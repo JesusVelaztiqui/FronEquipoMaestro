@@ -1,0 +1,70 @@
+@import "./variables.scss";
+
+.toast-container {
+  position: fixed;
+  top: $spacing-lg;
+  right: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 250px;
+  max-width: 350px;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-card;
+  color: $text-white;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  transform: translateY(-20px);
+  opacity: 0;
+  animation: slideIn 0.3s forwards, fadeOut 0.3s forwards;
+  animation-delay: 0s, var(--duration, 3s);
+
+  .toast-header {
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xs;
+  }
+
+  .toast-message {
+    font-weight: $font-weight-normal;
+    font-size: $font-size-sm;
+  }
+
+  &.toast-success {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  }
+
+  &.toast-error {
+    background: linear-gradient(
+      135deg,
+      $primary-red 0%,
+      $primary-red-hover 100%
+    );
+  }
+
+  &.toast-warning {
+    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    color: $text-dark;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}

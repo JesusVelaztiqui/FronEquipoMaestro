@@ -1,0 +1,492 @@
+@import "./variables.scss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family;
+  overflow: hidden;
+}
+
+.login-container {
+  display: flex;
+  min-height: 100vh;
+
+  .left-panel {
+    flex: 1;
+    background: $gradient-background;
+    display: flex;
+    flex-direction: column;
+    padding: $spacing-xl;
+    position: relative;
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-2xl;
+
+      h2 {
+        color: $text-white;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-medium;
+      }
+
+      .auth-buttons {
+        display: flex;
+        gap: $spacing-md;
+
+        .sign-up-btn {
+          background: transparent;
+          color: $text-white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          padding: $spacing-sm $spacing-lg;
+          border-radius: $border-radius-sm;
+          cursor: pointer;
+          font-size: $font-size-sm;
+          transition: $transition;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+          }
+        }
+
+        .join-us-btn {
+          background: rgba(255, 255, 255, 0.2);
+          color: $text-white;
+          border: none;
+          padding: $spacing-sm $spacing-lg;
+          border-radius: $border-radius-sm;
+          cursor: pointer;
+          font-size: $font-size-sm;
+          transition: $transition;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        }
+      }
+    }
+
+    .artwork-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      .artwork-card {
+        width: 300px;
+        height: 380px;
+        margin-bottom: $spacing-xl;
+        border-radius: $border-radius-xl;
+        overflow: hidden;
+        box-shadow: $shadow-heavy;
+
+        .artwork-image {
+          width: 100%;
+          height: 100%;
+          background: $gradient-artwork-1;
+          position: relative;
+
+          &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3csvg width='300' height='380' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cradialGradient id='sun' cx='50%25' cy='25%25' r='20%25'%3e%3cstop offset='0%25' style='stop-color:%23fff2d1;stop-opacity:1' /%3e%3cstop offset='100%25' style='stop-color:%23fff2d1;stop-opacity:0' /%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='240' cy='100' r='25' fill='%23fff' opacity='0.9'/%3e%3cpath d='M0,280 Q150,220 300,280 L300,380 L0,380 Z' fill='%23b85450' opacity='0.8'/%3e%3c/svg%3e");
+          }
+        }
+      }
+
+      .artist-section {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xl;
+
+        .artist-info {
+          display: flex;
+          align-items: center;
+          gap: $spacing-md;
+
+          .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .artist-details {
+            color: $text-white;
+
+            h3 {
+              font-size: $font-size-base;
+              font-weight: $font-weight-semibold;
+              margin-bottom: 4px;
+            }
+
+            p {
+              font-size: $font-size-sm;
+              opacity: 0.7;
+            }
+          }
+        }
+
+        .navigation-buttons {
+          display: flex;
+          gap: $spacing-md;
+
+          .nav-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: $text-white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: $font-size-lg;
+            transition: $transition;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .right-panel {
+    flex: 1;
+    background: $bg-light-gray;
+    display: flex;
+    flex-direction: column;
+
+    .login-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: $spacing-xl;
+
+      .logo {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $text-dark;
+        letter-spacing: -0.5px;
+      }
+
+      .language-selector {
+        background: $bg-white;
+        padding: $spacing-sm $spacing-md;
+        border-radius: $border-radius-sm;
+        box-shadow: $shadow-light;
+        cursor: pointer;
+
+        span {
+          color: $text-gray;
+          font-size: $font-size-sm;
+        }
+      }
+    }
+
+    .login-form-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: $spacing-xl;
+
+      .login-form {
+        width: 100%;
+        max-width: 400px;
+
+        h1 {
+          font-size: $font-size-3xl;
+          font-weight: $font-weight-bold;
+          color: $text-dark;
+          margin-bottom: $spacing-xs;
+        }
+
+        .welcome-text {
+          color: $text-gray;
+          margin-bottom: $spacing-2xl;
+          font-size: $font-size-base;
+        }
+
+        .form-fields {
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-lg;
+
+          .form-input {
+            width: 100%;
+            padding: $spacing-md;
+            border: 2px solid $border-light;
+            border-radius: $border-radius-md;
+            font-size: $font-size-base;
+            background: $bg-input;
+            transition: $transition;
+
+            &:focus {
+              outline: none;
+              border-color: $primary-red;
+            }
+
+            &::placeholder {
+              color: $text-light-gray;
+            }
+          }
+
+          .forgot-password {
+            text-align: right;
+            margin-top: -$spacing-sm;
+
+            a {
+              color: $primary-red;
+              text-decoration: none;
+              font-size: $font-size-sm;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+          }
+
+          .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: $spacing-md 0;
+
+            &::before,
+            &::after {
+              content: "";
+              flex: 1;
+              height: 1px;
+              background: $border-medium;
+            }
+
+            span {
+              padding: 0 $spacing-md;
+              color: $text-gray;
+              background: $bg-light-gray;
+              font-size: $font-size-sm;
+            }
+          }
+
+          .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: $spacing-sm;
+            padding: $spacing-md;
+            border: 2px solid $border-light;
+            border-radius: $border-radius-md;
+            background: $bg-white;
+            cursor: pointer;
+            font-size: $font-size-base;
+            transition: $transition;
+
+            &:hover {
+              border-color: $border-medium;
+            }
+          }
+
+          .login-btn {
+            padding: $spacing-md;
+            background: $primary-red;
+            border: none;
+            border-radius: $border-radius-md;
+            color: $text-white;
+            font-size: $font-size-base;
+            font-weight: $font-weight-semibold;
+            cursor: pointer;
+            transition: $transition;
+
+            &:hover {
+              background: $primary-red-hover;
+            }
+          }
+        }
+
+        .signup-text {
+          text-align: center;
+          margin-top: $spacing-xl;
+          color: $text-gray;
+          font-size: $font-size-sm;
+
+          a {
+            color: $primary-red;
+            text-decoration: none;
+            font-weight: $font-weight-medium;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+
+        .social-icons {
+          display: flex;
+          justify-content: center;
+          gap: $spacing-md;
+          margin-top: $spacing-lg;
+
+          .social-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: $bg-white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $text-gray;
+            text-decoration: none;
+            box-shadow: $shadow-light;
+            transition: $transition;
+
+            &:hover {
+              color: $text-dark;
+              transform: translateY(-2px);
+              box-shadow: $shadow-card;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .login-container {
+    flex-direction: column;
+
+    .left-panel {
+      min-height: 50vh;
+      padding: $spacing-lg;
+
+      .header {
+        margin-bottom: $spacing-lg;
+
+        h2 {
+          font-size: $font-size-base;
+        }
+
+        .auth-buttons {
+          gap: $spacing-sm;
+
+          button {
+            padding: $spacing-xs $spacing-md;
+            font-size: 12px;
+          }
+        }
+      }
+
+      .artwork-container {
+        .artwork-card {
+          width: 250px;
+          height: 320px;
+          margin-bottom: $spacing-lg;
+        }
+
+        .artist-section {
+          gap: $spacing-lg;
+
+          .artist-info {
+            .avatar {
+              width: 40px;
+              height: 40px;
+            }
+          }
+
+          .navigation-buttons {
+            .nav-btn {
+              width: 36px;
+              height: 36px;
+              font-size: $font-size-base;
+            }
+          }
+        }
+      }
+    }
+
+    .right-panel {
+      .login-header {
+        padding: $spacing-lg;
+
+        .logo {
+          font-size: $font-size-lg;
+        }
+      }
+
+      .login-form-container {
+        padding: $spacing-lg;
+
+        .login-form {
+          h1 {
+            font-size: $font-size-2xl;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .login-container {
+    .left-panel {
+      .header {
+        flex-direction: column;
+        gap: $spacing-md;
+        align-items: flex-start;
+      }
+
+      .artwork-container {
+        .artwork-card {
+          width: 200px;
+          height: 260px;
+        }
+
+        .artist-section {
+          flex-direction: column;
+          gap: $spacing-md;
+          text-align: center;
+        }
+      }
+    }
+
+    .right-panel {
+      .login-header {
+        flex-direction: column;
+        gap: $spacing-md;
+        align-items: flex-start;
+      }
+
+      .login-form-container {
+        .login-form {
+          h1 {
+            font-size: $font-size-xl;
+          }
+
+          .form-fields {
+            gap: $spacing-md;
+          }
+        }
+      }
+    }
+  }
+}
