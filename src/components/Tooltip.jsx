@@ -9,8 +9,27 @@ export const addToast = ({ type, title, message, duration = 3000 }) => {
   }
 };
 
+const getToastIcon = (type) => {
+  switch (type) {
+    case "success":
+      return <i className="fas fa-check"></i>;
+    case "error":
+      return <i className="fas fa-exclamation"></i>;
+    case "warning":
+      return <i className="fas fa-exclamation-triangle"></i>;
+    case "info":
+      return <i className="fas fa-exclamation"></i>;
+    default:
+      return <i className="fas fa-info"></i>;
+  }
+};
+
 export default function ToastManager() {
   const [toasts, setToasts] = useState([]);
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   useEffect(() => {
     addToastInternal = (toast) => {
@@ -34,29 +53,27 @@ export default function ToastManager() {
   }, []);
 
   return ReactDOM.createPortal(
-    <div
-      className="toast-container"
-      style={{
-        position: "fixed",
-        top: 10,
-        right: 10,
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        zIndex: 9999,
-      }}
-    >
+    <div className="toast-container">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           className={`toast toast-${toast.type}`}
           style={{
             opacity: toast.visible ? 1 : 0,
-            transition: "opacity 0.4s",
+            transition: "all 0.4s ease",
           }}
         >
-          <div className="toast-header">{toast.title}</div>
-          <div className="toast-message">{toast.message}</div>
+          <div className="toast-content">
+            <div className="toast-icon">{getToastIcon(toast.type)}</div>
+            <div className="toast-text">
+              <div className="toast-header">{toast.title}</div>
+              <div className="toast-message">{toast.message}</div>
+            </div>
+            <button
+              className="toast-close"
+              onClick={() => removeToast(toast.id)}
+            ></button>
+          </div>
         </div>
       ))}
     </div>,
