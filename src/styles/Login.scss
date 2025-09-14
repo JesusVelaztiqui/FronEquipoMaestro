@@ -254,7 +254,7 @@ body {
 
             &:focus {
               outline: none;
-              border-color: $primary-red;
+              border-color: $primary-purple;
             }
 
             &::placeholder {
@@ -286,7 +286,7 @@ body {
 
           .login-btn {
             padding: $spacing-md;
-            background: $primary-red;
+            background: $primary-purple;
             border: none;
             border-radius: $border-radius-md;
             color: $text-white;
@@ -296,7 +296,7 @@ body {
             transition: $transition;
 
             &:hover {
-              background: $primary-red-hover;
+              background: $primary-purple-hover;
             }
           }
         }
@@ -307,51 +307,51 @@ body {
         max-width: 400px;
 
         h1 {
-          font-size: 36px;
-          font-weight: 700;
-          color: #2d3748;
-          margin-bottom: 8px;
+          font-size: $font-size-2xl;
+          font-weight: $font-weight-bold;
+          color: $text-dark;
+          margin-bottom: $spacing-xs;
         }
 
         .welcome-text {
-          color: #718096;
+          color: $text-gray;
           margin-bottom: $spacing-2xl;
-          font-size: 16px;
+          font-size: $font-size-base;
         }
 
         .form-fields {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: $spacing-lg;
 
           .form-input {
             width: 100%;
-            padding: 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            background: #ffffff;
+            padding: $spacing-md;
+            border: 1px solid $border-light;
+            border-radius: $border-radius-md;
+            font-size: $font-size-base;
+            background: $bg-white;
             transition: $transition;
 
             &:focus {
               outline: none;
-              border-color: #4299e1;
-              box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+              border-color: $primary-purple;
+              box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
             }
 
             &::placeholder {
-              color: #a0aec0;
+              color: $text-light-gray;
             }
           }
 
           .forgot-password {
             text-align: right;
-            margin-top: -8px;
+            margin-top: -$spacing-xs;
 
             a {
-              color: #ef4444;
+              color: $primary-purple;
               text-decoration: none;
-              font-size: 14px;
+              font-size: $font-size-sm;
 
               &:hover {
                 text-decoration: underline;
@@ -363,21 +363,21 @@ body {
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 16px 0;
+            margin: $spacing-md 0;
 
             &::before,
             &::after {
               content: "";
               flex: 1;
               height: 1px;
-              background: #e2e8f0;
+              background: $border-light;
             }
 
             span {
-              padding: 0 16px;
-              color: #718096;
-              background: #ffffff;
-              font-size: 14px;
+              padding: 0 $spacing-md;
+              color: $text-gray;
+              background: $bg-white;
+              font-size: $font-size-sm;
             }
           }
 
@@ -385,48 +385,48 @@ body {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 18px 20px;
+            gap: $spacing-sm;
+            padding: $spacing-lg $spacing-lg;
             border: none;
             border-radius: 50px;
-            background: #f8f9fa;
+            background: $bg-light-gray;
             cursor: pointer;
-            font-size: 16px;
+            font-size: $font-size-base;
             transition: $transition;
-            color: #4a5568;
+            color: $text-dark;
 
             &:hover {
-              background: #f1f3f4;
+              background: $border-light;
             }
           }
 
           .login-btn {
-            padding: 18px 20px;
-            background: #ef4444;
+            padding: $spacing-lg $spacing-lg;
+            background: $primary-purple;
             border: none;
             border-radius: 50px;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 600;
+            color: $text-white;
+            font-size: $font-size-base;
+            font-weight: $font-weight-semibold;
             cursor: pointer;
             transition: $transition;
 
             &:hover {
-              background: #dc2626;
+              background: $primary-purple-hover;
             }
           }
         }
 
         .signup-text {
           text-align: center;
-          margin-top: 24px;
-          color: #718096;
-          font-size: 14px;
+          margin-top: $spacing-lg;
+          color: $text-gray;
+          font-size: $font-size-sm;
 
           a {
-            color: #ef4444;
+            color: $primary-purple;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: $font-weight-medium;
 
             &:hover {
               text-decoration: underline;
@@ -437,26 +437,26 @@ body {
         .social-icons {
           display: flex;
           justify-content: center;
-          gap: 16px;
-          margin-top: 20px;
+          gap: $spacing-md;
+          margin-top: $spacing-lg;
 
           .social-icon {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: #f7fafc;
+            background: $bg-light-gray;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #718096;
+            color: $text-gray;
             text-decoration: none;
-            border: 1px solid #e2e8f0;
+            border: 1px solid $border-light;
             transition: $transition;
 
             &:hover {
-              color: #2d3748;
+              color: $text-dark;
               transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              box-shadow: $shadow-light;
             }
           }
         }
@@ -465,7 +465,7 @@ body {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: $breakpoint-tablet) {
   .login-container {
     .left-panel {
       .artwork-container {
@@ -492,7 +492,7 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-mobile) {
   .login-container {
     flex-direction: column;
 
@@ -596,7 +596,7 @@ body {
         align-items: flex-start;
 
         h2 {
-          font-size: 14px;
+          font-size: $font-size-sm;
         }
 
         .auth-buttons {
@@ -604,7 +604,7 @@ body {
           justify-content: center;
 
           button {
-            padding: 8px 16px;
+            padding: $spacing-xs $spacing-md;
             font-size: 12px;
           }
         }
@@ -630,7 +630,7 @@ body {
 
             .artist-details {
               h3 {
-                font-size: 14px;
+                font-size: $font-size-sm;
               }
 
               p {
@@ -643,7 +643,7 @@ body {
             .nav-btn {
               width: 32px;
               height: 32px;
-              font-size: 14px;
+              font-size: $font-size-sm;
             }
           }
         }
@@ -679,7 +679,7 @@ body {
           }
 
           .welcome-text {
-            font-size: 14px;
+            font-size: $font-size-sm;
             margin-bottom: $spacing-lg;
           }
 
@@ -687,14 +687,14 @@ body {
             gap: $spacing-md;
 
             .form-input {
-              padding: 12px;
-              font-size: 14px;
+              padding: $spacing-sm;
+              font-size: $font-size-sm;
             }
 
             .login-btn,
             .google-btn {
-              padding: 12px;
-              font-size: 14px;
+              padding: $spacing-sm;
+              font-size: $font-size-sm;
             }
           }
 
@@ -719,7 +719,7 @@ body {
           }
 
           .welcome-text {
-            font-size: 14px;
+            font-size: $font-size-sm;
             margin-bottom: $spacing-lg;
           }
 
@@ -727,13 +727,13 @@ body {
             gap: $spacing-md;
 
             .form-input {
-              padding: 12px;
-              font-size: 14px;
+              padding: $spacing-sm;
+              font-size: $font-size-sm;
             }
 
             .login-btn {
-              padding: 12px;
-              font-size: 14px;
+              padding: $spacing-sm;
+              font-size: $font-size-sm;
             }
           }
         }
@@ -746,7 +746,7 @@ body {
   .login-container {
     .left-panel {
       min-height: 30vh;
-      padding: 12px;
+      padding: $spacing-sm;
 
       .header {
         h2 {
@@ -769,7 +769,7 @@ body {
 
         .artist-section {
           .artist-info {
-            gap: 8px;
+            gap: $spacing-xs;
 
             .avatar {
               width: 30px;
@@ -788,7 +788,7 @@ body {
           }
 
           .navigation-buttons {
-            gap: 8px;
+            gap: $spacing-xs;
 
             .nav-btn {
               width: 28px;
@@ -802,20 +802,20 @@ body {
 
     .right-panel {
       .login-header {
-        padding: 12px;
+        padding: $spacing-sm;
 
         .logo {
-          font-size: 14px;
+          font-size: $font-size-sm;
         }
       }
 
       .login-form-container {
-        padding: 12px;
+        padding: $spacing-sm;
 
         .login-form,
         .register-form {
           h1 {
-            font-size: 18px;
+            font-size: $font-size-lg;
           }
 
           .form-fields {

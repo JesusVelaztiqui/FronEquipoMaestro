@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { addToast } from "../../../components/Tooltip";
-import { sendData } from "../../../services/api";
-import { iniciarSesion, resgitrarmePrueba } from "../../../services/urls";
+import { addToast } from "../../components/Tooltip";
+import { sendData } from "../../services/api";
+import { iniciarSesion, resgitrarmePrueba } from "../../services/urls";
 import CryptoJS from "crypto-js";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const key = "1234567890123456";
   const iv = "abcdef1234567890";
+  const navigate = useNavigate();
   function encriptar(valor) {
     if (!valor) return "";
 
@@ -62,6 +64,7 @@ const LoginPage = () => {
     try {
       const response = await sendData(iniciarSesion, "POST", null, usuario);
       if (response.status === 200) {
+        navigate("/home");
         addToast({
           type: "success",
           title: "Inicio de Sesión",
@@ -71,7 +74,7 @@ const LoginPage = () => {
       } else if (response.status === 404) {
         addToast({
           type: "error",
-          title: "Licencia expirada",
+          title: "Atención",
           message: response?.mensaje,
           duration: 5000,
         });
