@@ -98,7 +98,6 @@ const LoginPage = () => {
 
   const registrarme = async () => {
     try {
-      console.log(registerUser);
       const response = await sendData(
         resgitrarmePrueba,
         "POST",
