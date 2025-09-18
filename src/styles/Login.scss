@@ -1,837 +1,598 @@
 @import "./variables.scss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: $font-family;
-  overflow-x: hidden;
+.login-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
 }
 
 .login-container {
+  width: 100%;
+  max-width: 1400px;
+  min-height: 700px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 0 0 60px rgba(103, 126, 234, 0.2);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  @media (max-width: 1200px) {
+    max-width: 1000px;
+    min-height: 650px;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    max-width: 550px;
+    min-height: 600px;
+  }
+
+  @media (max-width: 768px) {
+    border-radius: 16px;
+    margin: 1rem;
+    min-height: 550px;
+  }
+
+  @media (max-width: 480px) {
+    border-radius: 12px;
+    margin: 0.5rem;
+    min-height: 100vh;
+  }
+}
+
+.login-form-section {
   display: flex;
-  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
 
-  .left-panel {
-    flex: 1;
-    background: $gradient-background;
-    display: flex;
-    flex-direction: column;
-    padding: $spacing-xl;
-    position: relative;
+  @media (max-width: 1024px) {
+    background: rgba(248, 250, 252, 0.95);
+    backdrop-filter: blur(20px);
+  }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: $spacing-2xl;
+  @media (max-width: 768px) {
+    padding: 2rem;
+  }
 
-      h2 {
-        color: $text-white;
-        font-size: $font-size-lg;
-        font-weight: $font-weight-medium;
-        line-height: 1.2;
-      }
+  @media (max-width: 480px) {
+    padding: 1.5rem;
+    background: white;
+  }
+}
 
-      .auth-buttons {
-        display: flex;
-        gap: $spacing-md;
+.form-wrapper {
+  width: 100%;
+  max-width: 550px;
+  animation: slideInUp 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-        .sign-up-btn {
-          background: transparent;
-          color: $text-white;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          padding: $spacing-sm $spacing-lg;
-          border-radius: $border-radius-sm;
-          cursor: pointer;
-          font-size: $font-size-sm;
-          transition: $transition;
-          white-space: nowrap;
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-          &:hover {
-            background: rgba(255, 255, 255, 0.1);
-          }
-        }
+.welcome-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
 
-        .join-us-btn {
-          background: rgba(255, 255, 255, 0.2);
-          color: $text-white;
-          border: none;
-          padding: $spacing-sm $spacing-lg;
-          border-radius: $border-radius-sm;
-          cursor: pointer;
-          font-size: $font-size-sm;
-          transition: $transition;
-          white-space: nowrap;
+  @media (max-width: 768px) {
+    font-size: 2.2rem;
+  }
 
-          &:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-        }
-      }
-    }
+  @media (max-width: 480px) {
+    font-size: 1.9rem;
+  }
+}
 
-    .artwork-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+.subtitle {
+  color: #64748b;
+  margin: 0 0 2.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.5;
 
-      .artwork-card {
-        width: 300px;
-        height: 380px;
-        margin-bottom: $spacing-xl;
-        border-radius: $border-radius-xl;
-        overflow: hidden;
-        box-shadow: $shadow-heavy;
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+}
 
-        .artwork-image {
-          width: 100%;
-          height: 100%;
-          background: $gradient-artwork-1;
-          position: relative;
+.apple-login {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
 
-          &::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3csvg width='300' height='380' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cradialGradient id='sun' cx='50%25' cy='25%25' r='20%25'%3e%3cstop offset='0%25' style='stop-color:%23fff2d1;stop-opacity:1' /%3e%3cstop offset='100%25' style='stop-color:%23fff2d1;stop-opacity:0' /%3e%3c/radialGradient%3e%3c/defs%3e%3ccircle cx='240' cy='100' r='25' fill='%23fff' opacity='0.9'/%3e%3cpath d='M0,280 Q150,220 300,280 L300,380 L0,380 Z' fill='%23b85450' opacity='0.8'/%3e%3c/svg%3e");
-          }
-        }
-      }
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+    transition: left 0.6s;
+  }
 
-      .artist-section {
-        display: flex;
-        align-items: center;
-        gap: $spacing-xl;
+  &:hover {
+    background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 
-        .artist-info {
-          display: flex;
-          align-items: center;
-          gap: $spacing-md;
-
-          .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            flex-shrink: 0;
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
-          }
-
-          .artist-details {
-            color: $text-white;
-
-            h3 {
-              font-size: $font-size-base;
-              font-weight: $font-weight-semibold;
-              margin-bottom: 4px;
-            }
-
-            p {
-              font-size: $font-size-sm;
-              opacity: 0.7;
-            }
-          }
-        }
-
-        .navigation-buttons {
-          display: flex;
-          gap: $spacing-md;
-          flex-shrink: 0;
-
-          .nav-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: $text-white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: $font-size-lg;
-            transition: $transition;
-
-            &:hover {
-              background: rgba(255, 255, 255, 0.2);
-            }
-          }
-        }
-      }
+    &::before {
+      left: 100%;
     }
   }
 
-  .right-panel {
-    flex: 1;
-    background: $bg-light-gray;
-    display: flex;
-    flex-direction: column;
+  &:active {
+    transform: translateY(0);
+  }
 
-    .login-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: $spacing-xl;
+  @media (max-width: 480px) {
+    padding: 0.875rem;
+    font-size: 0.9rem;
+  }
+}
 
-      .logo {
-        font-size: $font-size-xl;
-        font-weight: $font-weight-bold;
-        color: $text-dark;
-        letter-spacing: -0.5px;
-      }
+.apple-icon {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
 
-      .language-selector {
-        background: $bg-white;
-        padding: $spacing-sm $spacing-md;
-        border-radius: $border-radius-sm;
-        box-shadow: $shadow-light;
-        cursor: pointer;
+.apple-login:hover .apple-icon {
+  transform: scale(1.1);
+}
 
-        span {
-          color: $text-gray;
-          font-size: $font-size-sm;
-        }
-      }
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 2rem 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  }
+
+  span {
+    background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+    padding: 0 1.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 20px;
+  }
+}
+
+.login-form {
+  margin-bottom: 2rem;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &.register-mode {
+    .form-fields {
+      max-height: 400px;
     }
+  }
 
-    .login-form-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: $spacing-xl;
+  &.login-mode {
+    .form-fields {
+      max-height: 150px;
+    }
+  }
+}
 
-      .register-form {
-        width: 100%;
-        max-width: 700px;
+.form-fields {
+  overflow: hidden;
+  transition: max-height 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-        h1 {
-          font-size: $font-size-3xl;
-          font-weight: $font-weight-bold;
-          color: $text-dark;
-          margin-bottom: $spacing-xs;
-        }
+.login-fields {
+  animation: fadeInFields 0.6s ease-out;
+}
 
-        .welcome-text {
-          color: $text-gray;
-          margin-bottom: $spacing-2xl;
-          font-size: $font-size-base;
-        }
+.register-fields {
+  animation: fadeInFields 0.6s ease-out;
+}
 
-        .form-fields {
-          display: flex;
-          flex-direction: column;
-          gap: $spacing-lg;
+@keyframes fadeInFields {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-          .columns {
-            width: 100%;
-            display: flex;
-            gap: 20px;
-          }
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
-          .form-input {
-            width: 50%;
-            padding: $spacing-md;
-            border: 2px solid $border-light;
-            border-radius: $border-radius-md;
-            font-size: $font-size-base;
-            background: $bg-input;
-            transition: $transition;
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
 
-            &:focus {
-              outline: none;
-              border-color: $primary-purple;
-            }
+.input-group {
+  margin-bottom: 1rem;
+  position: relative;
 
-            &::placeholder {
-              color: $text-light-gray;
-            }
-          }
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
 
-          .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: $spacing-md 0;
+.form-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  color: #1e293b;
 
-            &::before,
-            &::after {
-              content: "";
-              flex: 1;
-              height: 1px;
-              background: $border-medium;
-            }
+  &::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
-            span {
-              padding: 0 $spacing-md;
-              color: $text-gray;
-              background: $bg-light-gray;
-              font-size: $font-size-sm;
-            }
-          }
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1),
+      0 8px 25px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+  }
 
-          .login-btn {
-            padding: $spacing-md;
-            background: $primary-purple;
-            border: none;
-            border-radius: $border-radius-md;
-            color: $text-white;
-            font-size: $font-size-base;
-            font-weight: $font-weight-semibold;
-            cursor: pointer;
-            transition: $transition;
+  &:hover:not(:focus) {
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+  }
 
-            &:hover {
-              background: $primary-purple-hover;
-            }
-          }
-        }
-      }
+  @media (max-width: 480px) {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+}
 
-      .login-form {
-        width: 100%;
-        max-width: 400px;
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 2rem 0;
 
-        h1 {
-          font-size: $font-size-2xl;
-          font-weight: $font-weight-bold;
-          color: $text-dark;
-          margin-bottom: $spacing-xs;
-        }
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
 
-        .welcome-text {
-          color: $text-gray;
-          margin-bottom: $spacing-2xl;
-          font-size: $font-size-base;
-        }
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 500;
+  transition: color 0.2s ease;
 
-        .form-fields {
-          display: flex;
-          flex-direction: column;
-          gap: $spacing-lg;
+  &:hover {
+    color: #1e293b;
+  }
 
-          .form-input {
-            width: 100%;
-            padding: $spacing-md;
-            border: 1px solid $border-light;
-            border-radius: $border-radius-md;
-            font-size: $font-size-base;
-            background: $bg-white;
-            transition: $transition;
+  input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
 
-            &:focus {
-              outline: none;
-              border-color: $primary-purple;
-              box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            }
+    &:checked ~ .checkmark {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border-color: #3b82f6;
+      transform: scale(1.05);
 
-            &::placeholder {
-              color: $text-light-gray;
-            }
-          }
-
-          .forgot-password {
-            text-align: right;
-            margin-top: -$spacing-xs;
-
-            a {
-              color: $primary-purple;
-              text-decoration: none;
-              font-size: $font-size-sm;
-
-              &:hover {
-                text-decoration: underline;
-              }
-            }
-          }
-
-          .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: $spacing-md 0;
-
-            &::before,
-            &::after {
-              content: "";
-              flex: 1;
-              height: 1px;
-              background: $border-light;
-            }
-
-            span {
-              padding: 0 $spacing-md;
-              color: $text-gray;
-              background: $bg-white;
-              font-size: $font-size-sm;
-            }
-          }
-
-          .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: $spacing-sm;
-            padding: $spacing-lg $spacing-lg;
-            border: none;
-            border-radius: 50px;
-            background: $bg-light-gray;
-            cursor: pointer;
-            font-size: $font-size-base;
-            transition: $transition;
-            color: $text-dark;
-
-            &:hover {
-              background: $border-light;
-            }
-          }
-
-          .login-btn {
-            padding: $spacing-lg $spacing-lg;
-            background: $primary-purple;
-            border: none;
-            border-radius: 50px;
-            color: $text-white;
-            font-size: $font-size-base;
-            font-weight: $font-weight-semibold;
-            cursor: pointer;
-            transition: $transition;
-
-            &:hover {
-              background: $primary-purple-hover;
-            }
-          }
-        }
-
-        .signup-text {
-          text-align: center;
-          margin-top: $spacing-lg;
-          color: $text-gray;
-          font-size: $font-size-sm;
-
-          a {
-            color: $primary-purple;
-            text-decoration: none;
-            font-weight: $font-weight-medium;
-
-            &:hover {
-              text-decoration: underline;
-            }
-          }
-        }
-
-        .social-icons {
-          display: flex;
-          justify-content: center;
-          gap: $spacing-md;
-          margin-top: $spacing-lg;
-
-          .social-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: $bg-light-gray;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: $text-gray;
-            text-decoration: none;
-            border: 1px solid $border-light;
-            transition: $transition;
-
-            &:hover {
-              color: $text-dark;
-              transform: translateY(-2px);
-              box-shadow: $shadow-light;
-            }
-          }
-        }
+      &::after {
+        display: block;
       }
     }
   }
 }
 
-@media (max-width: $breakpoint-tablet) {
-  .login-container {
-    .left-panel {
-      .artwork-container {
-        .artwork-card {
-          width: 250px;
-          height: 320px;
-        }
-      }
-    }
+.checkmark {
+  height: 20px;
+  width: 20px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  margin-right: 0.75rem;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-    .right-panel {
-      .login-form-container {
-        .register-form {
-          max-width: 600px;
+  &::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+  }
 
-          .form-fields {
-            .columns {
-              gap: 15px;
-            }
-          }
-        }
-      }
+  &:hover {
+    border-color: #cbd5e1;
+    transform: scale(1.02);
+  }
+}
+
+.forgot-password {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    transition: width 0.3s ease;
+  }
+
+  &:hover {
+    color: #1d4ed8;
+
+    &::after {
+      width: 100%;
     }
   }
 }
 
-@media (max-width: $breakpoint-mobile) {
-  .login-container {
-    flex-direction: column;
+.submit-btn {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.025em;
 
-    .left-panel {
-      min-height: 40vh;
-      padding: $spacing-lg;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.6s;
+  }
 
-      .header {
-        margin-bottom: $spacing-lg;
+  &:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4),
+      0 5px 15px rgba(0, 0, 0, 0.12);
 
-        h2 {
-          font-size: $font-size-base;
-        }
-
-        .auth-buttons {
-          gap: $spacing-sm;
-
-          button {
-            padding: $spacing-xs $spacing-md;
-            font-size: 12px;
-          }
-        }
-      }
-
-      .artwork-container {
-        .artwork-card {
-          width: 200px;
-          height: 260px;
-          margin-bottom: $spacing-lg;
-        }
-
-        .artist-section {
-          gap: $spacing-lg;
-
-          .artist-info {
-            .avatar {
-              width: 40px;
-              height: 40px;
-            }
-          }
-
-          .navigation-buttons {
-            .nav-btn {
-              width: 36px;
-              height: 36px;
-              font-size: $font-size-base;
-            }
-          }
-        }
-      }
+    &::before {
+      left: 100%;
     }
+  }
 
-    .right-panel {
-      .login-header {
-        padding: $spacing-lg;
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3), 0 3px 8px rgba(0, 0, 0, 0.1);
+  }
 
-        .logo {
-          font-size: $font-size-lg;
-        }
-      }
+  @media (max-width: 480px) {
+    padding: 0.875rem;
+    font-size: 0.95rem;
+  }
+}
 
-      .login-form-container {
-        padding: $spacing-lg;
+.switch-mode {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 500;
 
-        .login-form {
-          h1 {
-            font-size: $font-size-2xl;
-          }
-        }
+  span {
+    margin-right: 0.5rem;
+  }
 
-        .register-form {
-          h1 {
-            font-size: $font-size-2xl;
-          }
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+}
 
-          .form-fields {
-            .columns {
-              flex-direction: column;
-              gap: $spacing-md;
-            }
+.switch-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  transition: all 0.2s ease;
+  position: relative;
 
-            .form-input {
-              width: 100%;
-            }
-          }
-        }
-      }
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    color: #1d4ed8;
+    transform: translateY(-1px);
+
+    &::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+.image-section {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(29, 78, 216, 0.1)
+  );
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.6s ease;
+  filter: brightness(0.8) contrast(1.1);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.image-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(147, 51, 234, 0.3) 100%
+  );
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 1024px) {
+  .login-container {
+    .image-section {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      opacity: 0.15;
+      display: block;
     }
   }
 }
 
 @media (max-width: 480px) {
+  .login-page {
+    padding: 0;
+  }
+
   .login-container {
-    .left-panel {
-      min-height: 35vh;
-      padding: $spacing-md;
+    border-radius: 0;
+    height: 100vh;
+    max-width: none;
 
-      .header {
-        flex-direction: column;
-        gap: $spacing-sm;
-        align-items: flex-start;
-
-        h2 {
-          font-size: $font-size-sm;
-        }
-
-        .auth-buttons {
-          width: 100%;
-          justify-content: center;
-
-          button {
-            padding: $spacing-xs $spacing-md;
-            font-size: 12px;
-          }
-        }
-      }
-
-      .artwork-container {
-        .artwork-card {
-          width: 160px;
-          height: 200px;
-          margin-bottom: $spacing-md;
-        }
-
-        .artist-section {
-          flex-direction: column;
-          gap: $spacing-sm;
-          text-align: center;
-
-          .artist-info {
-            .avatar {
-              width: 35px;
-              height: 35px;
-            }
-
-            .artist-details {
-              h3 {
-                font-size: $font-size-sm;
-              }
-
-              p {
-                font-size: 12px;
-              }
-            }
-          }
-
-          .navigation-buttons {
-            .nav-btn {
-              width: 32px;
-              height: 32px;
-              font-size: $font-size-sm;
-            }
-          }
-        }
-      }
+    .login-form-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
     }
 
-    .right-panel {
-      .login-header {
-        padding: $spacing-md;
-        flex-direction: column;
-        gap: $spacing-sm;
-        align-items: flex-start;
-
-        .logo {
-          font-size: $font-size-base;
-        }
-
-        .language-selector {
-          padding: 6px 12px;
-
-          span {
-            font-size: 12px;
-          }
-        }
-      }
-
-      .login-form-container {
-        padding: $spacing-md;
-
-        .login-form {
-          h1 {
-            font-size: $font-size-xl;
-          }
-
-          .welcome-text {
-            font-size: $font-size-sm;
-            margin-bottom: $spacing-lg;
-          }
-
-          .form-fields {
-            gap: $spacing-md;
-
-            .form-input {
-              padding: $spacing-sm;
-              font-size: $font-size-sm;
-            }
-
-            .login-btn,
-            .google-btn {
-              padding: $spacing-sm;
-              font-size: $font-size-sm;
-            }
-          }
-
-          .signup-text {
-            font-size: 12px;
-            margin-top: $spacing-md;
-          }
-
-          .social-icons {
-            margin-top: $spacing-md;
-
-            .social-icon {
-              width: 36px;
-              height: 36px;
-            }
-          }
-        }
-
-        .register-form {
-          h1 {
-            font-size: $font-size-xl;
-          }
-
-          .welcome-text {
-            font-size: $font-size-sm;
-            margin-bottom: $spacing-lg;
-          }
-
-          .form-fields {
-            gap: $spacing-md;
-
-            .form-input {
-              padding: $spacing-sm;
-              font-size: $font-size-sm;
-            }
-
-            .login-btn {
-              padding: $spacing-sm;
-              font-size: $font-size-sm;
-            }
-          }
-        }
-      }
+    .image-section {
+      display: none;
     }
   }
 }
 
-@media (max-width: 360px) {
-  .login-container {
-    .left-panel {
-      min-height: 30vh;
-      padding: $spacing-sm;
-
-      .header {
-        h2 {
-          font-size: 12px;
-        }
-
-        .auth-buttons {
-          button {
-            padding: 6px 12px;
-            font-size: 10px;
-          }
-        }
-      }
-
-      .artwork-container {
-        .artwork-card {
-          width: 140px;
-          height: 180px;
-        }
-
-        .artist-section {
-          .artist-info {
-            gap: $spacing-xs;
-
-            .avatar {
-              width: 30px;
-              height: 30px;
-            }
-
-            .artist-details {
-              h3 {
-                font-size: 12px;
-              }
-
-              p {
-                font-size: 10px;
-              }
-            }
-          }
-
-          .navigation-buttons {
-            gap: $spacing-xs;
-
-            .nav-btn {
-              width: 28px;
-              height: 28px;
-              font-size: 12px;
-            }
-          }
-        }
-      }
-    }
-
-    .right-panel {
-      .login-header {
-        padding: $spacing-sm;
-
-        .logo {
-          font-size: $font-size-sm;
-        }
-      }
-
-      .login-form-container {
-        padding: $spacing-sm;
-
-        .login-form,
-        .register-form {
-          h1 {
-            font-size: $font-size-lg;
-          }
-
-          .form-fields {
-            .form-input {
-              padding: 10px;
-              font-size: 12px;
-            }
-
-            .login-btn,
-            .google-btn {
-              padding: 10px;
-              font-size: 12px;
-            }
-          }
-        }
-      }
-    }
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
