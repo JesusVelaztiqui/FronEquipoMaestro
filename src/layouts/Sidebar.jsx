@@ -9,32 +9,32 @@ const Sidebar = ({ menuOpen }) => {
 
       <nav>
         <div className="menu-item active">
-          <i className="fas fa-home"></i>
-          <span>Dashboard</span>
+          <i className="fas fa-home" />
+          <span>Inicio</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-user"></i>
-          <span>Profile</span>
+          <i className="fas fa-user" />
+          <span>Clientes</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-grid"></i>
-          <span>Utilities</span>
+          <i className="fas fa-grid" />
+          <span>Turnos</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-cog"></i>
-          <span>Settings</span>
+          <i className="fas fa-cog" />
+          <span>Productos</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-envelope"></i>
-          <span>Messages</span>
+          <i className="fas fa-envelope" />
+          <span>Presupuesto</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-chart-bar"></i>
-          <span>Analytics</span>
+          <i className="fas fa-chart-bar" />
+          <span>Consentimiento</span>
         </div>
         <div className="menu-item">
-          <i className="fas fa-circle-question"></i>
-          <span>Support</span>
+          <i className="fas fa-circle-question" />
+          <span>Utilitarios </span>
         </div>
       </nav>
 
