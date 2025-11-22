@@ -1,15 +1,18 @@
-$ColorPrimario: rgb(163, 184, 161);
-$ColorSecundario: rgb(95, 113, 110);
-$ColorTerciario: rgb(244, 238, 212);
-$ColorGris: rgb(157, 157, 156);
-$ColorNegro: rgb(29, 29, 27);
-$ColorBlanco: rgb(255, 255, 255);
-$ColorFondo: rgb(258, 242, 241);
-$font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+:root {
+  --color-primario: rgb(163, 184, 161);
+  --color-secundario: rgb(95, 113, 110);
+  --color-terciario: rgb(244, 238, 212);
+  --color-gris: rgb(157, 157, 156);
+  --color-negro: rgb(29, 29, 27);
+  --color-blanco: rgb(255, 255, 255);
+  --color-fondo: rgb(238, 242, 241);
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+}
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: $font-family;
+  font-family: var(--font-family);
 }

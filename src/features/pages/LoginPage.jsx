@@ -36,7 +36,7 @@ const LoginPage = () => {
 
           <div className="image-section">
             <img
-              src="/public/prueba.jpg"
+              src="/public/portadaEM.png"
               alt="Mountain landscape"
               className="background-image"
             />
