@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-const Planes = ({ isOpen, onClose, validarRegistrarmePrueba }) => {
+const Planes = ({
+  isOpen,
+  onClose,
+  validarRegistrarmePrueba,
+  crearCuentaEmprendedorMes,
+  crearCuentaEmprendedorAnual,
+  crearCuentaProfesionalMes,
+  crearCuentaProfesionalAnual,
+}) => {
   const [billingType, setBillingType] = useState("monthly");
 
   const plans = {
@@ -20,6 +28,7 @@ const Planes = ({ isOpen, onClose, validarRegistrarmePrueba }) => {
       ],
       buttonText: "Empieza Gratis",
       buttonStyle: "primary",
+      id: 1,
     },
     genius: {
       name: "Profesional",
@@ -39,6 +48,7 @@ const Planes = ({ isOpen, onClose, validarRegistrarmePrueba }) => {
       ],
       buttonText: "Comenzar",
       buttonStyle: "secondary",
+      id: billingType === "annually" ? 4 : 2,
     },
     professional: {
       name: "Emprendedor",
@@ -57,6 +67,7 @@ const Planes = ({ isOpen, onClose, validarRegistrarmePrueba }) => {
       ],
       buttonText: "Comenzar",
       buttonStyle: "secondary",
+      id: billingType === "annually" ? 5 : 3,
     },
   };
 
@@ -136,8 +147,16 @@ const Planes = ({ isOpen, onClose, validarRegistrarmePrueba }) => {
               <button
                 className={`pricing-plan__button pricing-plan__button--${plan.buttonStyle}`}
                 onClick={async () => {
-                  if (plan?.buttonText === "Empieza Gratis") {
+                  if (plan?.id === 1) {
                     await validarRegistrarmePrueba();
+                  } else if (plan?.id === 2) {
+                    await crearCuentaProfesionalMes();
+                  } else if (plan?.id === 3) {
+                    await crearCuentaEmprendedorMes();
+                  } else if (plan?.id === 4) {
+                    await crearCuentaProfesionalAnual();
+                  } else if (plan?.id === 5) {
+                    await crearCuentaEmprendedorAnual();
                   }
                 }}
               >

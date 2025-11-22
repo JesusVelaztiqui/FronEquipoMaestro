@@ -1,0 +1,447 @@
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .bill-id {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .history-icon,
+    .close-icon {
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f5f5f5;
+      }
+    }
+  }
+}
+
+.account-section {
+  margin-bottom: 20px;
+
+  .account-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .account-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    background: white;
+
+    .treatment-fund {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #333;
+    }
+
+    .dropdown-arrow {
+      color: #666;
+    }
+  }
+}
+
+.patient-info {
+  margin-bottom: 24px;
+
+  .patient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .bill-to {
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .date {
+      font-size: 14px;
+      color: #333;
+    }
+  }
+
+  .patient-details {
+    position: relative;
+
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    p {
+      margin: 2px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .unpaid-status {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+}
+
+.bill-items {
+  margin-bottom: 24px;
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .item-icon {
+        font-size: 16px;
+      }
+    }
+
+    .amount {
+      font-weight: 500;
+      color: #333;
+    }
+  }
+}
+
+.notes-section {
+  margin-bottom: 24px;
+
+  label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 12px;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #999;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+  }
+}
+
+.total-section {
+  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e5e9;
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+
+    &.total-final {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      border-top: 1px solid #e1e5e9;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+  }
+}
+
+.payment-section {
+  .payment-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .payment-options {
+    margin-top: 20px;
+    margin-bottom: 16px;
+    .pagar {
+      margin-top: 20px;
+      background-color: #01c418;
+      span {
+        color: #fff !important;
+      }
+      &:hover {
+        background-color: #059a16 !important;
+      }
+    }
+    .payment-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .payment-icon {
+        margin-right: 8px;
+      }
+
+      .arrow {
+        color: #666;
+        font-size: 18px;
+      }
+    }
+  }
+
+  .show-more {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 8px 0;
+    width: 100%;
+    text-align: center;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    align-items: flex-end;
+  }
+}
+
+.modal-content {
+  height: 100%;
+  //   overflow-y: auto;
+  display: flex;
+  gap: 20px;
+  animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  @media (max-width: 768px) {
+    height: auto;
+    max-height: 90vh;
+    width: 100%;
+    flex-direction: column;
+    animation: slideInFromBottom 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    gap: 15px;
+    padding: 0 10px;
+  }
+
+  @media (max-width: 480px) {
+    max-height: 95vh;
+    gap: 10px;
+  }
+
+  .modal-card {
+    background: white;
+    width: 450px;
+    max-width: 100%;
+    height: 100%;
+    padding: 32px;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+    border-radius: 20px 0px 0px 20px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      height: auto;
+      border-radius: 16px 16px 0 0;
+      padding: 24px;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 480px) {
+      padding: 20px;
+    }
+
+    .patient-details .unpaid-status {
+      @media (max-width: 480px) {
+        position: static;
+        margin-top: 8px;
+        display: inline-block;
+      }
+    }
+  }
+
+  .empty-card {
+    width: 450px;
+    max-width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    font-size: 16px;
+
+    .cardCajas {
+      width: 100%;
+      height: 50%;
+      background: white;
+      overflow: hidden;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 768px) {
+      width: 100%;
+      height: 300px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 480px) {
+      padding: 20px;
+      height: 250px;
+    }
+  }
+}
+.textareaLogin {
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5rem;
+  max-height: calc(4rem * 2);
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.transladarItems {
+  animation: transladarDerecha 0.4s forwards;
+}
+.removetransladarItems {
+  animation: removetransladarDerecha 0.4s forwards;
+}
+
+@keyframes transladarDerecha {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+@keyframes removetransladarDerecha {
+  0% {
+    transform: translateX(50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
