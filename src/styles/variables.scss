@@ -1,66 +1,12 @@
-$primary-purple: #4f46e5;
-$primary-purple-hover: #4338ca;
-
-$dark-blue-primary: #2c3e50;
-$dark-blue-secondary: #34495e;
-$dark-navy: #1a252f;
-
-$text-dark: #2c3e50;
-$text-gray: #7f8c8d;
-$text-light-gray: #bdc3c7;
-$text-white: #ffffff;
-
-$bg-light-gray: #f8f9fa;
-$bg-white: #ffffff;
-$bg-input: #ffffff;
-
-$border-light: #e9ecef;
-$border-medium: #dee2e6;
-
-$gradient-artwork-1: linear-gradient(
-  135deg,
-  #4f46e5 0%,
-  #7c3aed 50%,
-  #8b5cf6 100%
-);
-$gradient-artwork-2: linear-gradient(45deg, #2c3e50 0%, #4f46e5 100%);
-$gradient-background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-
-$shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
-$shadow-card: 0 8px 25px rgba(0, 0, 0, 0.15);
-$shadow-heavy: 0 15px 35px rgba(0, 0, 0, 0.2);
-
+$ColorPrimario: rgb(163, 184, 161);
+$ColorSecundario: rgb(95, 113, 110);
+$ColorTerciario: rgb(244, 238, 212);
+$ColorGris: rgb(157, 157, 156);
+$ColorNegro: rgb(29, 29, 27);
+$ColorBlanco: rgb(255, 255, 255);
+$ColorFondo: rgb(258, 242, 241);
 $font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-$font-size-sm: 14px;
-$font-size-base: 16px;
-$font-size-lg: 18px;
-$font-size-xl: 24px;
-$font-size-2xl: 32px;
-$font-size-3xl: 48px;
-
-$font-weight-normal: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-
-$border-radius-sm: 8px;
-$border-radius-md: 12px;
-$border-radius-lg: 16px;
-$border-radius-xl: 20px;
-
-$spacing-xs: 8px;
-$spacing-sm: 12px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$spacing-xl: 32px;
-$spacing-2xl: 48px;
-
-$transition: all 0.3s ease;
-
-$breakpoint-mobile: 768px;
-$breakpoint-tablet: 992px;
-$breakpoint-desktop: 1200px;
 * {
   box-sizing: border-box;
   margin: 0;
