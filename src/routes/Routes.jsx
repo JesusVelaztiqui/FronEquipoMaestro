@@ -1,7 +1,7 @@
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
-import Home from "../pages/Home";
 import Layout from "../layouts/Layout";
 import LoginPage from "../features/pages/LoginPage";
+import Dahsboard from "../pages/Dahsboard";
 
 const AppRoutes = () => {
   return (
@@ -12,10 +12,10 @@ const AppRoutes = () => {
       </Routes>
       <Routes>
         <Route
-          path="/home"
+          path="/inicio"
           element={
             <Layout>
-              <Home />
+              <Dahsboard />
             </Layout>
           }
         ></Route>
