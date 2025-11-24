@@ -14,7 +14,7 @@ const Sidebar = ({ menuOpen }) => {
         </div>
         <div className="menu-item">
           <i className="fas fa-user" />
-          <span>Clientes</span>
+          <span>Pacientes</span>
         </div>
         <div className="menu-item">
           <i className="fas fa-grid" />
