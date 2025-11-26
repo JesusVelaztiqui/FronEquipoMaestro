@@ -1,27 +1,3 @@
-// Variables CSS
-:root {
-  --color-primario: rgb(163, 184, 161);
-  --color-secundario: rgb(95, 113, 110);
-  --color-terciario: rgb(244, 238, 212);
-  --color-gris: rgb(157, 157, 156);
-  --color-negro: rgb(29, 29, 27);
-  --color-blanco: rgb(255, 255, 255);
-  --color-fondo: rgb(238, 242, 241);
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-family);
-  overflow: hidden;
-}
-
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -157,9 +133,18 @@ body {
   flex: 1;
   padding: 28px;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 1024px) {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  @media (max-width: 640px) {
+    padding: 12px;
+  }
 }
 
 .header {

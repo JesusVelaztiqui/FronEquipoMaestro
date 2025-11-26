@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 const Sidebar = ({ menuOpen }) => {
+  const navigate = useNavigate();
   return (
     <aside
       className={`sidebar ${menuOpen ? "mobile-visible" : "mobile-hidden"}`}
@@ -8,11 +11,21 @@ const Sidebar = ({ menuOpen }) => {
       </div>
 
       <nav>
-        <div className="menu-item active">
+        <div
+          className="menu-item active"
+          onClick={() => {
+            navigate("/inicio");
+          }}
+        >
           <i className="fas fa-home" />
           <span>Inicio</span>
         </div>
-        <div className="menu-item">
+        <div
+          className="menu-item"
+          onClick={() => {
+            navigate("/pacientes");
+          }}
+        >
           <i className="fas fa-user" />
           <span>Pacientes</span>
         </div>
