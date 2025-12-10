@@ -5,6 +5,8 @@ import Dahsboard from "../pages/Dahsboard";
 import Pacientes from "../pages/Pacientes";
 import PrivateRoute from "./PrivateRoute";
 import Inputs from "../pages/Inputs";
+import Turnos from "../pages/Turnos";
+import Doctores from "../pages/Doctores";
 
 const AppRoutes = () => {
   return (
@@ -24,13 +26,32 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/doctores"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Doctores />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/pacientes"
           element={
             <PrivateRoute>
               <Layout>
                 <Pacientes />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/turnos"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Turnos />
               </Layout>
             </PrivateRoute>
           }

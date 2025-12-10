@@ -1,62 +1,30 @@
 import { useState } from "react";
 
-const Pacientes = () => {
+const Doctores = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
-  const mockPapers = [
+
+  const mockDoctors = [
     {
       id: 1,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
+      name: "Juan Pérez",
+      specialty: "Cardiología",
+      phone: "0991 123 456",
+      license: "MED-12345",
     },
     {
       id: 2,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
+      name: "Ana Gómez",
+      specialty: "Pediatría",
+      phone: "0982 555 222",
+      license: "MED-67890",
     },
     {
       id: 3,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
-    },
-    {
-      id: 4,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
-    },
-    {
-      id: 5,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
-    },
-    {
-      id: 6,
-      question: "ISC Class XI Mid-term 2024",
-      year: "2024",
-      student: "Jho Smith",
-      pages: "03",
-      questions: "40",
-      responses: "27",
+      name: "Carlos López",
+      specialty: "Dermatología",
+      phone: "0971 000 789",
+      license: "MED-11111",
     },
   ];
 
@@ -65,9 +33,9 @@ const Pacientes = () => {
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
-            <h1 className="mock-papers__title">Pacientes</h1>
+            <h1 className="mock-papers__title">Doctores</h1>
             <p className="mock-papers__subtitle">
-              Gestiona el registro y seguimiento de tus pacientes
+              Gestión y administración de profesionales médicos
             </p>
           </div>
 
@@ -111,26 +79,22 @@ const Pacientes = () => {
             <table className="mock-papers__table">
               <thead>
                 <tr>
-                  <th>S. Number</th>
-                  <th>Question</th>
-                  <th>Year</th>
-                  <th>Student</th>
-                  <th>Pages</th>
-                  <th>Questions</th>
-                  <th>Responses</th>
+                  <th>N°</th>
+                  <th>Nombre</th>
+                  <th>Especialidad</th>
+                  <th>Teléfono</th>
+                  <th>N° Licencia</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {mockPapers.map((paper, index) => (
-                  <tr key={paper.id}>
+                {mockDoctors.map((doc, index) => (
+                  <tr key={doc.id}>
                     <td>{String(index + 1).padStart(2, "0")}</td>
-                    <td>{paper.question}</td>
-                    <td>{paper.year}</td>
-                    <td>{paper.student}</td>
-                    <td>{paper.pages}</td>
-                    <td>{paper.questions}</td>
-                    <td>{paper.responses}</td>
+                    <td>{doc.name}</td>
+                    <td>{doc.specialty}</td>
+                    <td>{doc.phone}</td>
+                    <td>{doc.license}</td>
                     <td>
                       <div className="table-actions">
                         <button
@@ -176,13 +140,15 @@ const Pacientes = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL */}
       <div
         className="modal-overlay"
         style={{ display: openModal ? "flex" : "none" }}
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Carga De Paciente</h2>
+            <h2 className="modal-title">Registro de Doctor</h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>
@@ -191,63 +157,40 @@ const Pacientes = () => {
           <div className="modal-body">
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Nombre</label>
+                <label className="input-label">Nombre Completo</label>
                 <input
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
                 />
               </div>
+
               <div className="input-group">
-                <label className="input-label">Apellido</label>
+                <label className="input-label">Especialidad</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Escribe aquí..."
+                  placeholder="Ej: Cardiología"
                 />
               </div>
+
               <div className="input-group">
-                <label className="input-label">Fecha Nacimiento</label>
-                <input
-                  type="date"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-            </div>
-            <div className="modal-row">
-              <div className="input-group">
-                <label className="input-label">Edad</label>
+                <label className="input-label">Teléfono</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Cédula / Ruc</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Celular</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
+                  placeholder="0991..."
                 />
               </div>
             </div>
+
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Dirección</label>
+                <label className="input-label">N° Licencia Médica</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Escribe aquí..."
+                  placeholder="MED-xxxxx"
                 />
               </div>
             </div>
@@ -265,4 +208,4 @@ const Pacientes = () => {
   );
 };
 
-export default Pacientes;
+export default Doctores;
