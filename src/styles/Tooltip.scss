@@ -121,6 +121,16 @@
       color: #a855f7;
     }
   }
+  &--adjuntar {
+    &:hover {
+      background-color: rgba(247, 207, 85, 0.1);
+      color: #c98d0b;
+    }
+
+    i {
+      color: #d8b725;
+    }
+  }
 }
 
 .tooltip-divider {

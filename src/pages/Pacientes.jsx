@@ -94,7 +94,6 @@ const Pacientes = () => {
         const viewportHeight = window.innerHeight;
         const viewportWidth = window.innerWidth;
 
-        // Medir el tooltip después de que se muestre
         tooltip.style.visibility = "hidden";
         tooltip.style.opacity = "1";
         tooltip.style.display = "block";
@@ -104,23 +103,18 @@ const Pacientes = () => {
         tooltip.style.visibility = "";
         tooltip.style.opacity = "";
         tooltip.style.display = "";
-
-        // Reset
         tooltip.className = "tooltip-menu active";
 
-        // Calcular posición
         const spaceBelow = viewportHeight - triggerRect.bottom;
         const spaceAbove = triggerRect.top;
 
         let top, left;
 
-        // Posición vertical
         if (spaceBelow >= tooltipRect.height + 16) {
           top = triggerRect.bottom + 8;
         } else if (spaceAbove >= tooltipRect.height + 16) {
           top = triggerRect.top - tooltipRect.height - 8;
         } else {
-          // Usar el lado con más espacio
           if (spaceBelow > spaceAbove) {
             top = triggerRect.bottom + 8;
           } else {
@@ -128,15 +122,12 @@ const Pacientes = () => {
           }
         }
 
-        // Posición horizontal - centrado por defecto
         left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
 
-        // Ajustar si se sale por la izquierda
         if (left < 20) {
           left = 20;
         }
 
-        // Ajustar si se sale por la derecha
         if (left + tooltipRect.width > viewportWidth - 20) {
           left = viewportWidth - tooltipRect.width - 20;
         }
@@ -191,10 +182,10 @@ const Pacientes = () => {
 
           <button
             className="tooltip-item tooltip-item--export"
-            onClick={() => handleAction("Exportar")}
+            onClick={() => handleAction("Exportar Historial")}
           >
             <i className="fas fa-file-export"></i>
-            <span>Exportar</span>
+            <span>Exportar Historial</span>
           </button>
 
           <div className="tooltip-divider"></div>
