@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const Pacientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState(null);
+
   const mockPapers = [
     {
       id: 1,
@@ -58,7 +60,167 @@ const Pacientes = () => {
       questions: "40",
       responses: "27",
     },
+    {
+      id: 7,
+      question: "ISC Class XI Mid-term 2024",
+      year: "2024",
+      student: "Jho Smith",
+      pages: "03",
+      questions: "40",
+      responses: "27",
+    },
+    {
+      id: 8,
+      question: "ISC Class XI Mid-term 2024",
+      year: "2024",
+      student: "Jho Smith",
+      pages: "03",
+      questions: "40",
+      responses: "27",
+    },
   ];
+
+  const TooltipActions = ({ paperId }) => {
+    const tooltipRef = useRef(null);
+    const triggerRef = useRef(null);
+    const isActive = activeTooltip === paperId;
+
+    useEffect(() => {
+      if (isActive && tooltipRef.current && triggerRef.current) {
+        const tooltip = tooltipRef.current;
+        const trigger = triggerRef.current;
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+
+        // Medir el tooltip después de que se muestre
+        tooltip.style.visibility = "hidden";
+        tooltip.style.opacity = "1";
+        tooltip.style.display = "block";
+
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        tooltip.style.visibility = "";
+        tooltip.style.opacity = "";
+        tooltip.style.display = "";
+
+        // Reset
+        tooltip.className = "tooltip-menu active";
+
+        // Calcular posición
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+
+        let top, left;
+
+        // Posición vertical
+        if (spaceBelow >= tooltipRect.height + 16) {
+          top = triggerRect.bottom + 8;
+        } else if (spaceAbove >= tooltipRect.height + 16) {
+          top = triggerRect.top - tooltipRect.height - 8;
+        } else {
+          // Usar el lado con más espacio
+          if (spaceBelow > spaceAbove) {
+            top = triggerRect.bottom + 8;
+          } else {
+            top = triggerRect.top - tooltipRect.height - 8;
+          }
+        }
+
+        // Posición horizontal - centrado por defecto
+        left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+
+        // Ajustar si se sale por la izquierda
+        if (left < 20) {
+          left = 20;
+        }
+
+        // Ajustar si se sale por la derecha
+        if (left + tooltipRect.width > viewportWidth - 20) {
+          left = viewportWidth - tooltipRect.width - 20;
+        }
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.transform = "none";
+      }
+    }, [isActive]);
+
+    const handleToggle = (e) => {
+      e.stopPropagation();
+      setActiveTooltip(isActive ? null : paperId);
+    };
+
+    const handleAction = (action) => {
+      console.log(`${action} para paciente ID: ${paperId}`);
+      setActiveTooltip(null);
+    };
+
+    return (
+      <div className="tooltip-wrapper">
+        <button
+          ref={triggerRef}
+          className="tooltip-trigger"
+          onClick={handleToggle}
+        >
+          <i className="fas fa-ellipsis-v"></i>
+        </button>
+
+        <div
+          ref={tooltipRef}
+          className={`tooltip-menu ${isActive ? "active" : ""}`}
+        >
+          <button
+            className="tooltip-item tooltip-item--edit"
+            onClick={() => handleAction("Editar")}
+          >
+            <i className="fas fa-edit"></i>
+            <span>Editar</span>
+          </button>
+
+          <button
+            className="tooltip-item tooltip-item--view"
+            onClick={() => handleAction("Ver Historial")}
+          >
+            <i className="fas fa-history"></i>
+            <span>Ver Historial</span>
+          </button>
+
+          <div className="tooltip-divider"></div>
+
+          <button
+            className="tooltip-item tooltip-item--export"
+            onClick={() => handleAction("Exportar")}
+          >
+            <i className="fas fa-file-export"></i>
+            <span>Exportar</span>
+          </button>
+
+          <div className="tooltip-divider"></div>
+
+          <button
+            className="tooltip-item tooltip-item--delete"
+            onClick={() => handleAction("Eliminar")}
+          >
+            <i className="fas fa-trash-alt"></i>
+            <span>Eliminar</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".tooltip-wrapper")) {
+        setActiveTooltip(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -132,20 +294,7 @@ const Pacientes = () => {
                     <td>{paper.questions}</td>
                     <td>{paper.responses}</td>
                     <td>
-                      <div className="table-actions">
-                        <button
-                          className="action-btn action-btn--edit"
-                          title="Editar"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button
-                          className="action-btn action-btn--delete"
-                          title="Eliminar"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
+                      <TooltipActions paperId={paper.id} />
                     </td>
                   </tr>
                 ))}
@@ -176,6 +325,7 @@ const Pacientes = () => {
           </div>
         </div>
       </div>
+
       <div
         className="modal-overlay"
         style={{ display: openModal ? "flex" : "none" }}
