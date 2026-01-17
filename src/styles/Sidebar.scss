@@ -54,6 +54,9 @@
     background: var(--color-primario);
     color: var(--color-blanco);
   }
+  &.cerrarsesion {
+    color: red;
+  }
 
   svg {
     width: 20px;
@@ -213,7 +216,9 @@
   background: var(--color-blanco);
   border-radius: 16px;
   padding: 22px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
 
   &:hover {

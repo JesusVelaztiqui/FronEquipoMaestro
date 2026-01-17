@@ -4,7 +4,6 @@ const FileUpload = () => {
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -54,7 +53,7 @@ const FileUpload = () => {
             };
           }
           return f;
-        })
+        }),
       );
     }, 200);
 
@@ -125,7 +124,7 @@ const FileUpload = () => {
                   <span className="file-item__size">
                     {fileObj.uploading
                       ? `${fileObj.progress}% of ${formatFileSize(
-                          fileObj.file.size
+                          fileObj.file.size,
                         )}`
                       : formatFileSize(fileObj.file.size)}
                   </span>
@@ -415,7 +414,7 @@ const Turnos = () => {
                     <td>
                       <span
                         className={`turno-estado ${getEstadoClass(
-                          turno.estado
+                          turno.estado,
                         )}`}
                       >
                         {turno.estado}
@@ -520,9 +519,29 @@ const Turnos = () => {
                 <label className="input-label">Observaciones</label>
                 <textarea
                   className="input-textarea"
-                  placeholder="Notas adicionales sobre el turno..."
+                  placeholder="Notas adicionales sobre el turno, productos utilizados etc..."
                   rows="3"
                 ></textarea>
+              </div>
+            </div>
+
+            <div className="modal-row">
+              <div className="input-group">
+                <label className="input-label">Descontar al Médico</label>
+                <select className="input-select">
+                  <option value="">Seleccionar médico</option>
+                  <option value="1">Dra. Ana Solis</option>
+                  <option value="2">Dra. Carolina Sosa</option>
+                  <option value="3">Dra. Patricia Ojeda</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Porcentaje a descontar</label>
+                <input type="text" className="input-field" />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Importe Total</label>
+                <input type="text" className="input-field" />
               </div>
             </div>
 

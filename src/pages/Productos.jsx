@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const Doctores = () => {
+const Productos = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -149,9 +149,9 @@ const Doctores = () => {
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
-            <h1 className="mock-papers__title">Doctores</h1>
+            <h1 className="mock-papers__title">Productos</h1>
             <p className="mock-papers__subtitle">
-              Gestión y administración de profesionales médicos
+              Gestión y administración productos odontológicos
             </p>
           </div>
 
@@ -197,9 +197,10 @@ const Doctores = () => {
                 <tr>
                   <th>N°</th>
                   <th>Nombre</th>
-                  <th>Especialidad</th>
-                  <th>Teléfono</th>
-                  <th>N° Licencia</th>
+                  <th>Marca</th>
+                  <th>Categoria</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -210,6 +211,7 @@ const Doctores = () => {
                     <td>{doc.name}</td>
                     <td>{doc.specialty}</td>
                     <td>{doc.phone}</td>
+                    <td>{doc.license}</td>
                     <td>{doc.license}</td>
                     <td>
                       <TooltipActions doctorId={doc.id} />
@@ -311,4 +313,4 @@ const Doctores = () => {
   );
 };
 
-export default Doctores;
+export default Productos;

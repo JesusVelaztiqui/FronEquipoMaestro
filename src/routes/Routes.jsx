@@ -7,6 +7,8 @@ import PrivateRoute from "./PrivateRoute";
 import Inputs from "../pages/Inputs";
 import Turnos from "../pages/Turnos";
 import Doctores from "../pages/Doctores";
+import Auditoria from "../pages/Auditoria";
+import Productos from "../pages/Productos";
 
 const AppRoutes = () => {
   return (
@@ -52,6 +54,26 @@ const AppRoutes = () => {
             <PrivateRoute>
               <Layout>
                 <Turnos />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/productos"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Productos />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/auditoria"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Auditoria />
               </Layout>
             </PrivateRoute>
           }
