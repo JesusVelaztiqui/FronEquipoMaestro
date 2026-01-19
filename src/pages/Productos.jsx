@@ -196,9 +196,9 @@ const Productos = () => {
               <thead>
                 <tr>
                   <th>N°</th>
+                  <th>Código</th>
                   <th>Nombre</th>
                   <th>Marca</th>
-                  <th>Categoria</th>
                   <th>Cantidad</th>
                   <th>Precio</th>
                   <th>Acciones</th>
@@ -253,7 +253,7 @@ const Productos = () => {
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Registro de Doctor</h2>
+            <h2 className="modal-title">Registro de producto</h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>
@@ -262,7 +262,7 @@ const Productos = () => {
           <div className="modal-body">
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Nombre Completo</label>
+                <label className="input-label">Código</label>
                 <input
                   type="text"
                   className="input-field"
@@ -271,32 +271,55 @@ const Productos = () => {
               </div>
 
               <div className="input-group">
-                <label className="input-label">Especialidad</label>
+                <label className="input-label">Nombre</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Ej: Cardiología"
+                  placeholder="Escribe aquí..."
                 />
               </div>
 
               <div className="input-group">
-                <label className="input-label">Teléfono</label>
+                <label className="input-label">Marca</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="0991..."
+                  placeholder="Escribe aquí..."
                 />
+              </div>
+            </div>
+            <div className="modal-row">
+              <div className="input-group">
+                <label className="input-label">Precio</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Cantidad</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Vencimiento</label>
+                <input type="date" className="input-field" />
               </div>
             </div>
 
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">N° Licencia Médica</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="MED-xxxxx"
-                />
+                <label className="input-label">Descripción</label>
+                <textarea
+                  className="input-textarea"
+                  placeholder="Notas adicionales sobre el producto, indicaciones o advertencias"
+                  rows="3"
+                ></textarea>
               </div>
             </div>
           </div>

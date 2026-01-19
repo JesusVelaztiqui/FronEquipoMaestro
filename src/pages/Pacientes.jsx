@@ -384,6 +384,14 @@ const Pacientes = () => {
             </div>
             <div className="modal-row">
               <div className="input-group">
+                <label className="input-label">E-mail</label>
+                <input
+                  type="email"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+              <div className="input-group">
                 <label className="input-label">Dirección</label>
                 <input
                   type="text"
