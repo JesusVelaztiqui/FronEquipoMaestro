@@ -1,4 +1,8 @@
+import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
+
 const Dahsboard = () => {
+  cargarLoader();
+  ocultarLoader();
   return (
     <>
       <header className="header">
@@ -36,7 +40,7 @@ const Dahsboard = () => {
 
       <div className="transactions-grid">
         <div className="transaction-section">
-          <h2 className="section-title">Siguiente Turnos hoy</h2>
+          <h2 className="section-title">Siguientes Turnos hoy</h2>
 
           <div className="transaction-item">
             <div className="transaction-icon">

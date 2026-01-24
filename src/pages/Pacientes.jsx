@@ -164,7 +164,10 @@ const Pacientes = () => {
         >
           <button
             className="tooltip-item tooltip-item--edit"
-            onClick={() => handleAction("Editar")}
+            onClick={() => {
+              handleAction("Editar");
+              setOpenModal(true);
+            }}
           >
             <i className="fas fa-edit"></i>
             <span>Editar</span>

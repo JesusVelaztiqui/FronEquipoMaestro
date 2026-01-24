@@ -1,4 +1,3 @@
-const BASEURL_LICENCIAS = import.meta.env.VITE_BASEURL_LICENCIAS;
+const baseurl = import.meta.env.VITE_BASEURL;
 
-export const iniciarSesion = `${BASEURL_LICENCIAS}usuario/validar`;
-export const resgitrarmePrueba = `${BASEURL_LICENCIAS}licencias/crear`;
+export const iniciarSesion = `${baseurl}usuario/validar`;

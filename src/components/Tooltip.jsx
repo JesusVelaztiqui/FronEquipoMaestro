@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -38,7 +39,7 @@ export default function ToastManager() {
 
       setTimeout(() => {
         setToasts((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, visible: false } : t))
+          prev.map((t) => (t.id === id ? { ...t, visible: false } : t)),
         );
       }, toast.duration);
 
@@ -77,6 +78,6 @@ export default function ToastManager() {
         </div>
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }
