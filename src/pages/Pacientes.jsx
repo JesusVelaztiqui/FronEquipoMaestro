@@ -326,7 +326,7 @@ const Pacientes = () => {
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Carga De Paciente</h2>
+            <h2 className="modal-title">Registro De Paciente</h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>

@@ -154,7 +154,7 @@ const Doctores = () => {
           <div>
             <h1 className="mock-papers__title">Doctores</h1>
             <p className="mock-papers__subtitle">
-              Gestión y administración de profesionales médicos
+              Gestión y administración de profesionales
             </p>
           </div>
 
@@ -254,7 +254,7 @@ const Doctores = () => {
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Registro de Doctor</h2>
+            <h2 className="modal-title">Registro De Doctores</h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>
@@ -263,40 +263,81 @@ const Doctores = () => {
           <div className="modal-body">
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Nombre Completo</label>
+                <label className="input-label">Nombre</label>
                 <input
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
                 />
               </div>
-
               <div className="input-group">
-                <label className="input-label">Especialidad</label>
+                <label className="input-label">Apellido</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Ej: Cardiología"
+                  placeholder="Escribe aquí..."
                 />
               </div>
-
               <div className="input-group">
-                <label className="input-label">Teléfono</label>
+                <label className="input-label">Fecha Nacimiento</label>
                 <input
-                  type="text"
+                  type="date"
                   className="input-field"
-                  placeholder="0991..."
+                  placeholder="Escribe aquí..."
                 />
               </div>
             </div>
-
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">N° Licencia Médica</label>
+                <label className="input-label">Edad</label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="MED-xxxxx"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Cédula / Ruc</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Celular</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+            </div>
+            <div className="modal-row">
+              <div className="input-group">
+                <label className="input-label">E-mail</label>
+                <input
+                  type="email"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Dirección</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
+                />
+              </div>
+            </div>
+            <div className="modal-row">
+              <div className="input-group">
+                <label className="input-label">Nro Licencia</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Escribe aquí..."
                 />
               </div>
             </div>
