@@ -1,12 +1,12 @@
 export const sendData = async (url, metodo, params, jsonbody) => {
   try {
-    const userJson = localStorage.getItem("UsuarioInnova");
+    const userJson = localStorage.getItem("usuarioMaestro");
     const userData = userJson ? JSON.parse(userJson) : "";
     const response = await fetch(`${url}${params !== null ? params : ""}`, {
       method: metodo,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer `,
+        Authorization: `Bearer ${userData?.token || ""}`,
       },
       body: jsonbody !== null ? JSON.stringify(jsonbody) : null,
     });

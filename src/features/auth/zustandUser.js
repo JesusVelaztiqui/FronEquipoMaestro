@@ -4,14 +4,14 @@ const useUserStore = create((set) => ({
   user: null,
   setUser: (userData) => {
     set({ user: userData });
-    localStorage.setItem("UsuarioInnova", JSON.stringify(userData));
+    localStorage.setItem("usuarioMaestro", JSON.stringify(userData));
   },
   clearUser: () => {
     set({ user: null });
-    localStorage.removeItem("UsuarioInnova");
+    localStorage.removeItem("usuarioMaestro");
   },
   loadUser: () => {
-    const data = localStorage.getItem("UsuarioInnova");
+    const data = localStorage.getItem("usuarioMaestro");
     if (data) set({ user: JSON.parse(data) });
   },
 }));

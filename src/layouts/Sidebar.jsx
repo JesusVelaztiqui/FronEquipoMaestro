@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import useUserStore from "../features/auth/zustandUser";
 
 const Sidebar = ({ menuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const currentRoute = location.pathname.toLowerCase();
-
+  const { clearUser } = useUserStore();
   const isActive = (path) => currentRoute === path.toLowerCase();
 
   return (
@@ -82,7 +83,13 @@ const Sidebar = ({ menuOpen }) => {
           <span>Auditoria</span>
         </div>
 
-        <div className="menu-item cerrarsesion">
+        <div
+          className="menu-item cerrarsesion"
+          onClick={() => {
+            clearUser();
+            navigate("/login");
+          }}
+        >
           <i className="fas fa-right-from-bracket" />
           <span>Cerrar Sesión</span>
         </div>

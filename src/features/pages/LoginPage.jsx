@@ -1,23 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addToast } from "../../components/Tooltip";
 import { sendData } from "../../services/api";
 import { iniciarSesion } from "../../services/urls";
 import { useNavigate } from "react-router-dom";
 import { NoEmpty } from "../Components/NoEmpty";
+import useUserStore from "../auth/zustandUser";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ email: "", pass: "" });
+  const [usuario, setusuario] = useState({ email: "", pass: "" });
+  const { setUser, clearUser } = useUserStore();
   const { validate, clearErrors } = NoEmpty();
   const handleUser = (event) => {
-    setUser({ ...user, [event.target.name]: event.target.value });
+    setusuario({ ...usuario, [event.target.name]: event.target.value });
   };
 
   const fetchLogin = async () => {
     try {
-      const response = await sendData(iniciarSesion, "POST", null, user);
+      const response = await sendData(iniciarSesion, "POST", null, usuario);
       if (response.status === 200) {
-        // setUser(response.data);\
+        setUser(response.data);
         navigate("/inicio");
         addToast({
           type: "success",
@@ -49,6 +51,10 @@ const LoginPage = () => {
 
     fetchLogin();
   };
+
+  useEffect(() => {
+    clearUser();
+  }, []);
 
   return (
     <>

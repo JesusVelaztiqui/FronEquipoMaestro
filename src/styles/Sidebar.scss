@@ -139,6 +139,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 
   @media (max-width: 1024px) {
     margin-left: 0;
