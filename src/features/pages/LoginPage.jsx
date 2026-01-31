@@ -1,4 +1,55 @@
+import { useState } from "react";
+import { addToast } from "../../components/Tooltip";
+import { sendData } from "../../services/api";
+import { iniciarSesion } from "../../services/urls";
+import { useNavigate } from "react-router-dom";
+import { NoEmpty } from "../Components/NoEmpty";
+
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ email: "", pass: "" });
+  const { validate, clearErrors } = NoEmpty();
+  const handleUser = (event) => {
+    setUser({ ...user, [event.target.name]: event.target.value });
+  };
+
+  const fetchLogin = async () => {
+    try {
+      const response = await sendData(iniciarSesion, "POST", null, user);
+      if (response.status === 200) {
+        // setUser(response.data);\
+        navigate("/inicio");
+        addToast({
+          type: "success",
+          title: "Bienvenido",
+          message: response?.data?.nombre,
+          duration: 3000,
+        });
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleLogin = () => {
+    clearErrors();
+    if (!validate()) return;
+
+    fetchLogin();
+  };
+
   return (
     <>
       <div className="login-page">
@@ -15,6 +66,9 @@ const LoginPage = () => {
                       name="email"
                       placeholder="Email"
                       className="form-input"
+                      onChange={handleUser}
+                      noempty="true"
+                      validar="Ingrese el Correo Electrónico"
                     />
                   </div>
                   <div className="input-group">
@@ -23,11 +77,18 @@ const LoginPage = () => {
                       name="pass"
                       placeholder="Contraseña"
                       className="form-input"
+                      onChange={handleUser}
+                      noempty="true"
+                      validar="Ingrese la contraseña"
                     />
                   </div>
                 </div>
 
-                <button type="button" className="submit-btn">
+                <button
+                  type="button"
+                  className="submit-btn"
+                  onClick={() => handleLogin()}
+                >
                   Ingresar
                 </button>
               </div>

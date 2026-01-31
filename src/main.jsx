@@ -8,7 +8,7 @@ import LoaderManager from "./hooks/LoaderManager.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AppRoutes></AppRoutes>
+    <AppRoutes />
     <ToastManager />
     <LoaderManager />
   </StrictMode>,

@@ -40,8 +40,5 @@ export default function LoaderManager() {
     };
   }, []);
 
-  return ReactDOM.createPortal(
-    <>{isVisible && <Loader isVisible={true} />}</>,
-    document.body,
-  );
+  return ReactDOM.createPortal(<>{isVisible && <Loader />}</>, document.body);
 }
