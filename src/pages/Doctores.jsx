@@ -11,6 +11,7 @@ import {
 import { calcRows } from "../components/Formatos";
 import ModalDelete from "../components/ModalDelete";
 import { useNavigate } from "react-router-dom";
+import { NoEmpty } from "../components/NoEmpty";
 
 const Doctores = () => {
   const [pagina, setPagina] = useState(0);
@@ -23,6 +24,7 @@ const Doctores = () => {
   const [filas, setFilas] = useState(8);
   const [search, setSearch] = useState("");
   const [visible, setVisible] = useState(false);
+  const { validate, clearErrors } = NoEmpty();
   const [tituloModal, setTituloModal] = useState("");
   const [descripcionEliminar, setDescripcionEliminar] = useState("");
   const navigate = useNavigate();
@@ -57,13 +59,13 @@ const Doctores = () => {
         });
       }
     } catch (error) {
+      navigate("/login");
       addToast({
         type: "error",
         title: "Error",
         message: error,
         duration: 3000,
       });
-      navigate("/login");
     } finally {
       ocultarLoader();
     }
@@ -189,6 +191,8 @@ const Doctores = () => {
   };
 
   const postDoctores = async () => {
+    clearErrors();
+    if (!validate()) return;
     try {
       cargarLoader();
       const response = await sendData(
@@ -444,6 +448,8 @@ const Doctores = () => {
                   name="nombre"
                   value={doctor?.nombre}
                   onChange={handleChangeDoctores}
+                  noempty="true"
+                  validar="Ingrese el nombre"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -455,6 +461,8 @@ const Doctores = () => {
                   onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese el apellido"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -465,6 +473,8 @@ const Doctores = () => {
                   value={doctor?.fechanacimiento}
                   onChange={handleChangeDoctores}
                   type="date"
+                  noempty="true"
+                  validar="Ingrese la fecha de nacimiento"
                   className="input-field"
                   placeholder="Escribe aquí..."
                 />
@@ -497,6 +507,8 @@ const Doctores = () => {
                   onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese la cédula o ruc"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -508,6 +520,8 @@ const Doctores = () => {
                   onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese el nro de celular"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -521,6 +535,8 @@ const Doctores = () => {
                   onChange={handleChangeDoctores}
                   type="email"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese el E-mail"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -532,6 +548,8 @@ const Doctores = () => {
                   onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese la dirección"
                   placeholder="Escribe aquí..."
                 />
               </div>

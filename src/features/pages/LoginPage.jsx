@@ -24,7 +24,7 @@ const LoginPage = () => {
         addToast({
           type: "success",
           title: "Bienvenido",
-          message: response?.data?.nombre,
+          message: response?.data?.nombre + " " + response?.data?.apellido,
           duration: 3000,
         });
       } else {
