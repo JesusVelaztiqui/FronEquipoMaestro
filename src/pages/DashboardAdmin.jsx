@@ -1,15 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useUserStore from "../features/auth/zustandUser";
 import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { useNavigate } from "react-router-dom";
+import { sendData } from "../services/api";
+import { dahsboardAdmin } from "../services/urls";
+import { addToast } from "../components/Tooltip";
+import { formatoFecha } from "../components/Formatos";
 
 const AdminDashboard = () => {
-  // cargarLoader();
-  // ocultarLoader();
   const { user, loadUser } = useUserStore();
   const navigate = useNavigate();
+  const [dash, setDash] = useState({});
+  const getData = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(dahsboardAdmin, "GET", null, null);
+      if (response.status === 200) {
+        setDash(response.data);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      navigate("/login");
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
   useEffect(() => {
     loadUser();
+    getData();
   }, []);
 
   return (
@@ -29,8 +60,7 @@ const AdminDashboard = () => {
             <i className="fas fa-users" />
           </div>
           <div className="card-label">Total Pacientes</div>
-          <div className="card-amount">1,247</div>
-          <div className="card-trend positive">+12% este mes</div>
+          <div className="card-amount">{dash?.totalpaciente}</div>
         </div>
 
         <div className="transfer-card">
@@ -38,8 +68,14 @@ const AdminDashboard = () => {
             <i className="fas fa-calendar-check" />
           </div>
           <div className="card-label">Turnos del Día</div>
-          <div className="card-amount">24</div>
-          <div className="card-trend neutral">+8 que ayer</div>
+          <div className="card-amount">{dash?.turnodia}</div>
+          <div className="card-trend neutral">
+            {dash?.turnodia - dash?.turnosayer > 0
+              ? `+${dash?.turnodia - dash?.turnosayer} que ayer`
+              : dash?.turnodia - dash?.turnosayer < 0
+                ? `${dash?.turnodia - dash?.turnosayer} que ayer`
+                : "Igual que ayer"}
+          </div>
         </div>
 
         <div className="transfer-card">
@@ -47,7 +83,7 @@ const AdminDashboard = () => {
             <i className="fas fa-clock" />
           </div>
           <div className="card-label">Turnos Pendientes</div>
-          <div className="card-amount">156</div>
+          <div className="card-amount">{dash?.turnopendiente}</div>
           <div className="card-trend warning">Próximos 7 días</div>
         </div>
 
@@ -55,8 +91,8 @@ const AdminDashboard = () => {
           <div className="card-icon">
             <i className="fas fa-user-md" />
           </div>
-          <div className="card-label">Doctores Activos</div>
-          <div className="card-amount">8</div>
+          <div className="card-label">Total Doctores</div>
+          <div className="card-amount">{dash?.totaldoctores}</div>
         </div>
       </div>
 
@@ -69,10 +105,12 @@ const AdminDashboard = () => {
           <div className="stat-value">342</div>
           <div className="stat-details">
             <span className="stat-item">
-              <i className="fas fa-check-circle" /> 298 completados
+              <i className="fas fa-check-circle" /> {dash?.turnoscompletos}{" "}
+              completados
             </span>
             <span className="stat-item">
-              <i className="fas fa-times-circle" /> 44 cancelados
+              <i className="fas fa-times-circle" /> {dash?.turnoscanelados}{" "}
+              cancelados
             </span>
           </div>
         </div>
@@ -95,7 +133,7 @@ const AdminDashboard = () => {
             <h3>Tasa de Asistencia</h3>
             <i className="fas fa-chart-line" />
           </div>
-          <div className="stat-value">87%</div>
+          <div className="stat-value">{dash?.asistencia}%</div>
           <div className="stat-details">
             <span className="stat-item">
               <i className="fas fa-info-circle" /> Promedio mensual
@@ -333,80 +371,34 @@ const AdminDashboard = () => {
             Ver todos
           </button>
         </div>
-
-        <div className="patients-grid">
-          <div className="patient-card">
-            <div className="patient-avatar">
-              <i className="fas fa-user" />
-            </div>
-            <div className="patient-info">
-              <h4>Mónica Vera</h4>
-              <p className="patient-detail">
-                <i className="fas fa-phone" /> 0981-234-567
-              </p>
-              <p className="patient-detail">
-                <i className="fas fa-calendar" /> Último turno: 28/01/2026
-              </p>
-            </div>
-            <button className="patient-action-btn">
-              <i className="fas fa-eye" />
-            </button>
+        {dash?.pacienteList?.length > 0 ? (
+          <div className="patients-grid">
+            {dash?.pacienteList?.map((p) => (
+              <div className="patient-card">
+                <div className="patient-avatar">
+                  <i className="fas fa-user" />
+                </div>
+                <div className="patient-info">
+                  <h4>
+                    {p.nombre} {p.apellido}
+                  </h4>
+                  <p className="patient-detail">
+                    <i className="fas fa-phone" /> {p.celular}
+                  </p>
+                  <p className="patient-detail">
+                    <i className="fas fa-calendar" /> Último turno:
+                    {formatoFecha(p.fecha, "dd/MM/yyyy")}
+                  </p>
+                  <p className="patient-detail">
+                    <i className="far fa-clock" /> a las {p.hora}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="patient-card">
-            <div className="patient-avatar">
-              <i className="fas fa-user" />
-            </div>
-            <div className="patient-info">
-              <h4>Gustavo Prieto</h4>
-              <p className="patient-detail">
-                <i className="fas fa-phone" /> 0982-345-678
-              </p>
-              <p className="patient-detail">
-                <i className="fas fa-calendar" /> Último turno: 27/01/2026
-              </p>
-            </div>
-            <button className="patient-action-btn">
-              <i className="fas fa-eye" />
-            </button>
-          </div>
-
-          <div className="patient-card">
-            <div className="patient-avatar">
-              <i className="fas fa-user" />
-            </div>
-            <div className="patient-info">
-              <h4>Silvia Ortiz</h4>
-              <p className="patient-detail">
-                <i className="fas fa-phone" /> 0983-456-789
-              </p>
-              <p className="patient-detail">
-                <i className="fas fa-calendar" /> Último turno: 26/01/2026
-              </p>
-            </div>
-            <button className="patient-action-btn">
-              <i className="fas fa-eye" />
-            </button>
-          </div>
-
-          <div className="patient-card">
-            <div className="patient-avatar">
-              <i className="fas fa-user" />
-            </div>
-            <div className="patient-info">
-              <h4>Ricardo Medina</h4>
-              <p className="patient-detail">
-                <i className="fas fa-phone" /> 0984-567-890
-              </p>
-              <p className="patient-detail">
-                <i className="fas fa-calendar" /> Último turno: 25/01/2026
-              </p>
-            </div>
-            <button className="patient-action-btn">
-              <i className="fas fa-eye" />
-            </button>
-          </div>
-        </div>
+        ) : (
+          ""
+        )}
       </div>
     </>
   );

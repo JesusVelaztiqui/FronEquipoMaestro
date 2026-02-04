@@ -1,6 +1,7 @@
 const baseurl = import.meta.env.VITE_BASEURL;
 
 export const iniciarSesion = `${baseurl}usuario/validar`;
+export const dahsboardAdmin = `${baseurl}dahsboard/listar`;
 export const listarDoctores = `${baseurl}doctores/listar`;
 export const eliminarDoctores = `${baseurl}doctores/eliminar`;
 export const grabarDoctores = `${baseurl}doctores/grabar`;
