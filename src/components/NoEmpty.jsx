@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addToast } from "../../components/Tooltip";
+import { addToast } from "./Tooltip";
 
 export const NoEmpty = () => {
   const [errors, setErrors] = useState({});

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import Loader from "../features/Components/Loader";
+import Loader from "../components/Loader";
 
 let loaderController = {
   setVisible: null,

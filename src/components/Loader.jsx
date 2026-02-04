@@ -15,8 +15,8 @@ const Loader = () => {
                 cx="110"
                 cy="110"
                 r="100"
-                stroke-dasharray="628"
-                stroke-dashoffset="471"
+                strokeDasharray="628"
+                strokeDashoffset="471"
               />
             </svg>
             <div className="logo-center">

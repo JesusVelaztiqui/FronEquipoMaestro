@@ -3,8 +3,8 @@ import { addToast } from "../../components/Tooltip";
 import { sendData } from "../../services/api";
 import { iniciarSesion } from "../../services/urls";
 import { useNavigate } from "react-router-dom";
-import { NoEmpty } from "../Components/NoEmpty";
 import useUserStore from "../auth/zustandUser";
+import { NoEmpty } from "../../components/NoEmpty";
 
 const LoginPage = () => {
   const navigate = useNavigate();

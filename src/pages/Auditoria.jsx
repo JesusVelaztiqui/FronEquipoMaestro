@@ -4,6 +4,7 @@ import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { sendData } from "../services/api";
 import { listarAuditoria } from "../services/urls";
 import { calcRows, formatearFechaHora } from "../components/Formatos";
+import { useNavigate } from "react-router-dom";
 
 const Auditoria = () => {
   const [pagina, setPagina] = useState(0);
@@ -12,7 +13,7 @@ const Auditoria = () => {
   const rowRef = useRef(null);
   const [filas, setFilas] = useState(8);
   const [search, setSearch] = useState("");
-
+  const navigate = useNavigate();
   async function getAuditoria() {
     try {
       cargarLoader();
@@ -34,6 +35,7 @@ const Auditoria = () => {
         message: error,
         duration: 3000,
       });
+      navigate("/login");
     } finally {
       ocultarLoader();
     }
@@ -144,7 +146,7 @@ const Auditoria = () => {
                 ))
               ) : (
                 <tr>
-                  <td className="busquedaSinresultado" colspan="9">
+                  <td className="busquedaSinresultado" colSpan={6}>
                     <i className="fa-solid fa-file-circle-exclamation"></i> Sin
                     Datos
                   </td>

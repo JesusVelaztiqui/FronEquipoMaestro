@@ -2,8 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { addToast } from "../components/Tooltip";
 import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { sendData } from "../services/api";
-import { listarDoctores } from "../services/urls";
+import {
+  editarDoctores,
+  eliminarDoctores,
+  grabarDoctores,
+  listarDoctores,
+} from "../services/urls";
 import { calcRows } from "../components/Formatos";
+import ModalDelete from "../components/ModalDelete";
+import { useNavigate } from "react-router-dom";
 
 const Doctores = () => {
   const [pagina, setPagina] = useState(0);
@@ -12,15 +19,35 @@ const Doctores = () => {
   const [listDoctores, setListDoctores] = useState([]);
   const tableWrapperRef = useRef(null);
   const rowRef = useRef(null);
+  const [modo, setModo] = useState("INS");
   const [filas, setFilas] = useState(8);
   const [search, setSearch] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [tituloModal, setTituloModal] = useState("");
+  const [descripcionEliminar, setDescripcionEliminar] = useState("");
+  const navigate = useNavigate();
+  const [doctor, setDoctor] = useState({
+    id: 0,
+    nombre: "",
+    apellido: "",
+    fechanacimiento: "",
+    ruc: "",
+    celular: "",
+    mail: "",
+    direccion: "",
+    licencia: "",
+  });
 
-  async function getDoctores() {
+  const getDoctores = async () => {
     try {
       cargarLoader();
       const response = await sendData(listarDoctores, "GET", null, null);
       if (response.status === 200) {
         setListDoctores(response?.data);
+        setTituloModal("");
+        setDescripcionEliminar("");
+        setVisible(false);
+        setActiveTooltip(null);
       } else {
         addToast({
           type: "error",
@@ -36,15 +63,23 @@ const Doctores = () => {
         message: error,
         duration: 3000,
       });
+      navigate("/login");
     } finally {
       ocultarLoader();
     }
-  }
+  };
 
-  const TooltipActions = ({ doctorId }) => {
+  const handleChangeDoctores = (event) => {
+    setDoctor((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const TooltipActions = ({ doctor }) => {
     const tooltipRef = useRef(null);
     const triggerRef = useRef(null);
-    const isActive = activeTooltip === doctorId;
+    const isActive = activeTooltip === doctor;
 
     useEffect(() => {
       if (isActive && tooltipRef.current && triggerRef.current) {
@@ -97,12 +132,21 @@ const Doctores = () => {
 
     const handleToggle = (e) => {
       e.stopPropagation();
-      setActiveTooltip(isActive ? null : doctorId);
+      setActiveTooltip(isActive ? null : doctor);
     };
 
     const handleAction = (action) => {
-      console.log(`${action} para doctor ID: ${doctorId}`);
-      setActiveTooltip(null);
+      if (action === "Eliminar") {
+        setTituloModal("Atención");
+        setDescripcionEliminar(doctor?.nombre + " " + doctor?.apellido);
+        setVisible(true);
+        setActiveTooltip(null);
+        setDoctor(doctor);
+      } else if (action === "Editar") {
+        setActiveTooltip(null);
+        setDoctor(doctor);
+        setModo("UPD");
+      }
     };
 
     return (
@@ -144,12 +188,89 @@ const Doctores = () => {
     );
   };
 
+  const postDoctores = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(
+        modo === "INS" ? grabarDoctores : editarDoctores,
+        "POST",
+        null,
+        doctor,
+      );
+      if (response.status === 200) {
+        await getDoctores();
+        addToast({
+          type: "success",
+          title: "Doctor Grabado",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+        setOpenModal(false);
+        setTituloModal("");
+        setDescripcionEliminar("");
+        setVisible(false);
+        setActiveTooltip(null);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
   useEffect(() => {
     if (tableWrapperRef.current && rowRef.current) {
-      console.log(calcRows(tableWrapperRef.current, rowRef.current));
       setFilas(calcRows(tableWrapperRef.current, rowRef.current));
     }
   }, [listDoctores]);
+
+  const eliminarDoctor = async () => {
+    try {
+      const response = await sendData(
+        `${eliminarDoctores}?id=${doctor?.id}`,
+        "DELETE",
+        null,
+        null,
+      );
+      if (response.status === 200) {
+        addToast({
+          type: "success",
+          title: "Eliminado",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+        await getDoctores();
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
 
   useEffect(() => {
     getDoctores();
@@ -178,6 +299,13 @@ const Doctores = () => {
 
   return (
     <>
+      <ModalDelete
+        visible={visible}
+        setVisible={setVisible}
+        titulo={tituloModal}
+        eliminar={descripcionEliminar}
+        funcion={eliminarDoctor}
+      />
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
@@ -221,7 +349,10 @@ const Doctores = () => {
 
           <button
             className="mock-papers__upload-btn"
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setModo("INS");
+              setOpenModal(true);
+            }}
           >
             NUEVO <i className="fas fa-plus" />
           </button>
@@ -252,13 +383,13 @@ const Doctores = () => {
                       <td>{doc.celular}</td>
                       <td>{doc.licencia}</td>
                       <td>
-                        <TooltipActions doctorId={doc.id} />
+                        <TooltipActions doctor={doc} />
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="busquedaSinresultado" colSpan="6">
+                    <td className="busquedaSinresultado" colSpan={6}>
                       <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
                       Sin Datos
                     </td>
@@ -310,12 +441,18 @@ const Doctores = () => {
                 <input
                   type="text"
                   className="input-field"
+                  name="nombre"
+                  value={doctor?.nombre}
+                  onChange={handleChangeDoctores}
                   placeholder="Escribe aquí..."
                 />
               </div>
               <div className="input-group">
                 <label className="input-label">Apellido</label>
                 <input
+                  name="apellido"
+                  value={doctor?.apellido}
+                  onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -324,6 +461,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">Fecha Nacimiento</label>
                 <input
+                  name="fechanacimiento"
+                  value={doctor?.fechanacimiento}
+                  onChange={handleChangeDoctores}
                   type="date"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -335,6 +475,16 @@ const Doctores = () => {
                 <label className="input-label">Edad</label>
                 <input
                   type="text"
+                  value={
+                    doctor?.fechanacimiento
+                      ? Math.floor(
+                          (new Date() - new Date(doctor.fechanacimiento)) /
+                            (1000 * 60 * 60 * 24 * 365.25),
+                        )
+                      : ""
+                  }
+                  disabled
+                  onChange={handleChangeDoctores}
                   className="input-field"
                   placeholder="Escribe aquí..."
                 />
@@ -342,6 +492,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">Cédula / Ruc</label>
                 <input
+                  name="ruc"
+                  value={doctor?.ruc}
+                  onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -350,6 +503,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">Celular</label>
                 <input
+                  name="celular"
+                  value={doctor?.celular}
+                  onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -360,6 +516,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">E-mail</label>
                 <input
+                  name="mail"
+                  value={doctor?.mail}
+                  onChange={handleChangeDoctores}
                   type="email"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -368,6 +527,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">Dirección</label>
                 <input
+                  name="direccion"
+                  value={doctor?.direccion}
+                  onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -378,6 +540,9 @@ const Doctores = () => {
               <div className="input-group">
                 <label className="input-label">Nro Licencia</label>
                 <input
+                  name="licencia"
+                  value={doctor?.licencia}
+                  onChange={handleChangeDoctores}
                   type="text"
                   className="input-field"
                   placeholder="Escribe aquí..."
@@ -390,7 +555,9 @@ const Doctores = () => {
             <button className="btn-cancel" onClick={() => setOpenModal(false)}>
               Cancelar
             </button>
-            <button className="btn-submit">Guardar</button>
+            <button className="btn-submit" onClick={() => postDoctores()}>
+              Guardar
+            </button>
           </div>
         </div>
       </div>
