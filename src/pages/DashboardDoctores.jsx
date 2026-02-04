@@ -57,7 +57,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-name">Carlo Villagra</div>
               <div className="transaction-time">hoy, 13:20</div>
             </div>
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
 
           <div className="transaction-item">
@@ -69,7 +69,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-name">Juan Lopez</div>
               <div className="transaction-time">14:20</div>
             </div>
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
           <div className="transaction-item">
             <div className="transaction-icon">
@@ -80,7 +80,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-name">Carlo Villagra</div>
               <div className="transaction-time">hoy, 13:20</div>
             </div>
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
 
           <div className="transaction-item">
@@ -92,7 +92,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-name">Juan Lopez</div>
               <div className="transaction-time">14:20</div>
             </div>
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
           <div className="transaction-item">
             <div className="transaction-icon">
@@ -104,7 +104,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-time">hoy, 13:20</div>
             </div>
 
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
 
           <div className="transaction-item">
@@ -116,7 +116,7 @@ const DahsboardDoctores = () => {
               <div className="transaction-name">Juan Lopez</div>
               <div className="transaction-time">14:20</div>
             </div>
-            <div class="transaction-status pending">Pendiente</div>
+            <div className="transaction-status pending">Pendiente</div>
           </div>
         </div>
 

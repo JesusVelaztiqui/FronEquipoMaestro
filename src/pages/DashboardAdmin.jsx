@@ -57,7 +57,6 @@ const AdminDashboard = () => {
           </div>
           <div className="card-label">Doctores Activos</div>
           <div className="card-amount">8</div>
-          <div className="card-trend positive">4 disponibles</div>
         </div>
       </div>
 

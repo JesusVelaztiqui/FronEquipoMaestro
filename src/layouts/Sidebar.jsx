@@ -58,7 +58,7 @@ const Sidebar = ({ menuOpen }) => {
           <span>Productos</span>
         </div>
         <div className={`menu-item ${isActive("/caja") ? "active" : ""}`}>
-          <i class="fas fa-hand-holding-usd"></i>
+          <i className="fas fa-hand-holding-usd"></i>
           <span>Caja</span>
         </div>
         <div

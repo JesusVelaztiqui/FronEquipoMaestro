@@ -1,33 +1,45 @@
 import { useState, useRef, useEffect } from "react";
+import { addToast } from "../components/Tooltip";
+import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
+import { sendData } from "../services/api";
+import { listarDoctores } from "../services/urls";
+import { calcRows } from "../components/Formatos";
 
 const Doctores = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagina, setPagina] = useState(0);
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [listDoctores, setListDoctores] = useState([]);
+  const tableWrapperRef = useRef(null);
+  const rowRef = useRef(null);
+  const [filas, setFilas] = useState(8);
+  const [search, setSearch] = useState("");
 
-  const mockDoctors = [
-    {
-      id: 1,
-      name: "Juan Pérez",
-      specialty: "Cardiología",
-      phone: "0991 123 456",
-      license: "MED-12345",
-    },
-    {
-      id: 2,
-      name: "Ana Gómez",
-      specialty: "Pediatría",
-      phone: "0982 555 222",
-      license: "MED-67890",
-    },
-    {
-      id: 3,
-      name: "Carlos López",
-      specialty: "Dermatología",
-      phone: "0971 000 789",
-      license: "MED-11111",
-    },
-  ];
+  async function getDoctores() {
+    try {
+      cargarLoader();
+      const response = await sendData(listarDoctores, "GET", null, null);
+      if (response.status === 200) {
+        setListDoctores(response?.data);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  }
 
   const TooltipActions = ({ doctorId }) => {
     const tooltipRef = useRef(null);
@@ -73,13 +85,9 @@ const Doctores = () => {
 
         left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
 
-        if (left < 20) {
-          left = 20;
-        }
-
-        if (left + tooltipRect.width > viewportWidth - 20) {
+        if (left < 20) left = 20;
+        if (left + tooltipRect.width > viewportWidth - 20)
           left = viewportWidth - tooltipRect.width - 20;
-        }
 
         tooltip.style.top = `${top}px`;
         tooltip.style.left = `${left}px`;
@@ -137,15 +145,36 @@ const Doctores = () => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest(".tooltip-wrapper")) {
-        setActiveTooltip(null);
-      }
-    };
+    if (tableWrapperRef.current && rowRef.current) {
+      console.log(calcRows(tableWrapperRef.current, rowRef.current));
+      setFilas(calcRows(tableWrapperRef.current, rowRef.current));
+    }
+  }, [listDoctores]);
 
+  useEffect(() => {
+    getDoctores();
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".tooltip-wrapper")) setActiveTooltip(null);
+    };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  const doctoresFiltrados = listDoctores.filter((doc) => {
+    const texto = search.toLowerCase();
+    return (
+      doc.nombre?.toLowerCase().includes(texto) ||
+      doc.apellido?.toLowerCase().includes(texto) ||
+      doc.mail?.toLowerCase().includes(texto) ||
+      doc.celular?.toLowerCase().includes(texto) ||
+      doc.licencia?.toLowerCase().includes(texto)
+    );
+  });
+
+  const totalPaginas = Math.ceil(doctoresFiltrados.length / filas);
+  const inicio = pagina * filas;
+  const fin = inicio + filas;
+  const doctoresPaginados = doctoresFiltrados.slice(inicio, fin);
 
   return (
     <>
@@ -165,6 +194,11 @@ const Doctores = () => {
                   type="text"
                   className="input-field input-field--search"
                   placeholder="Buscar..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPagina(0);
+                  }}
                 />
                 <svg
                   className="input-search__icon"
@@ -194,60 +228,69 @@ const Doctores = () => {
         </div>
 
         <div className="mock-papers__table-card">
-          <div className="mock-papers__table-wrapper">
+          <div className="mock-papers__table-wrapper" ref={tableWrapperRef}>
             <table className="mock-papers__table">
               <thead>
                 <tr>
                   <th>N°</th>
                   <th>Nombre</th>
-                  <th>Especialidad</th>
+                  <th>Correo</th>
                   <th>Teléfono</th>
                   <th>N° Licencia</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {mockDoctors.map((doc, index) => (
-                  <tr key={doc.id}>
-                    <td>{String(index + 1).padStart(2, "0")}</td>
-                    <td>{doc.name}</td>
-                    <td>{doc.specialty}</td>
-                    <td>{doc.phone}</td>
-                    <td>{doc.license}</td>
-                    <td>
-                      <TooltipActions doctorId={doc.id} />
+                {doctoresPaginados.length > 0 ? (
+                  doctoresPaginados.map((doc, index) => (
+                    <tr key={doc.id} ref={index === 0 ? rowRef : null}>
+                      <td>{String(inicio + index + 1).padStart(2, "0")}</td>
+                      <td>
+                        {doc.nombre} {doc.apellido}
+                      </td>
+                      <td>{doc.mail}</td>
+                      <td>{doc.celular}</td>
+                      <td>{doc.licencia}</td>
+                      <td>
+                        <TooltipActions doctorId={doc.id} />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="busquedaSinresultado" colSpan="6">
+                      <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
+                      Sin Datos
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="mock-papers__pagination">
             <button
-              className={`mock-papers__page-btn ${
-                currentPage === 1 ? "active" : ""
-              }`}
-              onClick={() => setCurrentPage(1)}
+              className="mock-papers__arrow-btn"
+              disabled={pagina === 0}
+              onClick={() => setPagina((p) => Math.max(p - 1, 0))}
             >
-              1
+              ←
             </button>
+            <span className="mock-papers__page-btn">{pagina + 1}</span>/
+            <span className="mock-papers__page-btn">{totalPaginas}</span>
             <button
-              className="mock-papers__page-btn"
-              onClick={() => setCurrentPage(2)}
+              className="mock-papers__arrow-btn"
+              disabled={pagina + 1 >= totalPaginas}
+              onClick={() =>
+                setPagina((p) => Math.min(p + 1, totalPaginas - 1))
+              }
             >
-              2
+              →
             </button>
-            <span className="mock-papers__dots">...</span>
-            <button className="mock-papers__page-btn">6</button>
-            <button className="mock-papers__page-btn">7</button>
-            <button className="mock-papers__page-btn">8</button>
-            <button className="mock-papers__arrow-btn">→</button>
           </div>
         </div>
       </div>
 
-      {/* MODAL */}
       <div
         className="modal-overlay"
         style={{ display: openModal ? "flex" : "none" }}

@@ -226,24 +226,9 @@ const Productos = () => {
           </div>
 
           <div className="mock-papers__pagination">
-            <button
-              className={`mock-papers__page-btn ${
-                currentPage === 1 ? "active" : ""
-              }`}
-              onClick={() => setCurrentPage(1)}
-            >
-              1
-            </button>
-            <button
-              className="mock-papers__page-btn"
-              onClick={() => setCurrentPage(2)}
-            >
-              2
-            </button>
-            <span className="mock-papers__dots">...</span>
-            <button className="mock-papers__page-btn">6</button>
-            <button className="mock-papers__page-btn">7</button>
-            <button className="mock-papers__page-btn">8</button>
+            <button className="mock-papers__arrow-btn">←</button>
+            <span className="mock-papers__page-btn">{11}</span>/
+            <span className="mock-papers__page-btn">{2}</span>
             <button className="mock-papers__arrow-btn">→</button>
           </div>
         </div>
