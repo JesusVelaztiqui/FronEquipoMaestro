@@ -3,16 +3,23 @@ import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { addToast } from "../components/Tooltip";
 import { useNavigate } from "react-router-dom";
 import { sendData } from "../services/api";
-import { listarTurnos } from "../services/urls";
+import {
+  listarDoctores,
+  listarPacientes,
+  listarTurnos,
+} from "../services/urls";
+import { NoEmpty } from "../components/NoEmpty";
 
-const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
+const Buscador = ({ label, options, placeholder, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLabel, setSelectedLabel] = useState("");
   const dropdownRef = useRef(null);
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredOptions = options.filter(
+    (option) =>
+      option.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      option.apellido.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   useEffect(() => {
@@ -22,21 +29,20 @@ const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
         setSearchTerm("");
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSelect = (option) => {
-    setSelectedLabel(option.label);
-    onChange(option.value);
+    const label = option.label || `${option.nombre} ${option.apellido}`;
+    setSelectedLabel(label);
+    onChange(option.id || option.value);
     setIsOpen(false);
     setSearchTerm("");
   };
 
   const handleInputClick = () => {
-    setIsOpen(!isOpen);
-    setSearchTerm("");
+    setIsOpen(true);
   };
 
   return (
@@ -54,6 +60,8 @@ const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
+            noempty="true"
+            validar={"ingrese" + label}
           />
           <svg
             className={`dropdown-arrow ${isOpen ? "open" : ""}`}
@@ -76,11 +84,11 @@ const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div
-                  key={option.value}
-                  className={`dropdown-item ${value === option.value ? "selected" : ""}`}
+                  key={option.id || option.value}
+                  className={`dropdown-item ${value === (option.id || option.value) ? "selected" : ""}`}
                   onClick={() => handleSelect(option)}
                 >
-                  {value === option.value && (
+                  {value === (option.id || option.value) && (
                     <svg
                       className="check-icon"
                       width="16"
@@ -97,7 +105,7 @@ const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
                       />
                     </svg>
                   )}
-                  {option.label}
+                  {option.label || `${option.nombre} ${option.apellido}`}
                 </div>
               ))
             ) : (
@@ -265,23 +273,24 @@ const FileUpload = () => {
 };
 
 const Turnos = () => {
+  const navigate = useNavigate();
+  const { validate, clearErrors } = NoEmpty();
+  const [modo, setModo] = useState("INS");
+  const tableWrapperRef = useRef(null);
+  const rowRef = useRef(null);
+  const [filas, setFilas] = useState(8);
+  const [search, setSearch] = useState("");
+  const [turnos, setTurnos] = useState([]);
   const [pagina, setPagina] = useState(0);
   const rol = JSON.parse(localStorage.getItem("usuarioMaestro"))?.role;
   const id = JSON.parse(localStorage.getItem("usuarioMaestro"))?.id;
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
-  const [patientValue, setPatientValue] = useState("");
-  const tableWrapperRef = useRef(null);
-  const navigate = useNavigate();
-  const rowRef = useRef(null);
-  const [filas, setFilas] = useState(8);
-  const [search, setSearch] = useState("");
-  const [turnos, setTurnos] = useState([]);
-  const patients = [
-    { value: "1", label: "Juan Pérez" },
-    { value: "2", label: "María González" },
-    { value: "3", label: "Carlos Benítez" },
-  ];
+  const [pacienteValue, setPacienteValue] = useState("");
+  const [listPacientes, setListPacientes] = useState([]);
+  const [listDoctores, setListDoctores] = useState([]);
+  const [doctoresValue, setdoctoresValue] = useState("");
+  const [doctoresDescontarValue, setdoctoresDescontarValueValue] = useState("");
 
   const getTurnos = async () => {
     try {
@@ -295,6 +304,59 @@ const Turnos = () => {
       if (response.status === 200) {
         setActiveTooltip(null);
         setTurnos(response?.data || []);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      navigate("/login");
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+  const getPacientes = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(listarPacientes, "GET", null, null);
+      if (response.status === 200) {
+        setListPacientes(response?.data);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      navigate("/login");
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
+  const getDoctores = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(listarDoctores, "GET", null, null);
+      if (response.status === 200) {
+        setListDoctores(response?.data);
       } else {
         addToast({
           type: "error",
@@ -433,6 +495,8 @@ const Turnos = () => {
 
   useEffect(() => {
     getTurnos();
+    getPacientes();
+    getDoctores();
     const handleClickOutside = (e) => {
       if (!e.target.closest(".tooltip-wrapper")) {
         setActiveTooltip(null);
@@ -578,7 +642,9 @@ const Turnos = () => {
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Nuevo Turno</h2>
+            <h2 className="modal-title">
+              {modo === "INS" ? "Nuevo" : "Modificar"} Turno
+            </h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>
@@ -586,32 +652,42 @@ const Turnos = () => {
 
           <div className="modal-body">
             <div className="modal-row">
-              <SearchableSelect
+              <Buscador
                 label="Paciente"
-                options={patients}
+                options={listPacientes}
                 placeholder="Seleccionar paciente"
-                value={patientValue}
-                onChange={setPatientValue}
+                value={pacienteValue}
+                onChange={setPacienteValue}
               />
               <div className="input-group">
-                <label className="input-label">Médico</label>
-                <select className="input-select">
-                  <option value="">Seleccionar médico</option>
-                  <option value="1">Dra. Ana Solis</option>
-                  <option value="2">Dra. Carolina Sosa</option>
-                  <option value="3">Dra. Patricia Ojeda</option>
-                </select>
+                <Buscador
+                  label="Médico"
+                  options={listDoctores}
+                  placeholder="Seleccionar médico"
+                  value={doctoresValue}
+                  onChange={setdoctoresValue}
+                />
               </div>
               <div className="input-group">
                 <label className="input-label">Fecha</label>
-                <input type="date" className="input-field" />
+                <input
+                  type="date"
+                  className="input-field"
+                  noempty="true"
+                  validar="Ingrese la fecha del turno"
+                />
               </div>
             </div>
 
             <div className="modal-row">
               <div className="input-group">
                 <label className="input-label">Hora</label>
-                <input type="time" className="input-field" />
+                <input
+                  type="time"
+                  className="input-field"
+                  noempty="true"
+                  validar="Ingrese la hora del turnos"
+                />
               </div>
               <div className="input-group">
                 <label className="input-label">Estado</label>
@@ -626,6 +702,8 @@ const Turnos = () => {
                 <input
                   type="text"
                   className="input-field"
+                  noempty="true"
+                  validar="Ingrese el tratamiento, es importante para el historial del paciente"
                   placeholder="Ej: Limpieza dental, Extracción, etc."
                 />
               </div>
@@ -643,21 +721,31 @@ const Turnos = () => {
             </div>
 
             <div className="modal-row">
+              <Buscador
+                label="Descontar al Médico"
+                options={listDoctores}
+                placeholder="Seleccionar médico"
+                value={doctoresDescontarValue}
+                onChange={setdoctoresDescontarValueValue}
+              />
               <div className="input-group">
-                <label className="input-label">Descontar al Médico</label>
-                <select className="input-select">
-                  <option value="">Seleccionar médico</option>
-                  <option value="1">Dra. Ana Solis</option>
-                  <option value="2">Dra. Carolina Sosa</option>
-                  <option value="3">Dra. Patricia Ojeda</option>
-                </select>
-              </div>
-              <div className="input-group">
-                <label className="input-label">Porcentaje a descontar</label>
+                <label
+                  className="input-label"
+                  noempty="true"
+                  validar="Ingrese el porcentaje a descontar"
+                >
+                  Porcentaje a descontar
+                </label>
                 <input type="text" className="input-field" />
               </div>
               <div className="input-group">
-                <label className="input-label">Importe Total</label>
+                <label
+                  className="input-label"
+                  noempty="true"
+                  validar="Ingrese el importe total del procedimiento"
+                >
+                  Importe Total
+                </label>
                 <input type="text" className="input-field" />
               </div>
             </div>

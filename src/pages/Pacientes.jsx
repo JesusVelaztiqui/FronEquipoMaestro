@@ -148,6 +148,8 @@ const Pacientes = () => {
         setPaciente(paciente);
         setModo("UPD");
         setOpenModal(true);
+      } else if (action === "imagenes") {
+        navigate(`/imagenes/${paciente.id}`);
       }
     };
 
@@ -174,12 +176,19 @@ const Pacientes = () => {
           </button>
           <div className="tooltip-divider"></div>
           <button className="tooltip-item tooltip-item--view">
-            <i class="fas fa-eye"></i>
+            <i className="fas fa-eye"></i>
             <span>Ver historial</span>
           </button>
           <button className="tooltip-item tooltip-item--export">
-            <i class="fas fa-download"></i>
+            <i className="fas fa-download"></i>
             <span>Descargar historial</span>
+          </button>
+          <button
+            className="tooltip-item tooltip-item--adjuntar"
+            onClick={() => handleAction("imagenes")}
+          >
+            <i className="fas fa-eye"></i>
+            <span>Ver Imagenes</span>
           </button>
 
           <div className="tooltip-divider"></div>
@@ -306,7 +315,6 @@ const Pacientes = () => {
         funcion={eliminarPaciente}
       />
 
-      {/* TABLA */}
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
@@ -411,7 +419,6 @@ const Pacientes = () => {
         </div>
       </div>
 
-      {/* MODAL */}
       <div
         className="modal-overlay"
         style={{ display: openModal ? "flex" : "none" }}

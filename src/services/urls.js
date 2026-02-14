@@ -8,6 +8,7 @@ export const grabarDoctores = `${baseurl}doctores/grabar`;
 export const editarDoctores = `${baseurl}doctores/editar`;
 export const listarPacientes = `${baseurl}pacientes/listar`;
 export const eliminarPacientes = `${baseurl}pacientes/eliminar`;
+export const listarImagenes = `${baseurl}pacientes/listarimagenes/base64`;
 export const grabarPacientes = `${baseurl}pacientes/grabar`;
 export const editarPacientes = `${baseurl}pacientes/editar`;
 export const listarTurnos = `${baseurl}turnos/listar`;
