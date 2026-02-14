@@ -1,4 +1,116 @@
 import { useState, useRef, useEffect } from "react";
+import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
+import { addToast } from "../components/Tooltip";
+import { useNavigate } from "react-router-dom";
+import { sendData } from "../services/api";
+import { listarTurnos } from "../services/urls";
+
+const SearchableSelect = ({ label, options, placeholder, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLabel, setSelectedLabel] = useState("");
+  const dropdownRef = useRef(null);
+
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelect = (option) => {
+    setSelectedLabel(option.label);
+    onChange(option.value);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const handleInputClick = () => {
+    setIsOpen(!isOpen);
+    setSearchTerm("");
+  };
+
+  return (
+    <div className="input-group">
+      <label className="input-label">{label}</label>
+      <div className="searchable-select" ref={dropdownRef}>
+        <div className="select-input" onClick={handleInputClick}>
+          <input
+            type="text"
+            className="input-field search-input"
+            placeholder={selectedLabel || placeholder}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setIsOpen(true);
+            }}
+            onFocus={() => setIsOpen(true)}
+          />
+          <svg
+            className={`dropdown-arrow ${isOpen ? "open" : ""}`}
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+          >
+            <path
+              d="M5 7.5L10 12.5L15 7.5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {isOpen && (
+          <div className="dropdown-menu">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={`dropdown-item ${value === option.value ? "selected" : ""}`}
+                  onClick={() => handleSelect(option)}
+                >
+                  {value === option.value && (
+                    <svg
+                      className="check-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M13.3333 4L6 11.3333L2.66667 8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                  {option.label}
+                </div>
+              ))
+            ) : (
+              <div className="dropdown-item no-results">
+                No se encontraron resultados
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const FileUpload = () => {
   const [files, setFiles] = useState([]);
@@ -153,84 +265,75 @@ const FileUpload = () => {
 };
 
 const Turnos = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagina, setPagina] = useState(0);
+  const rol = JSON.parse(localStorage.getItem("usuarioMaestro"))?.role;
+  const id = JSON.parse(localStorage.getItem("usuarioMaestro"))?.id;
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
-
-  const mockTurnos = [
-    {
-      id: 1,
-      paciente: "Juan Pérez",
-      medico: "Dra. Ana Solis",
-      fecha: "15/12/2024",
-      hora: "09:00",
-      estado: "Confirmado",
-      tratamiento: "Limpieza dental",
-    },
-    {
-      id: 2,
-      paciente: "María González",
-      medico: "Dra. Carolina Sosa",
-      fecha: "15/12/2024",
-      hora: "10:30",
-      estado: "Pendiente",
-      tratamiento: "Extracción",
-    },
-    {
-      id: 3,
-      paciente: "Carlos Benítez",
-      medico: "Dra. Patricia Ojeda",
-      fecha: "16/12/2024",
-      hora: "14:00",
-      estado: "Confirmado",
-      tratamiento: "Ortodoncia",
-    },
-    {
-      id: 4,
-      paciente: "Laura Martínez",
-      medico: "Dra. Ana Solis",
-      fecha: "16/12/2024",
-      hora: "15:30",
-      estado: "Cancelado",
-      tratamiento: "Endodoncia",
-    },
-    {
-      id: 5,
-      paciente: "Roberto Silva",
-      medico: "Dra. Carolina Sosa",
-      fecha: "17/12/2024",
-      hora: "11:00",
-      estado: "Confirmado",
-      tratamiento: "Implante",
-    },
-    {
-      id: 6,
-      paciente: "Ana López",
-      medico: "Dra. Patricia Ojeda",
-      fecha: "17/12/2024",
-      hora: "16:00",
-      estado: "Pendiente",
-      tratamiento: "Control",
-    },
+  const [patientValue, setPatientValue] = useState("");
+  const tableWrapperRef = useRef(null);
+  const navigate = useNavigate();
+  const rowRef = useRef(null);
+  const [filas, setFilas] = useState(8);
+  const [search, setSearch] = useState("");
+  const [turnos, setTurnos] = useState([]);
+  const patients = [
+    { value: "1", label: "Juan Pérez" },
+    { value: "2", label: "María González" },
+    { value: "3", label: "Carlos Benítez" },
   ];
 
+  const getTurnos = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(
+        listarTurnos,
+        "GET",
+        `?rol=${rol}&id=${id}`,
+        null,
+      );
+      if (response.status === 200) {
+        setActiveTooltip(null);
+        setTurnos(response?.data || []);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      navigate("/login");
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
   const getEstadoClass = (estado) => {
-    switch (estado) {
-      case "Confirmado":
+    const estadoUpper = estado?.toUpperCase();
+    switch (estadoUpper) {
+      case "CONFIRMADO":
         return "turno-estado--confirmado";
-      case "Pendiente":
+      case "PENDIENTE":
         return "turno-estado--pendiente";
-      case "Cancelado":
+      case "CANCELADO":
         return "turno-estado--cancelado";
       default:
         return "";
     }
   };
 
-  const TooltipActions = ({ turnoId }) => {
+  const TooltipActions = ({ turno }) => {
     const tooltipRef = useRef(null);
     const triggerRef = useRef(null);
-    const isActive = activeTooltip === turnoId;
+    const isActive = activeTooltip === turno.id;
 
     useEffect(() => {
       if (isActive && tooltipRef.current && triggerRef.current) {
@@ -262,22 +365,17 @@ const Turnos = () => {
         } else if (spaceAbove >= tooltipRect.height + 16) {
           top = triggerRect.top - tooltipRect.height - 8;
         } else {
-          if (spaceBelow > spaceAbove) {
-            top = triggerRect.bottom + 8;
-          } else {
-            top = triggerRect.top - tooltipRect.height - 8;
-          }
+          top =
+            spaceBelow > spaceAbove
+              ? triggerRect.bottom + 8
+              : triggerRect.top - tooltipRect.height - 8;
         }
 
         left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
 
-        if (left < 20) {
-          left = 20;
-        }
-
-        if (left + tooltipRect.width > viewportWidth - 20) {
+        if (left < 20) left = 20;
+        if (left + tooltipRect.width > viewportWidth - 20)
           left = viewportWidth - tooltipRect.width - 20;
-        }
 
         tooltip.style.top = `${top}px`;
         tooltip.style.left = `${left}px`;
@@ -287,11 +385,13 @@ const Turnos = () => {
 
     const handleToggle = (e) => {
       e.stopPropagation();
-      setActiveTooltip(isActive ? null : turnoId);
+      setActiveTooltip(isActive ? null : turno.id);
     };
 
     const handleAction = (action) => {
-      console.log(`${action} para turno ID: ${turnoId}`);
+      if (action === "Editar") {
+        setOpenModal(true);
+      }
       setActiveTooltip(null);
     };
 
@@ -311,14 +411,12 @@ const Turnos = () => {
         >
           <button
             className="tooltip-item tooltip-item--edit"
-            onClick={() => {
-              handleAction("Editar");
-              setOpenModal(true);
-            }}
+            onClick={() => handleAction("Editar")}
           >
             <i className="fas fa-edit"></i>
             <span>Editar</span>
           </button>
+
           <div className="tooltip-divider"></div>
 
           <button
@@ -334,6 +432,7 @@ const Turnos = () => {
   };
 
   useEffect(() => {
+    getTurnos();
     const handleClickOutside = (e) => {
       if (!e.target.closest(".tooltip-wrapper")) {
         setActiveTooltip(null);
@@ -343,6 +442,29 @@ const Turnos = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  const turnosFiltrados = (turnos || []).filter((t) => {
+    const busqueda = search.toLowerCase();
+    return (
+      String(t.paciente || "")
+        .toLowerCase()
+        .includes(busqueda) ||
+      String(t.doctor || "")
+        .toLowerCase()
+        .includes(busqueda) ||
+      String(t.tratamiento || "")
+        .toLowerCase()
+        .includes(busqueda) ||
+      String(t.estado || "")
+        .toLowerCase()
+        .includes(busqueda)
+    );
+  });
+
+  const totalPaginas = Math.ceil(turnosFiltrados.length / filas) || 1;
+  const inicio = pagina * filas;
+  const fin = inicio + filas;
+  const turnosPaginados = turnosFiltrados.slice(inicio, fin);
 
   return (
     <>
@@ -356,30 +478,16 @@ const Turnos = () => {
           </div>
 
           <div className="mock-papers__search">
-            <div className="input-group">
-              <div className="input-search">
-                <input
-                  type="text"
-                  className="input-field input-field--search"
-                  placeholder="Buscar por paciente o médico..."
-                />
-                <svg
-                  className="input-search__icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <path
-                    d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
+            <input
+              type="text"
+              className="input-field input-field--search"
+              placeholder="Buscar por paciente o médico..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPagina(0);
+              }}
+            />
           </div>
 
           <button
@@ -391,7 +499,7 @@ const Turnos = () => {
         </div>
 
         <div className="mock-papers__table-card">
-          <div className="mock-papers__table-wrapper">
+          <div className="mock-papers__table-wrapper" ref={tableWrapperRef}>
             <table className="mock-papers__table">
               <thead>
                 <tr>
@@ -406,37 +514,60 @@ const Turnos = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockTurnos.map((turno, index) => (
-                  <tr key={turno.id}>
-                    <td>{String(index + 1).padStart(2, "0")}</td>
-                    <td>{turno.paciente}</td>
-                    <td>{turno.medico}</td>
-                    <td>{turno.fecha}</td>
-                    <td>{turno.hora}</td>
-                    <td>{turno.tratamiento}</td>
-                    <td>
-                      <span
-                        className={`turno-estado ${getEstadoClass(
-                          turno.estado,
-                        )}`}
-                      >
-                        {turno.estado}
-                      </span>
-                    </td>
-                    <td>
-                      <TooltipActions turnoId={turno.id} />
+                {turnosPaginados.length > 0 ? (
+                  turnosPaginados.map((turno, index) => (
+                    <tr key={turno.id} ref={index === 0 ? rowRef : null}>
+                      <td>{String(inicio + index + 1).padStart(2, "0")}</td>
+                      <td>{turno.paciente}</td>
+                      <td>{turno.doctor}</td>
+                      <td>{turno.fecha}</td>
+                      <td>{turno.hora}</td>
+                      <td>{turno.tratamiento}</td>
+                      <td>
+                        <span
+                          className={`turno-estado ${getEstadoClass(
+                            turno.estado,
+                          )}`}
+                        >
+                          {turno.estado}
+                        </span>
+                      </td>
+                      <td>
+                        <TooltipActions turno={turno} />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="busquedaSinresultado" colSpan={8}>
+                      <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
+                      Sin Datos
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="mock-papers__pagination">
-            <button className="mock-papers__arrow-btn">←</button>
-            <span className="mock-papers__page-btn">{11}</span>/
-            <span className="mock-papers__page-btn">{2}</span>
-            <button className="mock-papers__arrow-btn">→</button>
+            <button
+              className="mock-papers__arrow-btn"
+              disabled={pagina === 0}
+              onClick={() => setPagina((p) => Math.max(p - 1, 0))}
+            >
+              ←
+            </button>
+            <span className="mock-papers__page-btn">{pagina + 1}</span>/
+            <span className="mock-papers__page-btn">{totalPaginas}</span>
+            <button
+              className="mock-papers__arrow-btn"
+              disabled={pagina + 1 >= totalPaginas}
+              onClick={() =>
+                setPagina((p) => Math.min(p + 1, totalPaginas - 1))
+              }
+            >
+              →
+            </button>
           </div>
         </div>
       </div>
@@ -455,15 +586,13 @@ const Turnos = () => {
 
           <div className="modal-body">
             <div className="modal-row">
-              <div className="input-group">
-                <label className="input-label">Paciente</label>
-                <select className="input-select">
-                  <option value="">Seleccionar paciente</option>
-                  <option value="1">Juan Pérez</option>
-                  <option value="2">María González</option>
-                  <option value="3">Carlos Benítez</option>
-                </select>
-              </div>
+              <SearchableSelect
+                label="Paciente"
+                options={patients}
+                placeholder="Seleccionar paciente"
+                value={patientValue}
+                onChange={setPatientValue}
+              />
               <div className="input-group">
                 <label className="input-label">Médico</label>
                 <select className="input-select">

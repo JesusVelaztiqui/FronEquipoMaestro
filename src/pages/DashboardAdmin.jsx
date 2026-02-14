@@ -102,7 +102,7 @@ const AdminDashboard = () => {
             <h3>Turnos del Mes</h3>
             <i className="fas fa-calendar-alt" />
           </div>
-          <div className="stat-value">342</div>
+          <div className="stat-value">{dash?.turnosmes}</div>
           <div className="stat-details">
             <span className="stat-item">
               <i className="fas fa-check-circle" /> {dash?.turnoscompletos}{" "}
@@ -120,10 +120,36 @@ const AdminDashboard = () => {
             <h3>Nuevos Pacientes</h3>
             <i className="fas fa-user-plus" />
           </div>
-          <div className="stat-value">47</div>
+          <div className="stat-value">{dash?.pacientemes}</div>
           <div className="stat-details">
             <span className="stat-item">
-              <i className="fas fa-arrow-up" /> +8% vs mes anterior
+              {dash &&
+              dash.pacientemes != null &&
+              dash.pacientemespasado != null ? (
+                <>
+                  {dash.pacientemes > dash.pacientemespasado && (
+                    <>
+                      <i className="fas fa-arrow-up" />{" "}
+                      {dash.pacientemes - dash.pacientemespasado} más que el mes
+                      anterior
+                    </>
+                  )}
+                  {dash.pacientemes < dash.pacientemespasado && (
+                    <>
+                      <i className="fas fa-arrow-down" />{" "}
+                      {dash.pacientemespasado - dash.pacientemes} menos que el
+                      mes anterior
+                    </>
+                  )}
+                  {dash.pacientemes === dash.pacientemespasado && (
+                    <>
+                      <i className="fas fa-minus" /> 0 Igual que el mes anterior
+                    </>
+                  )}
+                </>
+              ) : (
+                <>Sin datos</>
+              )}
             </span>
           </div>
         </div>

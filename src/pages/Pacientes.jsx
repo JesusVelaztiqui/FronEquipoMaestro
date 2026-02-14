@@ -172,6 +172,15 @@ const Pacientes = () => {
             <i className="fas fa-edit"></i>
             <span>Editar</span>
           </button>
+          <div className="tooltip-divider"></div>
+          <button className="tooltip-item tooltip-item--view">
+            <i class="fas fa-eye"></i>
+            <span>Ver historial</span>
+          </button>
+          <button className="tooltip-item tooltip-item--export">
+            <i class="fas fa-download"></i>
+            <span>Descargar historial</span>
+          </button>
 
           <div className="tooltip-divider"></div>
 
@@ -202,7 +211,7 @@ const Pacientes = () => {
         await getPacientes();
         addToast({
           type: "success",
-          title: "Paciente Grabado",
+          title: "Paciente Guardado",
           message: response?.mensaje,
           duration: 3000,
         });
@@ -249,6 +258,13 @@ const Pacientes = () => {
           duration: 3000,
         });
         await getPacientes();
+      } else {
+        addToast({
+          type: "error",
+          title: "Atención",
+          message: response?.mensaje,
+          duration: 3000,
+        });
       }
     } finally {
       ocultarLoader();
