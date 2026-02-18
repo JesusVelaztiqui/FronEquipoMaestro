@@ -7,7 +7,7 @@
   justify-content: center;
   padding: 1.5rem;
   overflow: hidden;
-  background-image: url("/public/fondoEM.png");
+  background-image: url("/fondoEM.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -42,7 +42,8 @@
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  box-shadow: 0 25px 80px rgba(8, 3, 161, 0.092),
+  box-shadow:
+    0 25px 80px rgba(8, 3, 161, 0.092),
     0 0 60px rgba(1, 207, 243, 0.153);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -313,7 +314,8 @@
     outline: none;
     border-color: #3b82f6;
     background: white;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1),
+    box-shadow:
+      0 0 0 4px rgba(59, 130, 246, 0.1),
       0 8px 25px rgba(59, 130, 246, 0.15);
     transform: translateY(-2px);
   }
@@ -468,7 +470,8 @@
   &:hover {
     background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4),
+    box-shadow:
+      0 15px 35px rgba(59, 130, 246, 0.4),
       0 5px 15px rgba(0, 0, 0, 0.12);
 
     &::before {
@@ -478,7 +481,9 @@
 
   &:active {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3), 0 3px 8px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 8px 20px rgba(59, 130, 246, 0.3),
+      0 3px 8px rgba(0, 0, 0, 0.1);
   }
 
   @media (max-width: 480px) {

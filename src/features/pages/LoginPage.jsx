@@ -63,7 +63,7 @@ const LoginPage = () => {
           <div className="login-form-section">
             <div className="form-wrapper">
               <h1 className="welcome-title">BIENVENIDOS 👋</h1>
-              <p className="subtitle">Sitema de Odontología </p>
+              <p className="subtitle">Sistema de Odontología </p>
               <div className={`login-form login-mode `}>
                 <div className="form-fields login-fields">
                   <div className="input-group">
@@ -103,7 +103,7 @@ const LoginPage = () => {
 
           <div className="image-section">
             <img
-              src="/public/portadaEM.png"
+              src="/portadaEM.png"
               alt="Mountain landscape"
               className="background-image"
             />

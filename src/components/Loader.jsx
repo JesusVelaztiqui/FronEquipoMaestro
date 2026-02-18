@@ -21,7 +21,7 @@ const Loader = () => {
             </svg>
             <div className="logo-center">
               <div className="logo-placeholder">
-                <img src="/public/LogoSinFondo.png" alt="" />
+                <img src="/LogoSinFondo.png" alt="" />
               </div>
             </div>
           </div>
