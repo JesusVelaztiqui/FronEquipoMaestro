@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { addToast } from "../components/Tooltip";
 import { sendData } from "../services/api";
@@ -7,8 +7,10 @@ import { listarImagenes } from "../services/urls";
 
 const Imagenes = () => {
   const { id } = useParams();
-  const [listImagenes, setListimagenes] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
+  const navigate = useNavigate();
+  const [listImagenes, setListImagenes] = useState([]);
+  const [lightbox, setLightbox] = useState({ open: false, index: 0 });
+  const [search, setSearch] = useState("");
 
   const getImagenes = async () => {
     try {
@@ -20,7 +22,7 @@ const Imagenes = () => {
         null,
       );
       if (response.status === 200) {
-        setListimagenes(response?.data);
+        setListImagenes(response?.data);
       } else {
         addToast({
           type: "error",
@@ -30,7 +32,7 @@ const Imagenes = () => {
         });
       }
     } catch (error) {
-      Navigate("/login");
+      navigate("/login");
       addToast({
         type: "error",
         title: "Error",
@@ -41,208 +43,191 @@ const Imagenes = () => {
       ocultarLoader();
     }
   };
-  console.log(listImagenes);
-
-  const mockDoctors = [
-    {
-      id: 1,
-      name: "Juan Pérez",
-      specialty: "Cardiología",
-      phone: "0991 123 456",
-      license: "MED-12345",
-    },
-    {
-      id: 2,
-      name: "Ana Gómez",
-      specialty: "Pediatría",
-      phone: "0982 555 222",
-      license: "MED-67890",
-    },
-    {
-      id: 3,
-      name: "Carlos López",
-      specialty: "Dermatología",
-      phone: "0971 000 789",
-      license: "MED-11111",
-    },
-  ];
 
   useEffect(() => {
     getImagenes();
   }, []);
 
+  const filtered = listImagenes.filter(
+    (img) =>
+      (img.titulo || "").toLowerCase().includes(search.toLowerCase()) ||
+      (img.descripcion || "").toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const handleKey = useCallback(
+    (e) => {
+      if (!lightbox.open) return;
+      if (e.key === "Escape") setLightbox({ open: false, index: 0 });
+      if (e.key === "ArrowRight")
+        setLightbox((prev) => ({
+          ...prev,
+          index: Math.min(prev.index + 1, filtered.length - 1),
+        }));
+      if (e.key === "ArrowLeft")
+        setLightbox((prev) => ({
+          ...prev,
+          index: Math.max(prev.index - 1, 0),
+        }));
+    },
+    [lightbox.open, filtered.length],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "Sin fecha";
+    return new Date(dateStr).toLocaleDateString("es-PY", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const currentImg = filtered[lightbox.index];
+
   return (
     <>
-      <div className="mock-papers">
-        <div className="mock-papers__header">
-          <div>
-            <h1 className="mock-papers__title">Imagenes</h1>
-            <p className="mock-papers__subtitle">Imagenes del paciente</p>
+      <div className="gallery-page">
+        <div className="gallery-header">
+          <div className="gallery-header__info">
+            <h1 className="gallery-header__title">
+              <i className="fas fa-images" /> Imágenes
+            </h1>
+            <p className="gallery-header__sub">Imágenes del paciente</p>
           </div>
 
-          <div className="mock-papers__search">
-            <div className="input-group">
-              <div className="input-search">
-                <input
-                  type="text"
-                  className="input-field input-field--search"
-                  placeholder="Buscar..."
-                />
-                <svg
-                  className="input-search__icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <path
-                    d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+          <div className="gallery-header__actions">
+            <div className="gallery-search">
+              <i className="fas fa-search gallery-search__icon" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="gallery-search__input"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="gallery-stats">
+          <span>
+            <i className="fas fa-photo-film" /> {filtered.length}{" "}
+            {filtered.length === 1 ? "imagen" : "imágenes"}
+          </span>
+          {search && <span className="gallery-stats__filter">"{search}"</span>}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="gallery-empty">
+            <i className="fas fa-image gallery-empty__icon" />
+            <p className="gallery-empty__title">Sin imágenes</p>
+            <p className="gallery-empty__sub">
+              {search
+                ? "No hay resultados para tu búsqueda"
+                : "Subí la primera imagen del paciente"}
+            </p>
+          </div>
+        )}
+
+        {filtered.length > 0 && (
+          <div className="gallery-grid">
+            {filtered.map((img, index) => (
+              <div
+                key={img.id}
+                className="gallery-card"
+                onClick={() => setLightbox({ open: true, index })}
+              >
+                <div className="gallery-card__thumb">
+                  <img
+                    src={img.url}
+                    alt={img.titulo || `Imagen ${img.id}`}
+                    loading="lazy"
                   />
-                </svg>
+                  <div className="gallery-card__overlay">
+                    <i className="fas fa-expand" />
+                  </div>
+                </div>
+                <div className="gallery-card__info">
+                  <p className="gallery-card__title">
+                    {"Dr. " + img.titulo || "Sin título"}
+                  </p>
+                  <p className="gallery-card__desc">
+                    {img.observacion || "Sin descripción"}
+                  </p>
+                  <span className="gallery-card__date">
+                    <i className="fas fa-calendar-days" />{" "}
+                    {formatDate(img.fecha)}
+                  </span>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-
-          <button
-            className="mock-papers__upload-btn"
-            onClick={() => setOpenModal(true)}
+        )}
+      </div>
+      {lightbox.open && currentImg && (
+        <div
+          className="lightbox"
+          onClick={() => setLightbox({ open: false, index: 0 })}
+        >
+          <div
+            className="lightbox__content"
+            onClick={(e) => e.stopPropagation()}
           >
-            NUEVO <i className="fas fa-plus" />
-          </button>
-        </div>
-
-        <div className="mock-papers__table-card">
-          <div className="mock-papers__table-wrapper">
-            <table className="mock-papers__table">
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Código</th>
-                  <th>Nombre</th>
-                  <th>Marca</th>
-                  <th>Cantidad</th>
-                  <th>Precio</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {listImagenes?.map((img, index) => (
-                  <tr key={img.id}>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                      <img
-                        src={img.url}
-                        alt={`Imagen ${img.id}`}
-                        style={{ width: "100px", height: "auto" }}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mock-papers__pagination">
-            <button className="mock-papers__arrow-btn">←</button>
-            <span className="mock-papers__page-btn">{11}</span>/
-            <span className="mock-papers__page-btn">{2}</span>
-            <button className="mock-papers__arrow-btn">→</button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="modal-overlay"
-        style={{ display: openModal ? "flex" : "none" }}
-      >
-        <div className="modal">
-          <div className="modal-header">
-            <h2 className="modal-title">Registro de producto</h2>
-            <button className="modal-close" onClick={() => setOpenModal(false)}>
-              &times;
+            <button
+              className="lightbox__close"
+              onClick={() => setLightbox({ open: false, index: 0 })}
+            >
+              <i className="fas fa-xmark" />
             </button>
-          </div>
-
-          <div className="modal-body">
-            <div className="modal-row">
-              <div className="input-group">
-                <label className="input-label">Código</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Nombre</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Marca</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-            </div>
-            <div className="modal-row">
-              <div className="input-group">
-                <label className="input-label">Precio</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Cantidad</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Escribe aquí..."
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Vencimiento</label>
-                <input type="date" className="input-field" />
-              </div>
-            </div>
-
-            <div className="modal-row">
-              <div className="input-group">
-                <label className="input-label">Descripción</label>
-                <textarea
-                  className="input-textarea"
-                  placeholder="Notas adicionales sobre el producto, indicaciones o advertencias"
-                  rows="3"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button className="btn-cancel" onClick={() => setOpenModal(false)}>
-              Cancelar
+            <button
+              className="lightbox__nav lightbox__nav--prev"
+              onClick={() =>
+                setLightbox((prev) => ({
+                  ...prev,
+                  index: Math.max(prev.index - 1, 0),
+                }))
+              }
+              disabled={lightbox.index === 0}
+            >
+              <i className="fas fa-chevron-left" />
             </button>
-            <button className="btn-submit">Guardar</button>
+            <div className="lightbox__img-wrap">
+              <img src={currentImg.url} alt={currentImg.titulo || "Imagen"} />
+            </div>
+            <button
+              className="lightbox__nav lightbox__nav--next"
+              onClick={() =>
+                setLightbox((prev) => ({
+                  ...prev,
+                  index: Math.min(prev.index + 1, filtered.length - 1),
+                }))
+              }
+              disabled={lightbox.index === filtered.length - 1}
+            >
+              <i className="fas fa-chevron-right" />
+            </button>
+            <div className="lightbox__meta">
+              <h3 className="lightbox__title">
+                {currentImg.titulo || "Sin título"}
+              </h3>
+              <p className="lightbox__desc">
+                {currentImg.descripcion || "Sin descripción"}
+              </p>
+              <span className="lightbox__date">
+                <i className="fas fa-calendar-days" />{" "}
+                {formatDate(currentImg.fecha)}
+              </span>
+              <span className="lightbox__counter">
+                {lightbox.index + 1} / {filtered.length}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
