@@ -57,8 +57,8 @@
   }
 
   @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
     margin-bottom: 16px;
   }
 }
@@ -170,10 +170,11 @@
   }
 
   @media (max-width: 968px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr); // 👈 agregado
     gap: 14px;
     margin-bottom: 16px;
   }
@@ -194,6 +195,11 @@
 
   @media (max-width: 1366px) {
     padding: 20px;
+  }
+  &:nth-child(3) {
+    @media (max-width: 640px) {
+      grid-column: 1 / -1;
+    }
   }
 
   @media (max-width: 640px) {

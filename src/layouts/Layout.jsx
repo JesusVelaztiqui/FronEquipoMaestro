@@ -20,7 +20,7 @@ const Layout = ({ children }) => {
           ></i>
         </button>
       </div>
-      <Sidebar menuOpen={menuOpen} />
+      <Sidebar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       <main className="main-content">{children}</main>
     </div>

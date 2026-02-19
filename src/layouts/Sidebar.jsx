@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import useUserStore from "../features/auth/zustandUser";
 
-const Sidebar = ({ menuOpen }) => {
+const Sidebar = ({ menuOpen, setMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,7 +20,10 @@ const Sidebar = ({ menuOpen }) => {
       <nav>
         <div
           className={`menu-item ${isActive("/inicio") ? "active" : ""}`}
-          onClick={() => navigate("/inicio")}
+          onClick={() => {
+            navigate("/inicio");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-house" />
           <span>Inicio</span>
@@ -28,7 +31,10 @@ const Sidebar = ({ menuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/doctores") ? "active" : ""}`}
-          onClick={() => navigate("/doctores")}
+          onClick={() => {
+            navigate("/doctores");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-user-doctor" />
           <span>Doctores</span>
@@ -36,7 +42,10 @@ const Sidebar = ({ menuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/pacientes") ? "active" : ""}`}
-          onClick={() => navigate("/pacientes")}
+          onClick={() => {
+            navigate("/pacientes");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-users" />
           <span>Pacientes</span>
@@ -44,7 +53,10 @@ const Sidebar = ({ menuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/turnos") ? "active" : ""}`}
-          onClick={() => navigate("/turnos")}
+          onClick={() => {
+            navigate("/turnos");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-calendar-check" />
           <span>Turnos</span>
@@ -52,7 +64,10 @@ const Sidebar = ({ menuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/productos") ? "active" : ""}`}
-          onClick={() => navigate("/productos")}
+          onClick={() => {
+            navigate("/productos");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-boxes-stacked" />
           <span>Productos</span>
@@ -77,7 +92,10 @@ const Sidebar = ({ menuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/auditoria") ? "active" : ""}`}
-          onClick={() => navigate("/auditoria")}
+          onClick={() => {
+            navigate("/auditoria");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-clipboard-check" />
           <span>Auditoria</span>
@@ -88,6 +106,7 @@ const Sidebar = ({ menuOpen }) => {
           onClick={() => {
             clearUser();
             navigate("/login");
+            setMenuOpen(false);
           }}
         >
           <i className="fas fa-right-from-bracket" />

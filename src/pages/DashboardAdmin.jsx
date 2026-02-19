@@ -184,95 +184,27 @@ const AdminDashboard = () => {
           </div>
 
           <div className="transaction-list">
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">María González</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 13:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. Ana Solis
-                  </span>
+            {dash?.turnos
+              ?.filter((e) => e.estado === "PENDIENTE")
+              ?.map((t) => (
+                <div className="transaction-item" key={t.id}>
+                  <div className="transaction-icon">
+                    <i className="fas fa-user-circle" />
+                  </div>
+                  <div className="transaction-details">
+                    <div className="transaction-name">{t.paciente}</div>
+                    <div className="transaction-meta">
+                      <span className="transaction-time">
+                        <i className="fas fa-clock" /> {t.hora}
+                      </span>
+                      <span className="transaction-doctor">
+                        <i className="fas fa-user-md" /> {t.doctor}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="transaction-status pending">{t.estado}</div>
                 </div>
-              </div>
-              <div className="transaction-status pending">Pendiente</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Carlos Martínez</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 14:00
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dr. Roberto López
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status pending">Pendiente</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Laura Benítez</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 14:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. Ana Solis
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status pending">Pendiente</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Pedro Ramírez</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 15:00
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dr. Roberto López
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status pending">Pendiente</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Ana Castro</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 15:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. María Fernández
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status pending">Pendiente</div>
-            </div>
+              ))}
           </div>
         </div>
 
@@ -291,95 +223,27 @@ const AdminDashboard = () => {
           </div>
 
           <div className="transaction-list">
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Roberto Villalba</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 12:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. Ana Solis
-                  </span>
+            {dash?.turnos
+              ?.filter((e) => e.estado === "CONFIRMADO")
+              ?.map((t) => (
+                <div className="transaction-item" key={t.id}>
+                  <div className="transaction-icon">
+                    <i className="fas fa-user-circle" />
+                  </div>
+                  <div className="transaction-details">
+                    <div className="transaction-name">{t.paciente}</div>
+                    <div className="transaction-meta">
+                      <span className="transaction-time">
+                        <i className="fas fa-clock" /> {t.hora}
+                      </span>
+                      <span className="transaction-doctor">
+                        <i className="fas fa-user-md" /> {t.doctor}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="transaction-status completed">{t.estado}</div>
                 </div>
-              </div>
-              <div className="transaction-status completed">Completado</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Claudia Rojas</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 11:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dr. Roberto López
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status completed">Completado</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Jorge Duarte</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 10:30
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. María Fernández
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status completed">Completado</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Patricia Núñez</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 10:00
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dra. Ana Solis
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status completed">Completado</div>
-            </div>
-
-            <div className="transaction-item">
-              <div className="transaction-icon">
-                <i className="fas fa-user-circle" />
-              </div>
-              <div className="transaction-details">
-                <div className="transaction-name">Fernando Acosta</div>
-                <div className="transaction-meta">
-                  <span className="transaction-time">
-                    <i className="fas fa-clock" /> 09:00
-                  </span>
-                  <span className="transaction-doctor">
-                    <i className="fas fa-user-md" /> Dr. Roberto López
-                  </span>
-                </div>
-              </div>
-              <div className="transaction-status completed">Completado</div>
-            </div>
+              ))}
           </div>
         </div>
       </div>
