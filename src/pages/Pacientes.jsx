@@ -365,6 +365,7 @@ const Pacientes = () => {
                 <tr>
                   <th>N°</th>
                   <th>Nombre</th>
+                  <th>Ruc / C.I</th>
                   <th>Correo</th>
                   <th>Teléfono</th>
                   <th>Acciones</th>
@@ -378,6 +379,7 @@ const Pacientes = () => {
                       <td>
                         {p.nombre} {p.apellido}
                       </td>
+                      <td>{p.ruc}</td>
                       <td>{p.mail}</td>
                       <td>{p.celular}</td>
                       <td>
