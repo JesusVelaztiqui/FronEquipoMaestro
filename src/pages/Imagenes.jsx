@@ -76,10 +76,13 @@ const Imagenes = () => {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
-
   const formatDate = (dateStr) => {
     if (!dateStr) return "Sin fecha";
-    return new Date(dateStr).toLocaleDateString("es-PY", {
+
+    const [year, month, day] = dateStr.split("-");
+    const date = new Date(year, month - 1, day);
+
+    return date.toLocaleDateString("es-PY", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -112,7 +115,6 @@ const Imagenes = () => {
             </div>
           </div>
         </div>
-
         <div className="gallery-stats">
           <span>
             <i className="fas fa-photo-film" /> {filtered.length}{" "}
@@ -120,7 +122,7 @@ const Imagenes = () => {
           </span>
           {search && <span className="gallery-stats__filter">"{search}"</span>}
         </div>
-
+        {console.log(filtered)}
         {filtered.length === 0 && (
           <div className="gallery-empty">
             <i className="fas fa-image gallery-empty__icon" />
@@ -132,7 +134,6 @@ const Imagenes = () => {
             </p>
           </div>
         )}
-
         {filtered.length > 0 && (
           <div className="gallery-grid">
             {filtered.map((img, index) => (
@@ -215,7 +216,7 @@ const Imagenes = () => {
                 {currentImg.titulo || "Sin título"}
               </h3>
               <p className="lightbox__desc">
-                {currentImg.descripcion || "Sin descripción"}
+                {currentImg.observacion || "Sin descripción"}
               </p>
               <span className="lightbox__date">
                 <i className="fas fa-calendar-days" />{" "}

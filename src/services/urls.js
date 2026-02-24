@@ -12,4 +12,11 @@ export const listarImagenes = `${baseurl}pacientes/listarimagenes/base64`;
 export const grabarPacientes = `${baseurl}pacientes/grabar`;
 export const editarPacientes = `${baseurl}pacientes/editar`;
 export const listarTurnos = `${baseurl}turnos/listar`;
+export const grabarTurnos = `${baseurl}turnos/grabar`;
+export const editarTurnos = `${baseurl}turnos/editar`;
+export const eliminarTurnos = `${baseurl}turnos/eliminar`;
+export const recuperarTurno = `${baseurl}turnos/recuperar`;
+export const listarImagenesTurno = `${baseurl}turnos/imagenes`;
+export const eliminarImagenTurno = `${baseurl}turnos/imagenes`;
+
 export const listarAuditoria = `${baseurl}auditoria/listar`;

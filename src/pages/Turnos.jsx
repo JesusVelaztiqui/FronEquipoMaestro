@@ -4,13 +4,28 @@ import { addToast } from "../components/Tooltip";
 import { useNavigate } from "react-router-dom";
 import { sendData } from "../services/api";
 import {
+  editarTurnos,
+  eliminarImagenTurno,
+  eliminarTurnos,
+  grabarTurnos,
   listarDoctores,
+  listarImagenesTurno,
   listarPacientes,
   listarTurnos,
+  recuperarTurno,
 } from "../services/urls";
 import { NoEmpty } from "../components/NoEmpty";
+import ModalDelete from "../components/ModalDelete";
 
-const Buscador = ({ label, options, placeholder, value, onChange }) => {
+const Buscador = ({
+  label,
+  options,
+  placeholder,
+  value,
+  onChange,
+  labelExterno,
+  onLabelChange,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLabel, setSelectedLabel] = useState("");
@@ -21,6 +36,24 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
       option.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       option.apellido.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  useEffect(() => {
+    if (labelExterno !== undefined) {
+      setSelectedLabel(labelExterno);
+    }
+  }, [labelExterno]);
+
+  useEffect(() => {
+    if (!labelExterno && value && options.length > 0) {
+      const encontrado = options.find((o) => (o.id || o.value) === value);
+      if (encontrado) {
+        setSelectedLabel(`${encontrado.nombre} ${encontrado.apellido}`);
+      }
+    }
+    if (!value) {
+      setSelectedLabel("");
+    }
+  }, [value, options]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -34,22 +67,19 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
   }, []);
 
   const handleSelect = (option) => {
-    const label = option.label || `${option.nombre} ${option.apellido}`;
-    setSelectedLabel(label);
+    const lbl = option.label || `${option.nombre} ${option.apellido}`;
+    setSelectedLabel(lbl);
+    onLabelChange && onLabelChange(lbl);
     onChange(option.id || option.value);
     setIsOpen(false);
     setSearchTerm("");
-  };
-
-  const handleInputClick = () => {
-    setIsOpen(true);
   };
 
   return (
     <div className="input-group">
       <label className="input-label">{label}</label>
       <div className="searchable-select" ref={dropdownRef}>
-        <div className="select-input" onClick={handleInputClick}>
+        <div className="select-input" onClick={() => setIsOpen(true)}>
           <input
             type="text"
             className="input-field search-input"
@@ -60,8 +90,6 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
-            noempty="true"
-            validar={"ingrese" + label}
           />
           <svg
             className={`dropdown-arrow ${isOpen ? "open" : ""}`}
@@ -78,7 +106,6 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
             />
           </svg>
         </div>
-
         {isOpen && (
           <div className="dropdown-menu">
             {filteredOptions.length > 0 ? (
@@ -120,30 +147,29 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
   );
 };
 
-const FileUpload = () => {
+const FileUpload = ({
+  onFilesChange,
+  imagenesExistentes = [],
+  onEliminarImagen,
+}) => {
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+  const handleDragLeave = () => setIsDragging(false);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    addFiles(droppedFiles);
+    addFiles(Array.from(e.dataTransfer.files));
   };
 
-  const handleFileSelect = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    addFiles(selectedFiles);
-  };
+  const handleFileSelect = (e) => addFiles(Array.from(e.target.files));
 
   const addFiles = (newFiles) => {
     const filesWithProgress = newFiles.map((file) => ({
@@ -153,11 +179,13 @@ const FileUpload = () => {
       uploading: true,
     }));
 
-    setFiles((prev) => [...prev, ...filesWithProgress]);
-
-    filesWithProgress.forEach((fileObj) => {
-      simulateUpload(fileObj.id);
+    setFiles((prev) => {
+      const next = [...prev, ...filesWithProgress];
+      onFilesChange && onFilesChange(next.map((f) => f.file));
+      return next;
     });
+
+    filesWithProgress.forEach((fileObj) => simulateUpload(fileObj.id));
   };
 
   const simulateUpload = (fileId) => {
@@ -176,12 +204,15 @@ const FileUpload = () => {
         }),
       );
     }, 200);
-
     setTimeout(() => clearInterval(interval), 2200);
   };
 
   const removeFile = (fileId) => {
-    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    setFiles((prev) => {
+      const next = prev.filter((f) => f.id !== fileId);
+      onFilesChange && onFilesChange(next.map((f) => f.file));
+      return next;
+    });
   };
 
   const formatFileSize = (bytes) => {
@@ -193,7 +224,7 @@ const FileUpload = () => {
   };
 
   const getFileIcon = (fileName) => {
-    const ext = fileName.split(".").pop().toLowerCase();
+    const ext = (fileName || "").split(".").pop().toLowerCase();
     if (["pdf"].includes(ext)) return "fa-file-pdf";
     if (["doc", "docx"].includes(ext)) return "fa-file-word";
     if (["xls", "xlsx"].includes(ext)) return "fa-file-excel";
@@ -202,12 +233,15 @@ const FileUpload = () => {
     return "fa-file";
   };
 
+  const getNombreArchivo = (url) => {
+    if (!url) return "archivo";
+    return url.split(/[\\/]/).pop();
+  };
+
   return (
     <div className="file-upload">
       <div
-        className={`file-upload__dropzone ${
-          isDragging ? "file-upload__dropzone--dragging" : ""
-        }`}
+        className={`file-upload__dropzone ${isDragging ? "file-upload__dropzone--dragging" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -231,8 +265,44 @@ const FileUpload = () => {
         />
       </div>
 
+      {imagenesExistentes.length > 0 && (
+        <div className="file-upload__list">
+          <p style={{ fontSize: "12px", color: "#888", marginBottom: "6px" }}>
+            Archivos existentes:
+          </p>
+          {imagenesExistentes.map((img) => (
+            <div key={img.id} className="file-item">
+              <div className="file-item__icon">
+                <i className={`fas ${getFileIcon(img.url)}`}></i>
+              </div>
+              <div className="file-item__content">
+                <div className="file-item__info">
+                  <span className="file-item__name">
+                    {getNombreArchivo(img.url)}
+                  </span>
+                </div>
+              </div>
+              <button
+                className="file-item__delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEliminarImagen && onEliminarImagen(img.id);
+                }}
+              >
+                <i className="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {files.length > 0 && (
         <div className="file-upload__list">
+          {imagenesExistentes.length > 0 && (
+            <p style={{ fontSize: "12px", color: "#888", marginBottom: "6px" }}>
+              Nuevos archivos:
+            </p>
+          )}
           {files.map((fileObj) => (
             <div key={fileObj.id} className="file-item">
               <div className="file-item__icon">
@@ -243,9 +313,7 @@ const FileUpload = () => {
                   <span className="file-item__name">{fileObj.file.name}</span>
                   <span className="file-item__size">
                     {fileObj.uploading
-                      ? `${fileObj.progress}% of ${formatFileSize(
-                          fileObj.file.size,
-                        )}`
+                      ? `${fileObj.progress}% of ${formatFileSize(fileObj.file.size)}`
                       : formatFileSize(fileObj.file.size)}
                   </span>
                 </div>
@@ -260,7 +328,10 @@ const FileUpload = () => {
               </div>
               <button
                 className="file-item__delete"
-                onClick={() => removeFile(fileObj.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile(fileObj.id);
+                }}
               >
                 <i className="fas fa-trash-alt"></i>
               </button>
@@ -272,25 +343,59 @@ const FileUpload = () => {
   );
 };
 
+const FORM_VACIO = {
+  id: 0,
+  paciente: 0,
+  doctor: 0,
+  fecha: "",
+  hora: "",
+  estado: "Pendiente",
+  tratamiento: "",
+  observacion: "",
+  descuentodoctor: 0,
+  porcentajedescuento: 0,
+  importetotal: 0,
+};
+
+const LABELS_VACIOS = {
+  paciente: "",
+  doctor: "",
+  descuentodoctor: "",
+};
+
 const Turnos = () => {
+  const userData = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
   const navigate = useNavigate();
   const { validate, clearErrors } = NoEmpty();
   const [modo, setModo] = useState("INS");
   const tableWrapperRef = useRef(null);
   const rowRef = useRef(null);
-  const [filas, setFilas] = useState(8);
+  const [filas] = useState(8);
   const [search, setSearch] = useState("");
   const [turnos, setTurnos] = useState([]);
   const [pagina, setPagina] = useState(0);
-  const rol = JSON.parse(localStorage.getItem("usuarioMaestro"))?.role;
-  const id = JSON.parse(localStorage.getItem("usuarioMaestro"))?.id;
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
-  const [pacienteValue, setPacienteValue] = useState("");
   const [listPacientes, setListPacientes] = useState([]);
   const [listDoctores, setListDoctores] = useState([]);
-  const [doctoresValue, setdoctoresValue] = useState("");
-  const [doctoresDescontarValue, setdoctoresDescontarValueValue] = useState("");
+  const [archivos, setArchivos] = useState([]);
+  const [imagenesExistentes, setImagenesExistentes] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [turnoAEliminar, setTurnoAEliminar] = useState(null);
+  const [descripcionEliminar, setDescripcionEliminar] = useState("");
+  const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
+  const [labels, setLabels] = useState(LABELS_VACIOS);
+
+  const handleChangeTurno = (e) => {
+    setTurnoForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const resetForm = () => {
+    setTurnoForm(FORM_VACIO);
+    setLabels(LABELS_VACIOS);
+    setArchivos([]);
+    setImagenesExistentes([]);
+  };
 
   const getTurnos = async () => {
     try {
@@ -298,7 +403,7 @@ const Turnos = () => {
       const response = await sendData(
         listarTurnos,
         "GET",
-        `?rol=${rol}&id=${id}`,
+        `?rol=${userData?.role}&id=${userData?.id}`,
         null,
       );
       if (response.status === 200) {
@@ -324,6 +429,7 @@ const Turnos = () => {
       ocultarLoader();
     }
   };
+
   const getPacientes = async () => {
     try {
       cargarLoader();
@@ -378,9 +484,259 @@ const Turnos = () => {
     }
   };
 
+  const getImagenesTurno = async (idTurno) => {
+    try {
+      cargarLoader();
+      const response = await sendData(
+        listarImagenesTurno,
+        "GET",
+        `?idTurno=${idTurno}`,
+        null,
+      );
+      if (response.status === 200) {
+        setImagenesExistentes(response?.data || []);
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
+  const buscarLabelEnLista = (lista, id) => {
+    const encontrado = lista.find((o) => o.id === id);
+    return encontrado ? `${encontrado.nombre} ${encontrado.apellido}` : "";
+  };
+
+  const abrirEditar = async (turno) => {
+    try {
+      cargarLoader();
+      const response = await sendData(
+        recuperarTurno,
+        "GET",
+        `?id=${turno.id}`,
+        null,
+      );
+      if (response.status === 200) {
+        console.log(response.data);
+        const t = response.data;
+        setTurnoForm({
+          id: t.id,
+          paciente: t.paciente,
+          doctor: t.doctor,
+          fecha: t.fecha,
+          hora: t.hora,
+          estado: t.estado,
+          tratamiento: t.tratamiento,
+          observacion: t.observacion,
+          descuentodoctor: t.descuentodoctor,
+          porcentajedescuento: t.porcentajedescuento,
+          importetotal: t.importetotal,
+        });
+        setLabels({
+          paciente: buscarLabelEnLista(listPacientes, t.paciente),
+          doctor: buscarLabelEnLista(listDoctores, t.doctor),
+          descuentodoctor: buscarLabelEnLista(listDoctores, t.descuentodoctor),
+        });
+        setArchivos([]);
+        await getImagenesTurno(t.id);
+        setModo("UPD");
+        setOpenModal(true);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
+  const eliminarImagenExistente = async (idImagen) => {
+    try {
+      cargarLoader();
+
+      const response = await fetch(`${eliminarImagenTurno}?id=${idImagen}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${userData?.token || ""}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 200) {
+        await getImagenesTurno(turnoForm.id);
+        addToast({
+          type: "success",
+          title: "Eliminado",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+  const postTurno = async () => {
+    clearErrors();
+    if (!turnoForm.paciente) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "Seleccione un paciente",
+        duration: 3000,
+      });
+      return;
+    }
+    if (!turnoForm.doctor) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "Seleccione un médico",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      cargarLoader();
+
+      const payload = {
+        ...turnoForm,
+        porcentajedescuento: Number(turnoForm.porcentajedescuento) || 0,
+        importetotal: Number(turnoForm.importetotal) || 0,
+      };
+
+      const formData = new FormData();
+      formData.append("turnos", JSON.stringify(payload));
+
+      if (archivos.length > 0) {
+        archivos.forEach((file) => formData.append("imagenes", file));
+      } else {
+        formData.append(
+          "imagenes",
+          new Blob([], { type: "application/octet-stream" }),
+          "empty",
+        );
+      }
+
+      const url = modo === "INS" ? grabarTurnos : editarTurnos;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${userData?.token || ""}` },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 200) {
+        addToast({
+          type: "success",
+          title: modo === "INS" ? "Turno Guardado" : "Turno Actualizado",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+        setOpenModal(false);
+        resetForm();
+        await getTurnos();
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: String(error),
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
+  const eliminarTurnoFn = async () => {
+    try {
+      cargarLoader();
+
+      const response = await fetch(
+        `${eliminarTurnos}?id=${turnoAEliminar?.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${userData?.token || ""}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 200) {
+        addToast({
+          type: "success",
+          title: "Eliminado",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+        setVisible(false);
+        setTurnoAEliminar(null);
+        await getTurnos();
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: data?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
   const getEstadoClass = (estado) => {
-    const estadoUpper = estado?.toUpperCase();
-    switch (estadoUpper) {
+    switch (estado?.toUpperCase()) {
       case "CONFIRMADO":
         return "turno-estado--confirmado";
       case "PENDIENTE":
@@ -401,7 +757,6 @@ const Turnos = () => {
       if (isActive && tooltipRef.current && triggerRef.current) {
         const tooltip = tooltipRef.current;
         const trigger = triggerRef.current;
-
         const triggerRect = trigger.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         const viewportWidth = window.innerWidth;
@@ -409,9 +764,7 @@ const Turnos = () => {
         tooltip.style.visibility = "hidden";
         tooltip.style.opacity = "1";
         tooltip.style.display = "block";
-
         const tooltipRect = tooltip.getBoundingClientRect();
-
         tooltip.style.visibility = "";
         tooltip.style.opacity = "";
         tooltip.style.display = "";
@@ -420,21 +773,17 @@ const Turnos = () => {
         const spaceBelow = viewportHeight - triggerRect.bottom;
         const spaceAbove = triggerRect.top;
 
-        let top, left;
+        let top =
+          spaceBelow >= tooltipRect.height + 16
+            ? triggerRect.bottom + 8
+            : spaceAbove >= tooltipRect.height + 16
+              ? triggerRect.top - tooltipRect.height - 8
+              : spaceBelow > spaceAbove
+                ? triggerRect.bottom + 8
+                : triggerRect.top - tooltipRect.height - 8;
 
-        if (spaceBelow >= tooltipRect.height + 16) {
-          top = triggerRect.bottom + 8;
-        } else if (spaceAbove >= tooltipRect.height + 16) {
-          top = triggerRect.top - tooltipRect.height - 8;
-        } else {
-          top =
-            spaceBelow > spaceAbove
-              ? triggerRect.bottom + 8
-              : triggerRect.top - tooltipRect.height - 8;
-        }
-
-        left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
-
+        let left =
+          triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
         if (left < 20) left = 20;
         if (left + tooltipRect.width > viewportWidth - 20)
           left = viewportWidth - tooltipRect.width - 20;
@@ -451,10 +800,14 @@ const Turnos = () => {
     };
 
     const handleAction = (action) => {
-      if (action === "Editar") {
-        setOpenModal(true);
-      }
       setActiveTooltip(null);
+      if (action === "Editar") {
+        abrirEditar(turno);
+      } else if (action === "Eliminar") {
+        setTurnoAEliminar(turno);
+        setDescripcionEliminar(`Turno de ${turno.paciente} - ${turno.fecha}`);
+        setVisible(true);
+      }
     };
 
     return (
@@ -466,7 +819,6 @@ const Turnos = () => {
         >
           <i className="fas fa-ellipsis-v"></i>
         </button>
-
         <div
           ref={tooltipRef}
           className={`tooltip-menu ${isActive ? "active" : ""}`}
@@ -478,9 +830,7 @@ const Turnos = () => {
             <i className="fas fa-edit"></i>
             <span>Editar</span>
           </button>
-
           <div className="tooltip-divider"></div>
-
           <button
             className="tooltip-item tooltip-item--delete"
             onClick={() => handleAction("Eliminar")}
@@ -498,11 +848,8 @@ const Turnos = () => {
     getPacientes();
     getDoctores();
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".tooltip-wrapper")) {
-        setActiveTooltip(null);
-      }
+      if (!e.target.closest(".tooltip-wrapper")) setActiveTooltip(null);
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
@@ -527,11 +874,18 @@ const Turnos = () => {
 
   const totalPaginas = Math.ceil(turnosFiltrados.length / filas) || 1;
   const inicio = pagina * filas;
-  const fin = inicio + filas;
-  const turnosPaginados = turnosFiltrados.slice(inicio, fin);
+  const turnosPaginados = turnosFiltrados.slice(inicio, inicio + filas);
 
   return (
     <>
+      <ModalDelete
+        visible={visible}
+        setVisible={setVisible}
+        titulo="Atención"
+        eliminar={descripcionEliminar}
+        funcion={eliminarTurnoFn}
+      />
+
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
@@ -540,7 +894,6 @@ const Turnos = () => {
               Gestiona los turnos y citas de tus pacientes
             </p>
           </div>
-
           <div className="mock-papers__search">
             <input
               type="text"
@@ -553,10 +906,13 @@ const Turnos = () => {
               }}
             />
           </div>
-
           <button
             className="mock-papers__upload-btn"
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setModo("INS");
+              resetForm();
+              setOpenModal(true);
+            }}
           >
             NUEVO <i className="fas fa-plus" />
           </button>
@@ -589,9 +945,7 @@ const Turnos = () => {
                       <td>{turno.tratamiento}</td>
                       <td>
                         <span
-                          className={`turno-estado ${getEstadoClass(
-                            turno.estado,
-                          )}`}
+                          className={`turno-estado ${getEstadoClass(turno.estado)}`}
                         >
                           {turno.estado}
                         </span>
@@ -612,7 +966,6 @@ const Turnos = () => {
               </tbody>
             </table>
           </div>
-
           <div className="mock-papers__pagination">
             <button
               className="mock-papers__arrow-btn"
@@ -656,23 +1009,36 @@ const Turnos = () => {
                 label="Paciente"
                 options={listPacientes}
                 placeholder="Seleccionar paciente"
-                value={pacienteValue}
-                onChange={setPacienteValue}
+                value={turnoForm.paciente}
+                labelExterno={labels.paciente}
+                onLabelChange={(lbl) =>
+                  setLabels((prev) => ({ ...prev, paciente: lbl }))
+                }
+                onChange={(val) =>
+                  setTurnoForm((prev) => ({ ...prev, paciente: val }))
+                }
               />
-              <div className="input-group">
-                <Buscador
-                  label="Médico"
-                  options={listDoctores}
-                  placeholder="Seleccionar médico"
-                  value={doctoresValue}
-                  onChange={setdoctoresValue}
-                />
-              </div>
+              <Buscador
+                label="Médico"
+                options={listDoctores}
+                placeholder="Seleccionar médico"
+                value={turnoForm.doctor}
+                labelExterno={labels.doctor}
+                onLabelChange={(lbl) =>
+                  setLabels((prev) => ({ ...prev, doctor: lbl }))
+                }
+                onChange={(val) =>
+                  setTurnoForm((prev) => ({ ...prev, doctor: val }))
+                }
+              />
               <div className="input-group">
                 <label className="input-label">Fecha</label>
                 <input
                   type="date"
                   className="input-field"
+                  name="fecha"
+                  value={turnoForm.fecha}
+                  onChange={handleChangeTurno}
                   noempty="true"
                   validar="Ingrese la fecha del turno"
                 />
@@ -685,13 +1051,21 @@ const Turnos = () => {
                 <input
                   type="time"
                   className="input-field"
+                  name="hora"
+                  value={turnoForm.hora}
+                  onChange={handleChangeTurno}
                   noempty="true"
-                  validar="Ingrese la hora del turnos"
+                  validar="Ingrese la hora del turno"
                 />
               </div>
               <div className="input-group">
                 <label className="input-label">Estado</label>
-                <select className="input-select">
+                <select
+                  className="input-select"
+                  name="estado"
+                  value={turnoForm.estado}
+                  onChange={handleChangeTurno}
+                >
                   <option value="Pendiente">Pendiente</option>
                   <option value="Confirmado">Confirmado</option>
                   <option value="Cancelado">Cancelado</option>
@@ -702,6 +1076,9 @@ const Turnos = () => {
                 <input
                   type="text"
                   className="input-field"
+                  name="tratamiento"
+                  value={turnoForm.tratamiento}
+                  onChange={handleChangeTurno}
                   noempty="true"
                   validar="Ingrese el tratamiento, es importante para el historial del paciente"
                   placeholder="Ej: Limpieza dental, Extracción, etc."
@@ -714,6 +1091,9 @@ const Turnos = () => {
                 <label className="input-label">Observaciones</label>
                 <textarea
                   className="input-textarea"
+                  name="observacion"
+                  value={turnoForm.observacion}
+                  onChange={handleChangeTurno}
                   placeholder="Notas adicionales sobre el turno, productos utilizados etc..."
                   rows="3"
                 ></textarea>
@@ -725,35 +1105,53 @@ const Turnos = () => {
                 label="Descontar al Médico"
                 options={listDoctores}
                 placeholder="Seleccionar médico"
-                value={doctoresDescontarValue}
-                onChange={setdoctoresDescontarValueValue}
+                value={turnoForm.descuentodoctor}
+                labelExterno={labels.descuentodoctor}
+                onLabelChange={(lbl) =>
+                  setLabels((prev) => ({ ...prev, descuentodoctor: lbl }))
+                }
+                onChange={(val) =>
+                  setTurnoForm((prev) => ({ ...prev, descuentodoctor: val }))
+                }
               />
               <div className="input-group">
-                <label
-                  className="input-label"
-                  noempty="true"
-                  validar="Ingrese el porcentaje a descontar"
-                >
-                  Porcentaje a descontar
-                </label>
-                <input type="text" className="input-field" />
+                <label className="input-label">Porcentaje a descontar</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={turnoForm.porcentajedescuento || ""}
+                  onChange={(e) =>
+                    setTurnoForm((prev) => ({
+                      ...prev,
+                      porcentajedescuento: Number(e.target.value) || 0,
+                    }))
+                  }
+                />
               </div>
               <div className="input-group">
-                <label
-                  className="input-label"
-                  noempty="true"
-                  validar="Ingrese el importe total del procedimiento"
-                >
-                  Importe Total
-                </label>
-                <input type="text" className="input-field" />
+                <label className="input-label">Importe Total</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={turnoForm.importetotal || ""}
+                  onChange={(e) =>
+                    setTurnoForm((prev) => ({
+                      ...prev,
+                      importetotal: Number(e.target.value) || 0,
+                    }))
+                  }
+                />
               </div>
             </div>
 
             <div className="modal-row">
               <div className="input-group">
                 <label className="input-label">Carga de Almacenamiento</label>
-                <FileUpload />
+                <FileUpload
+                  onFilesChange={setArchivos}
+                  imagenesExistentes={imagenesExistentes}
+                  onEliminarImagen={eliminarImagenExistente}
+                />
               </div>
             </div>
           </div>
@@ -762,7 +1160,9 @@ const Turnos = () => {
             <button className="btn-cancel" onClick={() => setOpenModal(false)}>
               Cancelar
             </button>
-            <button className="btn-submit">Guardar</button>
+            <button className="btn-submit" onClick={postTurno}>
+              Guardar
+            </button>
           </div>
         </div>
       </div>
