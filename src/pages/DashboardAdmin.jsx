@@ -185,7 +185,7 @@ const AdminDashboard = () => {
 
           <div className="transaction-list">
             {dash?.turnos
-              ?.filter((e) => e.estado === "PENDIENTE")
+              ?.filter((e) => e.estado === "Pendiente")
               ?.map((t) => (
                 <div className="transaction-item" key={t.id}>
                   <div className="transaction-icon">
@@ -224,7 +224,7 @@ const AdminDashboard = () => {
 
           <div className="transaction-list">
             {dash?.turnos
-              ?.filter((e) => e.estado === "CONFIRMADO")
+              ?.filter((e) => e.estado === "Confirmado")
               ?.map((t) => (
                 <div className="transaction-item" key={t.id}>
                   <div className="transaction-icon">
