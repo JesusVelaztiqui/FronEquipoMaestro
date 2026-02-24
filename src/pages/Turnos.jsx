@@ -924,6 +924,7 @@ const Turnos = () => {
               <thead>
                 <tr>
                   <th>N°</th>
+                  <th>Id turno</th>
                   <th>Paciente</th>
                   <th>Médico</th>
                   <th>Fecha</th>
@@ -938,6 +939,7 @@ const Turnos = () => {
                   turnosPaginados.map((turno, index) => (
                     <tr key={turno.id} ref={index === 0 ? rowRef : null}>
                       <td>{String(inicio + index + 1).padStart(2, "0")}</td>
+                      <td>{turno.id}</td>
                       <td>{turno.paciente}</td>
                       <td>{turno.doctor}</td>
                       <td>{turno.fecha}</td>
