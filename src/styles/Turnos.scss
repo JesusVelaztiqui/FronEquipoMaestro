@@ -1,9 +1,3 @@
-/* ============================================================
-   calendario-turnos.css
-   Importar en Turnos.jsx:  import "./calendario-turnos.css";
-   ============================================================ */
-
-/* ── Toggle de vista ────────────────────────────────────── */
 .view-toggle {
   display: flex;
   gap: 2px;
@@ -37,7 +31,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Wrapper principal ──────────────────────────────────── */
 .cal-wrapper {
   background: var(--color-blanco);
   border-radius: 12px;
@@ -45,7 +38,6 @@
   overflow: hidden;
 }
 
-/* ── Navegación mes ─────────────────────────────────────── */
 .cal-nav {
   display: flex;
   align-items: center;
@@ -121,7 +113,6 @@
   background: var(--color-fondo);
 }
 
-/* ── Leyenda ─────────────────────────────────────────────── */
 .cal-legend {
   display: flex;
   gap: 14px;
@@ -153,7 +144,6 @@
   background: #b05050;
 }
 
-/* ── Grilla ──────────────────────────────────────────────── */
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -171,7 +161,6 @@
   padding: 12px 0 8px;
 }
 
-/* ── Celda día ───────────────────────────────────────────── */
 .cal-day {
   min-height: 80px;
   border-radius: 8px;
@@ -228,7 +217,6 @@
   gap: 2px;
 }
 
-/* ── Chips ───────────────────────────────────────────────── */
 .cal-chip {
   display: flex;
   align-items: center;
@@ -287,7 +275,6 @@
   margin-top: 1px;
 }
 
-/* ── Drawer overlay ─────────────────────────────────────── */
 .cal-drawer-overlay {
   position: fixed;
   inset: 0;
@@ -305,7 +292,6 @@
   }
 }
 
-/* ── Drawer panel ───────────────────────────────────────── */
 .cal-drawer {
   position: fixed;
   top: 0;
@@ -407,7 +393,6 @@
   opacity: 0.4;
 }
 
-/* ── Tarjeta turno en drawer ────────────────────────────── */
 .cal-card {
   border: 1px solid var(--color-primario);
   border-radius: 10px;
@@ -525,7 +510,6 @@
   color: var(--color-blanco);
 }
 
-/* ── Botón agregar en drawer ────────────────────────────── */
 .cal-drawer__add {
   width: 100%;
   margin-top: 2px;
@@ -554,7 +538,6 @@
   background: var(--color-fondo);
 }
 
-/* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 700px) {
   .cal-day {
     min-height: 54px;
