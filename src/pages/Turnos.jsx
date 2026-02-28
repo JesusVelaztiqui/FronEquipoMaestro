@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
 import { addToast } from "../components/Tooltip";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,51 @@ import {
 } from "../services/urls";
 import { NoEmpty } from "../components/NoEmpty";
 import ModalDelete from "../components/ModalDelete";
+
+const MESES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+const DIAS_CORTO = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const DIAS_LARGO = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
+
+const parseLocalDate = (str) => {
+  if (!str) return null;
+  const [y, m, d] = str.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
+const formatKey = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const estadoCalClass = (estado) => {
+  switch ((estado || "").toUpperCase()) {
+    case "CONFIRMADO":
+      return "confirmado";
+    case "CANCELADO":
+      return "cancelado";
+    default:
+      return "pendiente";
+  }
+};
 
 const Buscador = ({
   label,
@@ -38,21 +83,16 @@ const Buscador = ({
   );
 
   useEffect(() => {
-    if (labelExterno !== undefined) {
-      setSelectedLabel(labelExterno);
-    }
+    if (labelExterno !== undefined) setSelectedLabel(labelExterno);
   }, [labelExterno]);
 
   useEffect(() => {
     if (!labelExterno && value && options.length > 0) {
       const encontrado = options.find((o) => (o.id || o.value) === value);
-      if (encontrado) {
+      if (encontrado)
         setSelectedLabel(`${encontrado.nombre} ${encontrado.apellido}`);
-      }
     }
-    if (!value) {
-      setSelectedLabel("");
-    }
+    if (!value) setSelectedLabel("");
   }, [value, options]);
 
   useEffect(() => {
@@ -160,15 +200,12 @@ const FileUpload = ({
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = () => setIsDragging(false);
-
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     addFiles(Array.from(e.dataTransfer.files));
   };
-
   const handleFileSelect = (e) => addFiles(Array.from(e.target.files));
 
   const addFiles = (newFiles) => {
@@ -178,13 +215,11 @@ const FileUpload = ({
       progress: 0,
       uploading: true,
     }));
-
     setFiles((prev) => {
       const next = [...prev, ...filesWithProgress];
       onFilesChange && onFilesChange(next.map((f) => f.file));
       return next;
     });
-
     filesWithProgress.forEach((fileObj) => simulateUpload(fileObj.id));
   };
 
@@ -357,11 +392,7 @@ const FORM_VACIO = {
   importetotal: 0,
 };
 
-const LABELS_VACIOS = {
-  paciente: "",
-  doctor: "",
-  descuentodoctor: "",
-};
+const LABELS_VACIOS = { paciente: "", doctor: "", descuentodoctor: "" };
 
 const Turnos = () => {
   const userData = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
@@ -385,6 +416,20 @@ const Turnos = () => {
   const [descripcionEliminar, setDescripcionEliminar] = useState("");
   const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
   const [labels, setLabels] = useState(LABELS_VACIOS);
+
+  const [vista, setVista] = useState(
+    () => localStorage.getItem("turnos_vista") || "lista",
+  );
+
+  const cambiarVista = (v) => {
+    localStorage.setItem("turnos_vista", v);
+    setVista(v);
+  };
+
+  const hoy = new Date();
+  const [calMes, setCalMes] = useState(hoy.getMonth());
+  const [calAnio, setCalAnio] = useState(hoy.getFullYear());
+  const [diaSeleccionado, setDiaSeleccionado] = useState(null);
 
   const handleChangeTurno = (e) => {
     setTurnoForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -493,9 +538,7 @@ const Turnos = () => {
         `?idTurno=${idTurno}`,
         null,
       );
-      if (response.status === 200) {
-        setImagenesExistentes(response?.data || []);
-      }
+      if (response.status === 200) setImagenesExistentes(response?.data || []);
     } catch (error) {
       addToast({
         type: "error",
@@ -523,7 +566,6 @@ const Turnos = () => {
         null,
       );
       if (response.status === 200) {
-        console.log(response.data);
         const t = response.data;
         setTurnoForm({
           id: t.id,
@@ -570,16 +612,11 @@ const Turnos = () => {
   const eliminarImagenExistente = async (idImagen) => {
     try {
       cargarLoader();
-
       const response = await fetch(`${eliminarImagenTurno}?id=${idImagen}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${userData?.token || ""}`,
-        },
+        headers: { Authorization: `Bearer ${userData?.token || ""}` },
       });
-
       const data = await response.json();
-
       if (response.ok && data.status === 200) {
         await getImagenesTurno(turnoForm.id);
         addToast({
@@ -607,8 +644,10 @@ const Turnos = () => {
       ocultarLoader();
     }
   };
+
   const postTurno = async () => {
     clearErrors();
+    if (!validate()) return;
     if (!turnoForm.paciente) {
       addToast({
         type: "error",
@@ -627,19 +666,15 @@ const Turnos = () => {
       });
       return;
     }
-
     try {
       cargarLoader();
-
       const payload = {
         ...turnoForm,
         porcentajedescuento: Number(turnoForm.porcentajedescuento) || 0,
         importetotal: Number(turnoForm.importetotal) || 0,
       };
-
       const formData = new FormData();
       formData.append("turnos", JSON.stringify(payload));
-
       if (archivos.length > 0) {
         archivos.forEach((file) => formData.append("imagenes", file));
       } else {
@@ -649,17 +684,13 @@ const Turnos = () => {
           "empty",
         );
       }
-
       const url = modo === "INS" ? grabarTurnos : editarTurnos;
-
       const response = await fetch(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${userData?.token || ""}` },
         body: formData,
       });
-
       const data = await response.json();
-
       if (response.ok && data.status === 200) {
         addToast({
           type: "success",
@@ -693,19 +724,14 @@ const Turnos = () => {
   const eliminarTurnoFn = async () => {
     try {
       cargarLoader();
-
       const response = await fetch(
         `${eliminarTurnos}?id=${turnoAEliminar?.id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${userData?.token || ""}`,
-          },
+          headers: { Authorization: `Bearer ${userData?.token || ""}` },
         },
       );
-
       const data = await response.json();
-
       if (response.ok && data.status === 200) {
         addToast({
           type: "success",
@@ -735,6 +761,13 @@ const Turnos = () => {
       ocultarLoader();
     }
   };
+
+  const abrirEliminar = (turno) => {
+    setTurnoAEliminar(turno);
+    setDescripcionEliminar(`Turno de ${turno.paciente} - ${turno.fecha}`);
+    setVisible(true);
+  };
+
   const getEstadoClass = (estado) => {
     switch (estado?.toUpperCase()) {
       case "CONFIRMADO":
@@ -801,13 +834,8 @@ const Turnos = () => {
 
     const handleAction = (action) => {
       setActiveTooltip(null);
-      if (action === "Editar") {
-        abrirEditar(turno);
-      } else if (action === "Eliminar") {
-        setTurnoAEliminar(turno);
-        setDescripcionEliminar(`Turno de ${turno.paciente} - ${turno.fecha}`);
-        setVisible(true);
-      }
+      if (action === "Editar") abrirEditar(turno);
+      else if (action === "Eliminar") abrirEliminar(turno);
     };
 
     return (
@@ -855,26 +883,83 @@ const Turnos = () => {
   }, []);
 
   const turnosFiltrados = (turnos || []).filter((t) => {
-    const busqueda = search.toLowerCase();
+    const b = search.toLowerCase();
     return (
       String(t.paciente || "")
         .toLowerCase()
-        .includes(busqueda) ||
+        .includes(b) ||
       String(t.doctor || "")
         .toLowerCase()
-        .includes(busqueda) ||
+        .includes(b) ||
       String(t.tratamiento || "")
         .toLowerCase()
-        .includes(busqueda) ||
+        .includes(b) ||
       String(t.estado || "")
         .toLowerCase()
-        .includes(busqueda)
+        .includes(b)
     );
   });
 
   const totalPaginas = Math.ceil(turnosFiltrados.length / filas) || 1;
   const inicio = pagina * filas;
   const turnosPaginados = turnosFiltrados.slice(inicio, inicio + filas);
+
+  const turnosPorDia = useMemo(() => {
+    const mapa = {};
+    turnos.forEach((t) => {
+      const key = t.fecha;
+      if (!mapa[key]) mapa[key] = [];
+      mapa[key].push(t);
+    });
+    Object.values(mapa).forEach((arr) =>
+      arr.sort((a, b) => (a.hora || "").localeCompare(b.hora || "")),
+    );
+    return mapa;
+  }, [turnos]);
+
+  const calCeldas = useMemo(() => {
+    const primerDia = new Date(calAnio, calMes, 1);
+    const diasEnMes = new Date(calAnio, calMes + 1, 0).getDate();
+    const offset = primerDia.getDay();
+    const total = Math.ceil((offset + diasEnMes) / 7) * 7;
+    return Array.from({ length: total }, (_, i) => {
+      const dia = i - offset + 1;
+      if (dia < 1 || dia > diasEnMes) return null;
+      return formatKey(new Date(calAnio, calMes, dia));
+    });
+  }, [calMes, calAnio]);
+
+  const navCalMes = (delta) => {
+    let m = calMes + delta;
+    let a = calAnio;
+    if (m < 0) {
+      m = 11;
+      a--;
+    }
+    if (m > 11) {
+      m = 0;
+      a++;
+    }
+    setCalMes(m);
+    setCalAnio(a);
+  };
+
+  const turnosDrawer = diaSeleccionado
+    ? turnosPorDia[diaSeleccionado] || []
+    : [];
+
+  const formatFechaDrawer = (key) => {
+    const d = parseLocalDate(key);
+    if (!d) return key;
+    return `${DIAS_LARGO[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`;
+  };
+
+  const abrirNuevoCon = (fecha) => {
+    setModo("INS");
+    resetForm();
+    setTurnoForm((prev) => ({ ...prev, fecha }));
+    setOpenModal(true);
+  };
 
   return (
     <>
@@ -894,18 +979,37 @@ const Turnos = () => {
               Gestiona los turnos y citas de tus pacientes
             </p>
           </div>
-          <div className="mock-papers__search">
-            <input
-              type="text"
-              className="input-field input-field--search"
-              placeholder="Buscar por paciente o médico..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPagina(0);
-              }}
-            />
+
+          <div className="view-toggle">
+            <button
+              className={`view-toggle__btn ${vista === "lista" ? "active" : ""}`}
+              onClick={() => cambiarVista("lista")}
+            >
+              <i className="fas fa-list" /> Lista
+            </button>
+            <button
+              className={`view-toggle__btn ${vista === "calendario" ? "active" : ""}`}
+              onClick={() => cambiarVista("calendario")}
+            >
+              <i className="fas fa-calendar-alt" /> Calendario
+            </button>
           </div>
+
+          {vista === "lista" && (
+            <div className="mock-papers__search">
+              <input
+                type="text"
+                className="input-field input-field--search"
+                placeholder="Buscar por paciente o médico..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPagina(0);
+                }}
+              />
+            </div>
+          )}
+
           <button
             className="mock-papers__upload-btn"
             onClick={() => {
@@ -918,78 +1022,280 @@ const Turnos = () => {
           </button>
         </div>
 
-        <div className="mock-papers__table-card">
-          <div className="mock-papers__table-wrapper" ref={tableWrapperRef}>
-            <table className="mock-papers__table">
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Id turno</th>
-                  <th>Paciente</th>
-                  <th>Médico</th>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Tratamiento</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {turnosPaginados.length > 0 ? (
-                  turnosPaginados.map((turno, index) => (
-                    <tr key={turno.id} ref={index === 0 ? rowRef : null}>
-                      <td>{String(inicio + index + 1).padStart(2, "0")}</td>
-                      <td>{turno.id}</td>
-                      <td>{turno.paciente}</td>
-                      <td>{turno.doctor}</td>
-                      <td>{turno.fecha}</td>
-                      <td>{turno.hora}</td>
-                      <td>{turno.tratamiento}</td>
-                      <td>
-                        <span
-                          className={`turno-estado ${getEstadoClass(turno.estado)}`}
-                        >
-                          {turno.estado}
-                        </span>
-                      </td>
-                      <td>
-                        <TooltipActions turno={turno} />
+        {vista === "lista" && (
+          <div className="mock-papers__table-card">
+            <div className="mock-papers__table-wrapper" ref={tableWrapperRef}>
+              <table className="mock-papers__table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Id turno</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Tratamiento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {turnosPaginados.length > 0 ? (
+                    turnosPaginados.map((turno, index) => (
+                      <tr key={turno.id} ref={index === 0 ? rowRef : null}>
+                        <td>{String(inicio + index + 1).padStart(2, "0")}</td>
+                        <td>{turno.id}</td>
+                        <td>{turno.paciente}</td>
+                        <td>{turno.doctor}</td>
+                        <td>{turno.fecha}</td>
+                        <td>{turno.hora}</td>
+                        <td>{turno.tratamiento}</td>
+                        <td>
+                          <span
+                            className={`turno-estado ${getEstadoClass(turno.estado)}`}
+                          >
+                            {turno.estado}
+                          </span>
+                        </td>
+                        <td>
+                          <TooltipActions turno={turno} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td className="busquedaSinresultado" colSpan={9}>
+                        <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
+                        Sin Datos
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td className="busquedaSinresultado" colSpan={8}>
-                      <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
-                      Sin Datos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="mock-papers__pagination">
+              <button
+                className="mock-papers__arrow-btn"
+                disabled={pagina === 0}
+                onClick={() => setPagina((p) => Math.max(p - 1, 0))}
+              >
+                ←
+              </button>
+              <span className="mock-papers__page-btn">{pagina + 1}</span>/
+              <span className="mock-papers__page-btn">{totalPaginas}</span>
+              <button
+                className="mock-papers__arrow-btn"
+                disabled={pagina + 1 >= totalPaginas}
+                onClick={() =>
+                  setPagina((p) => Math.min(p + 1, totalPaginas - 1))
+                }
+              >
+                →
+              </button>
+            </div>
           </div>
-          <div className="mock-papers__pagination">
-            <button
-              className="mock-papers__arrow-btn"
-              disabled={pagina === 0}
-              onClick={() => setPagina((p) => Math.max(p - 1, 0))}
-            >
-              ←
-            </button>
-            <span className="mock-papers__page-btn">{pagina + 1}</span>/
-            <span className="mock-papers__page-btn">{totalPaginas}</span>
-            <button
-              className="mock-papers__arrow-btn"
-              disabled={pagina + 1 >= totalPaginas}
-              onClick={() =>
-                setPagina((p) => Math.min(p + 1, totalPaginas - 1))
-              }
-            >
-              →
-            </button>
+        )}
+
+        {vista === "calendario" && (
+          <div className="cal-wrapper">
+            <div className="cal-nav">
+              <h2 className="cal-nav__title">
+                {MESES[calMes]} <span>{calAnio}</span>
+              </h2>
+              <div className="cal-nav__right">
+                <div className="cal-legend">
+                  <div className="cal-legend__item">
+                    <div className="cal-legend__dot cal-legend__dot--pendiente" />
+                    Pendiente
+                  </div>
+                  <div className="cal-legend__item">
+                    <div className="cal-legend__dot cal-legend__dot--confirmado" />
+                    Confirmado
+                  </div>
+                  <div className="cal-legend__item">
+                    <div className="cal-legend__dot cal-legend__dot--cancelado" />
+                    Cancelado
+                  </div>
+                </div>
+                <div className="cal-nav__controls">
+                  <button
+                    className="cal-nav__today"
+                    onClick={() => {
+                      setCalMes(hoy.getMonth());
+                      setCalAnio(hoy.getFullYear());
+                    }}
+                  >
+                    Hoy
+                  </button>
+                  <button
+                    className="cal-nav__btn"
+                    onClick={() => navCalMes(-1)}
+                  >
+                    <i className="fas fa-chevron-left" />
+                  </button>
+                  <button className="cal-nav__btn" onClick={() => navCalMes(1)}>
+                    <i className="fas fa-chevron-right" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="cal-grid">
+              {DIAS_CORTO.map((d) => (
+                <div key={d} className="cal-weekday">
+                  {d}
+                </div>
+              ))}
+              {calCeldas.map((key, idx) => {
+                if (!key)
+                  return (
+                    <div key={`v-${idx}`} className="cal-day cal-day--vacio" />
+                  );
+                const d = parseLocalDate(key);
+                const esHoy = formatKey(hoy) === key;
+                const lista = turnosPorDia[key] || [];
+                const MAX = 2;
+                return (
+                  <div
+                    key={key}
+                    className={["cal-day", esHoy ? "cal-day--hoy" : ""]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => setDiaSeleccionado(key)}
+                  >
+                    <div className="cal-day__num">{d.getDate()}</div>
+                    <div className="cal-day__chips">
+                      {lista.slice(0, MAX).map((t) => (
+                        <div
+                          key={t.id}
+                          className={`cal-chip cal-chip--${estadoCalClass(t.estado)}`}
+                          title={`${t.hora} — ${t.paciente}`}
+                        >
+                          <div className="cal-chip__dot" />
+                          <span className="cal-chip__hora">{t.hora}</span>
+                          <span className="cal-chip__nombre">{t.paciente}</span>
+                        </div>
+                      ))}
+                      {lista.length > MAX && (
+                        <div className="cal-day__mas">
+                          +{lista.length - MAX} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {diaSeleccionado && (
+        <>
+          <div
+            className="cal-drawer-overlay"
+            onClick={() => setDiaSeleccionado(null)}
+          />
+          <div className="cal-drawer">
+            <div className="cal-drawer__header">
+              <div>
+                <div className="cal-drawer__titulo">Turnos del día</div>
+                <div className="cal-drawer__fecha-txt">
+                  {formatFechaDrawer(diaSeleccionado)}
+                </div>
+              </div>
+              <button
+                className="cal-drawer__close"
+                onClick={() => setDiaSeleccionado(null)}
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
+            <div className="cal-drawer__body">
+              {turnosDrawer.length === 0 ? (
+                <div className="cal-drawer__vacio">
+                  <i className="fas fa-calendar-times" />
+                  Sin turnos programados
+                </div>
+              ) : (
+                turnosDrawer.map((t) => (
+                  <div key={t.id} className="cal-card">
+                    <div className="cal-card__top">
+                      <span className="cal-card__hora">{t.hora}</span>
+                      <span
+                        className={`cal-card__badge cal-card__badge--${estadoCalClass(t.estado)}`}
+                      >
+                        {t.estado}
+                      </span>
+                    </div>
+                    <div className="cal-card__row">
+                      <i className="fas fa-user" />
+                      <div>
+                        <span className="cal-card__lbl">Paciente</span>
+                        {t.paciente}
+                      </div>
+                    </div>
+                    <div className="cal-card__row">
+                      <i className="fas fa-stethoscope" />
+                      <div>
+                        <span className="cal-card__lbl">Médico</span>
+                        {t.doctor}
+                      </div>
+                    </div>
+                    {t.tratamiento && (
+                      <div className="cal-card__row">
+                        <i className="fas fa-tooth" />
+                        <div>
+                          <span className="cal-card__lbl">Tratamiento</span>
+                          {t.tratamiento}
+                        </div>
+                      </div>
+                    )}
+                    {t.observacion && (
+                      <div className="cal-card__row">
+                        <i className="fas fa-sticky-note" />
+                        <div>
+                          <span className="cal-card__lbl">Observación</span>
+                          {t.observacion}
+                        </div>
+                      </div>
+                    )}
+                    <div className="cal-card__actions">
+                      <button
+                        className="cal-card__btn"
+                        onClick={() => {
+                          setDiaSeleccionado(null);
+                          abrirEditar(t);
+                        }}
+                      >
+                        <i className="fas fa-edit" /> Editar
+                      </button>
+                      <button
+                        className="cal-card__btn cal-card__btn--del"
+                        onClick={() => {
+                          setDiaSeleccionado(null);
+                          abrirEliminar(t);
+                        }}
+                      >
+                        <i className="fas fa-trash-alt" /> Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+              <button
+                className="cal-drawer__add"
+                onClick={() => {
+                  setDiaSeleccionado(null);
+                  abrirNuevoCon(diaSeleccionado);
+                }}
+              >
+                <i className="fas fa-plus" /> Nuevo turno en este día
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <div
         className="modal-overlay"

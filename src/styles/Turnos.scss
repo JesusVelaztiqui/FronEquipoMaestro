@@ -1,0 +1,583 @@
+/* ============================================================
+   calendario-turnos.css
+   Importar en Turnos.jsx:  import "./calendario-turnos.css";
+   ============================================================ */
+
+/* ── Toggle de vista ────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-primario);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.view-toggle__btn {
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-gris);
+  transition:
+    background 0.15s,
+    color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle__btn.active {
+  background: var(--color-blanco);
+  color: var(--color-negro);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Wrapper principal ──────────────────────────────────── */
+.cal-wrapper {
+  background: var(--color-blanco);
+  border-radius: 12px;
+  border: 1px solid var(--color-primario);
+  overflow: hidden;
+}
+
+/* ── Navegación mes ─────────────────────────────────────── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-fondo);
+}
+
+.cal-nav__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-negro);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.cal-nav__title span {
+  color: var(--color-secundario);
+  font-weight: 400;
+}
+
+.cal-nav__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cal-nav__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal-nav__btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--color-primario);
+  background: var(--color-blanco);
+  color: var(--color-secundario);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.cal-nav__btn:hover {
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  border-color: var(--color-primario);
+}
+
+.cal-nav__today {
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--color-primario);
+  background: var(--color-blanco);
+  color: var(--color-secundario);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.12s;
+}
+
+.cal-nav__today:hover {
+  background: var(--color-fondo);
+}
+
+/* ── Leyenda ─────────────────────────────────────────────── */
+.cal-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.cal-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-gris);
+}
+
+.cal-legend__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-legend__dot--pendiente {
+  background: #c9a84c;
+}
+.cal-legend__dot--confirmado {
+  background: var(--color-secundario);
+}
+.cal-legend__dot--cancelado {
+  background: #b05050;
+}
+
+/* ── Grilla ──────────────────────────────────────────────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 16px 16px;
+  gap: 4px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-gris);
+  padding: 12px 0 8px;
+}
+
+/* ── Celda día ───────────────────────────────────────────── */
+.cal-day {
+  min-height: 80px;
+  border-radius: 8px;
+  padding: 6px;
+  background: var(--color-fondo);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
+}
+
+.cal-day:hover {
+  border-color: var(--color-primario);
+  background: var(--color-blanco);
+}
+
+.cal-day--vacio {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cal-day--hoy {
+  background: var(--color-blanco);
+  border-color: var(--color-secundario) !important;
+}
+
+.cal-day--hoy .cal-day__num {
+  background: var(--color-secundario);
+  color: var(--color-blanco);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-day__num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-negro);
+  margin-bottom: 4px;
+  display: inline-block;
+  line-height: 22px;
+  padding: 0 2px;
+}
+
+.cal-day__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Chips ───────────────────────────────────────────────── */
+.cal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 5px;
+  border-radius: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cal-chip__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cal-chip__hora {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.cal-chip__nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-chip--pendiente {
+  background: #fef9ec;
+  color: #7a5a00;
+}
+.cal-chip--pendiente .cal-chip__dot {
+  background: #c9a84c;
+}
+.cal-chip--confirmado {
+  background: #eef3f2;
+  color: var(--color-secundario);
+}
+.cal-chip--confirmado .cal-chip__dot {
+  background: var(--color-secundario);
+}
+.cal-chip--cancelado {
+  background: #fdf0f0;
+  color: #7a2a2a;
+}
+.cal-chip--cancelado .cal-chip__dot {
+  background: #b05050;
+}
+
+.cal-day__mas {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-gris);
+  padding-left: 4px;
+  margin-top: 1px;
+}
+
+/* ── Drawer overlay ─────────────────────────────────────── */
+.cal-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(29, 29, 27, 0.25);
+  z-index: 300;
+  animation: calFadeIn 0.15s ease;
+}
+
+@keyframes calFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Drawer panel ───────────────────────────────────────── */
+.cal-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 360px;
+  max-width: 95vw;
+  background: var(--color-blanco);
+  border-left: 1px solid var(--color-primario);
+  z-index: 301;
+  display: flex;
+  flex-direction: column;
+  animation: calSlideIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes calSlideIn {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.cal-drawer__header {
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--color-fondo);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cal-drawer__titulo {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-gris);
+  margin-bottom: 4px;
+}
+
+.cal-drawer__fecha-txt {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-negro);
+  letter-spacing: -0.3px;
+}
+
+.cal-drawer__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-primario);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gris);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.cal-drawer__close:hover {
+  background: var(--color-fondo);
+  color: var(--color-negro);
+}
+
+.cal-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.cal-drawer__body::-webkit-scrollbar {
+  width: 3px;
+}
+.cal-drawer__body::-webkit-scrollbar-thumb {
+  background: var(--color-primario);
+  border-radius: 3px;
+}
+
+.cal-drawer__vacio {
+  text-align: center;
+  color: var(--color-gris);
+  font-size: 13px;
+  padding: 36px 0;
+}
+
+.cal-drawer__vacio i {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+
+/* ── Tarjeta turno en drawer ────────────────────────────── */
+.cal-card {
+  border: 1px solid var(--color-primario);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: var(--color-fondo);
+  transition: box-shadow 0.14s;
+}
+
+.cal-card:hover {
+  box-shadow: 0 2px 12px rgba(95, 113, 110, 0.12);
+}
+
+.cal-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cal-card__hora {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-negro);
+  letter-spacing: -0.5px;
+}
+
+.cal-card__badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.cal-card__badge--pendiente {
+  background: #fef9ec;
+  color: #7a5a00;
+}
+.cal-card__badge--confirmado {
+  background: #eef3f2;
+  color: var(--color-secundario);
+}
+.cal-card__badge--cancelado {
+  background: #fdf0f0;
+  color: #7a2a2a;
+}
+
+.cal-card__row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--color-negro);
+  margin-bottom: 5px;
+}
+
+.cal-card__row i {
+  color: var(--color-secundario);
+  width: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 11px;
+}
+
+.cal-card__lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gris);
+  display: block;
+  margin-bottom: 1px;
+}
+
+.cal-card__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-primario);
+}
+
+.cal-card__btn {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--color-primario);
+  background: var(--color-blanco);
+  cursor: pointer;
+  color: var(--color-secundario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.cal-card__btn:hover {
+  background: var(--color-secundario);
+  border-color: var(--color-secundario);
+  color: var(--color-blanco);
+}
+
+.cal-card__btn--del:hover {
+  background: #b05050;
+  border-color: #b05050;
+  color: var(--color-blanco);
+}
+
+/* ── Botón agregar en drawer ────────────────────────────── */
+.cal-drawer__add {
+  width: 100%;
+  margin-top: 2px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--color-primario);
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gris);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition:
+    border-color 0.13s,
+    color 0.13s,
+    background 0.13s;
+}
+
+.cal-drawer__add:hover {
+  border-color: var(--color-secundario);
+  color: var(--color-secundario);
+  background: var(--color-fondo);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .cal-day {
+    min-height: 54px;
+    padding: 4px;
+  }
+  .cal-chip__hora,
+  .cal-chip__nombre {
+    display: none;
+  }
+  .cal-chip {
+    padding: 2px 3px;
+  }
+  .cal-drawer {
+    width: 100%;
+  }
+  .cal-legend {
+    display: none;
+  }
+  .cal-nav {
+    padding: 14px 14px 10px;
+  }
+  .cal-grid {
+    padding: 0 10px 10px;
+    gap: 2px;
+  }
+}
