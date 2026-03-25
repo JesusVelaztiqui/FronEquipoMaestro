@@ -1,0 +1,299 @@
+.recetario-page {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+
+  @media (max-width: 968px) {
+    flex-direction: column;
+  }
+}
+
+// ─── FORM LEFT PANEL ─────────────────────────────────────────────────────────
+
+.recetario-form {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 968px) {
+    width: 100%;
+  }
+
+  &__card {
+    background-color: var(--color-blanco);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__textarea {
+    min-height: 220px;
+    max-height: 220px;
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: 13px 24px;
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-family: var(--font-family);
+
+    &:hover {
+      background-color: var(--color-secundario);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// ─── PREVIEW RIGHT PANEL ─────────────────────────────────────────────────────
+
+.recetario-preview {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__label {
+    font-size: 13px;
+    color: var(--color-gris);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    i {
+      color: var(--color-primario);
+    }
+  }
+
+  &__badge {
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  &__scroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding-bottom: 24px;
+  }
+}
+
+// ─── A4 PAPER ─────────────────────────────────────────────────────────────────
+
+.recetario-paper {
+  width: 540px;
+  min-height: 764px;
+  background: #ffffff;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    0 10px 30px rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  font-family: "DejaVu Sans", "Arial", sans-serif;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    min-height: auto;
+  }
+
+  &__header {
+    padding: 18px 36px 12px;
+    flex-shrink: 0;
+  }
+
+  &__logo-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  &__logo-placeholder {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+  }
+
+  &__brand {
+    text-align: center;
+    color: #3a6b5c;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 6px 0 3px;
+    letter-spacing: 0.3px;
+  }
+
+  &__brand-sub {
+    text-align: center;
+    color: #666666;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: #cccccc;
+    margin-bottom: 10px;
+  }
+
+  &__patient-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  &__field {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+
+    &--wide {
+      flex: 1;
+    }
+
+    &--narrow {
+      flex-shrink: 0;
+      width: 130px;
+    }
+  }
+
+  &__field-label {
+    font-size: 10px;
+    color: #333333;
+    white-space: nowrap;
+    padding-bottom: 3px;
+    flex-shrink: 0;
+  }
+
+  &__field-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__field-text {
+    display: block;
+    font-size: 10px;
+    color: #333333;
+    padding-bottom: 2px;
+    min-height: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__field-line {
+    height: 1px;
+    background-color: #555555;
+    width: 100%;
+  }
+
+  &__section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #333333;
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+  &__content {
+    flex: 1;
+    padding: 10px 36px 16px;
+    min-height: 498px;
+  }
+
+  &__line {
+    font-size: 11px;
+    color: #222222;
+    line-height: 1.65;
+    margin: 0 0 1px;
+    word-break: break-word;
+  }
+
+  &__placeholder {
+    font-size: 11px;
+    color: #cccccc;
+    font-style: italic;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  &__page-num {
+    text-align: right;
+    padding: 0 36px 6px;
+    font-size: 9px;
+    color: #aaaaaa;
+    flex-shrink: 0;
+  }
+
+  &__footer {
+    background-color: #3a6b5c;
+    padding: 9px 36px;
+    flex-shrink: 0;
+    border-radius: 0 0 2px 2px;
+
+    p {
+      text-align: center;
+      color: #ffffff;
+      font-size: 9px;
+      line-height: 1.7;
+      margin: 0;
+    }
+  }
+}
+
+// ─── HIDDEN MEASURE ──────────────────────────────────────────────────────────
+
+.recetario-measure {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: 468px;
+  font-family: "DejaVu Sans", "Arial", sans-serif;
+  font-size: 11px;
+  color: #222222;
+  line-height: 1.65;
+  word-break: break-word;
+  white-space: pre-wrap;
+  visibility: hidden;
+  pointer-events: none;
+}

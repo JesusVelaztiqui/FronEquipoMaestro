@@ -10,6 +10,8 @@ import Doctores from "../pages/Doctores";
 import Auditoria from "../pages/Auditoria";
 import Productos from "../pages/Productos";
 import Imagenes from "../pages/Imagenes";
+import Caja from "../pages/Caja";
+import Recetario from "../pages/Recetario";
 
 const AppRoutes = () => {
   return (
@@ -65,6 +67,26 @@ const AppRoutes = () => {
             <PrivateRoute>
               <Layout>
                 <Productos />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/caja"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Caja />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/recetario"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Recetario />
               </Layout>
             </PrivateRoute>
           }

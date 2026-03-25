@@ -72,10 +72,27 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
           <i className="fas fa-boxes-stacked" />
           <span>Productos</span>
         </div>
-        <div className={`menu-item ${isActive("/caja") ? "active" : ""}`}>
+        <div
+          className={`menu-item ${isActive("/caja") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/caja");
+            setMenuOpen(false);
+          }}
+        >
           <i className="fas fa-hand-holding-usd"></i>
           <span>Caja</span>
         </div>
+        <div
+          className={`menu-item ${isActive("/recetario") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/recetario");
+            setMenuOpen(false);
+          }}
+        >
+          <i className="fas fa-notes-medical" />
+          <span>Recetario</span>
+        </div>
+
         <div
           className={`menu-item ${isActive("/presupuesto") ? "active" : ""}`}
         >

@@ -20,3 +20,15 @@ export const listarImagenesTurno = `${baseurl}turnos/imagenes`;
 export const eliminarImagenTurno = `${baseurl}turnos/imagenes`;
 
 export const listarAuditoria = `${baseurl}auditoria/listar`;
+
+export const listarCaja = `${baseurl}caja/listar`;
+export const grabarCaja = `${baseurl}caja/grabar`;
+export const editarCaja = `${baseurl}caja/editar`;
+export const eliminarCaja = `${baseurl}caja/eliminar`;
+
+export const generarRecetario = `${baseurl}report/recetario`;
+
+export const listarProductos = `${baseurl}productos/listar`;
+export const grabarProductos = `${baseurl}productos/grabar`;
+export const editarProductos = `${baseurl}productos/editar`;
+export const eliminarProductos = `${baseurl}productos/eliminar`;
