@@ -100,12 +100,78 @@
     font-weight: 700;
   }
 
-  &__scroll {
+}
+
+// ─── SLIDER ───────────────────────────────────────────────────────────────────
+
+.recetario-slider {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  &__stage {
+    flex: 1;
+    min-width: 0;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+  }
+
+  &__arrow {
+    flex-shrink: 0;
+    margin-top: 340px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    background-color: var(--color-blanco);
+    color: var(--color-secundario);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
     align-items: center;
-    gap: 28px;
-    padding-bottom: 24px;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primario);
+      border-color: var(--color-primario);
+      color: var(--color-blanco);
+      transform: scale(1.08);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
+  &__dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background-color: #d1d5db;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+
+    &--active {
+      background-color: var(--color-primario);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    &:hover:not(&--active) {
+      background-color: var(--color-gris);
+    }
   }
 }
 
@@ -238,14 +304,14 @@
   &__content {
     flex: 1;
     padding: 10px 36px 16px;
-    min-height: 498px;
+    min-height: 600px;
   }
 
   &__line {
     font-size: 11px;
     color: #222222;
-    line-height: 1.65;
-    margin: 0 0 1px;
+    line-height: 1.2;
+    margin: 0;
     word-break: break-word;
   }
 
@@ -291,7 +357,7 @@
   font-family: "DejaVu Sans", "Arial", sans-serif;
   font-size: 11px;
   color: #222222;
-  line-height: 1.65;
+  line-height: 1.2;
   word-break: break-word;
   white-space: pre-wrap;
   visibility: hidden;

@@ -5,7 +5,7 @@ import { addToast } from "../components/Tooltip";
 import { generarRecetario, listarPacientes } from "../services/urls";
 import { useNavigate } from "react-router-dom";
 
-const PAGE_CONTENT_HEIGHT = 498;
+const PAGE_CONTENT_HEIGHT = 600;
 
 const formatFecha = (dateStr) => {
   if (!dateStr) return "";
@@ -104,6 +104,7 @@ const Recetario = () => {
   const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
   const [indicaciones, setIndicaciones] = useState("");
   const [pages, setPages] = useState([""]);
+  const [paginaActual, setPaginaActual] = useState(0);
   const [listPacientes, setListPacientes] = useState([]);
 
   const measureRef = useRef(null);
@@ -151,6 +152,7 @@ const Recetario = () => {
     }
     if (current.trim()) pageTexts.push(current.trimEnd());
     setPages(pageTexts.length > 0 ? pageTexts : [""]);
+    setPaginaActual(0);
   }, [indicaciones]);
 
   const handleGenerar = async () => {
@@ -283,11 +285,48 @@ const Recetario = () => {
             <span className="recetario-preview__badge">{pages.length} páginas</span>
           )}
         </div>
-        <div className="recetario-preview__scroll">
-          {pages.map((pageContent, i) => (
-            <PaperPage key={i} content={pageContent} pageNum={i + 1} totalPages={pages.length} />
-          ))}
+
+        <div className="recetario-slider">
+          {pages.length > 1 && (
+            <button
+              className="recetario-slider__arrow recetario-slider__arrow--left"
+              onClick={() => setPaginaActual((p) => Math.max(p - 1, 0))}
+              disabled={paginaActual === 0}
+            >
+              <i className="fas fa-chevron-left"></i>
+            </button>
+          )}
+
+          <div className="recetario-slider__stage">
+            <PaperPage
+              content={pages[paginaActual] || ""}
+              pageNum={paginaActual + 1}
+              totalPages={pages.length}
+            />
+          </div>
+
+          {pages.length > 1 && (
+            <button
+              className="recetario-slider__arrow recetario-slider__arrow--right"
+              onClick={() => setPaginaActual((p) => Math.min(p + 1, pages.length - 1))}
+              disabled={paginaActual === pages.length - 1}
+            >
+              <i className="fas fa-chevron-right"></i>
+            </button>
+          )}
         </div>
+
+        {pages.length > 1 && (
+          <div className="recetario-slider__dots">
+            {pages.map((_, i) => (
+              <button
+                key={i}
+                className={`recetario-slider__dot ${i === paginaActual ? "recetario-slider__dot--active" : ""}`}
+                onClick={() => setPaginaActual(i)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div ref={measureRef} className="recetario-measure" aria-hidden="true"></div>
