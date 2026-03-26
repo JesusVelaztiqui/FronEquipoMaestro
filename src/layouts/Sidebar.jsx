@@ -117,6 +117,16 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
           <i className="fas fa-clipboard-check" />
           <span>Auditoria</span>
         </div>
+        <div
+          className={`menu-item ${isActive("/micuenta") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/micuenta");
+            setMenuOpen(false);
+          }}
+        >
+          <i class="fas fa-user"></i>
+          <span>Mi Cuenta</span>
+        </div>
 
         <div
           className="menu-item cerrarsesion"

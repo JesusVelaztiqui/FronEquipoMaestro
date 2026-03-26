@@ -256,6 +256,17 @@ const Doctores = () => {
           duration: 3000,
         });
         await getDoctores();
+        setDoctor({
+          id: 0,
+          nombre: "",
+          apellido: "",
+          fechanacimiento: "",
+          ruc: "",
+          celular: "",
+          mail: "",
+          direccion: "",
+          licencia: "",
+        });
       } else {
         addToast({
           type: "error",

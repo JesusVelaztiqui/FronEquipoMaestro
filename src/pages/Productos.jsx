@@ -1,38 +1,86 @@
 import { useState, useRef, useEffect } from "react";
+import { addToast } from "../components/Tooltip";
+import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
+import { sendData } from "../services/api";
+import {
+  editarProductos,
+  eliminarProductos,
+  grabarProductos,
+  listarProductos,
+} from "../services/urls";
+import { calcRows } from "../components/Formatos";
+import ModalDelete from "../components/ModalDelete";
+import { useNavigate } from "react-router-dom";
+import { NoEmpty } from "../components/NoEmpty";
 
 const Productos = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagina, setPagina] = useState(0);
   const [openModal, setOpenModal] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [listProductos, setListProductos] = useState([]);
+  const tableWrapperRef = useRef(null);
+  const rowRef = useRef(null);
+  const [modo, setModo] = useState("INS");
+  const [filas, setFilas] = useState(8);
+  const [search, setSearch] = useState("");
+  const [visible, setVisible] = useState(false);
+  const { validate, clearErrors } = NoEmpty();
+  const [tituloModal, setTituloModal] = useState("");
+  const [descripcionEliminar, setDescripcionEliminar] = useState("");
+  const navigate = useNavigate();
+  const [producto, setProducto] = useState({
+    codigo: "",
+    nombre: "",
+    marca: "",
+    cantidad: "",
+    precio: "",
+    lote: "",
+    vencimiento: "",
+    fabricacion: "",
+  });
 
-  const mockDoctors = [
-    {
-      id: 1,
-      name: "Juan Pérez",
-      specialty: "Cardiología",
-      phone: "0991 123 456",
-      license: "MED-12345",
-    },
-    {
-      id: 2,
-      name: "Ana Gómez",
-      specialty: "Pediatría",
-      phone: "0982 555 222",
-      license: "MED-67890",
-    },
-    {
-      id: 3,
-      name: "Carlos López",
-      specialty: "Dermatología",
-      phone: "0971 000 789",
-      license: "MED-11111",
-    },
-  ];
+  const getProductos = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(listarProductos, "GET", null, null);
+      if (response.status === 200) {
+        setListProductos(response?.data);
+        setTituloModal("");
+        setDescripcionEliminar("");
+        setVisible(false);
+        setActiveTooltip(null);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      navigate("/login");
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
 
-  const TooltipActions = ({ doctorId }) => {
+  const handleChangeProductos = (event) => {
+    setProducto((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const TooltipActions = ({ producto }) => {
     const tooltipRef = useRef(null);
     const triggerRef = useRef(null);
-    const isActive = activeTooltip === doctorId;
+    const isActive = activeTooltip === producto;
 
     useEffect(() => {
       if (isActive && tooltipRef.current && triggerRef.current) {
@@ -72,14 +120,9 @@ const Productos = () => {
         }
 
         left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
-
-        if (left < 20) {
-          left = 20;
-        }
-
-        if (left + tooltipRect.width > viewportWidth - 20) {
+        if (left < 20) left = 20;
+        if (left + tooltipRect.width > viewportWidth - 20)
           left = viewportWidth - tooltipRect.width - 20;
-        }
 
         tooltip.style.top = `${top}px`;
         tooltip.style.left = `${left}px`;
@@ -89,12 +132,21 @@ const Productos = () => {
 
     const handleToggle = (e) => {
       e.stopPropagation();
-      setActiveTooltip(isActive ? null : doctorId);
+      setActiveTooltip(isActive ? null : producto);
     };
 
     const handleAction = (action) => {
-      console.log(`${action} para doctor ID: ${doctorId}`);
-      setActiveTooltip(null);
+      if (action === "Eliminar") {
+        setTituloModal("Atención");
+        setDescripcionEliminar(producto?.codigo + " - " + producto?.nombre);
+        setVisible(true);
+        setActiveTooltip(null);
+        setProducto(producto);
+      } else if (action === "Editar") {
+        setActiveTooltip(null);
+        setProducto(producto);
+        setModo("UPD");
+      }
     };
 
     return (
@@ -136,25 +188,132 @@ const Productos = () => {
     );
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest(".tooltip-wrapper")) {
+  const postProductos = async () => {
+    clearErrors();
+    if (!validate()) return;
+    try {
+      cargarLoader();
+      const response = await sendData(
+        modo === "INS" ? grabarProductos : editarProductos,
+        "POST",
+        null,
+        producto,
+      );
+      if (response.status === 200) {
+        await getProductos();
+        addToast({
+          type: "success",
+          title: "Producto Grabado",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+        setOpenModal(false);
+        setTituloModal("");
+        setDescripcionEliminar("");
+        setVisible(false);
         setActiveTooltip(null);
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
       }
-    };
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
 
+  useEffect(() => {
+    if (tableWrapperRef.current && rowRef.current) {
+      setFilas(calcRows(tableWrapperRef.current, rowRef.current));
+    }
+  }, [listProductos]);
+
+  const eliminarProducto = async () => {
+    try {
+      cargarLoader();
+      const response = await sendData(
+        `${eliminarProductos}?codigo=${producto?.codigo}`,
+        "DELETE",
+        null,
+        null,
+      );
+      if (response.status === 200) {
+        addToast({
+          type: "success",
+          title: "Eliminado",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+        await getProductos();
+      } else {
+        addToast({
+          type: "error",
+          title: "Error",
+          message: response?.mensaje,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error,
+        duration: 3000,
+      });
+    } finally {
+      ocultarLoader();
+    }
+  };
+
+  useEffect(() => {
+    getProductos();
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".tooltip-wrapper")) setActiveTooltip(null);
+    };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const productosFiltrados = listProductos.filter((p) => {
+    const texto = search.toLowerCase();
+    return (
+      p.codigo?.toLowerCase().includes(texto) ||
+      p.nombre?.toLowerCase().includes(texto) ||
+      p.marca?.toLowerCase().includes(texto) ||
+      p.lote?.toLowerCase().includes(texto)
+    );
+  });
+
+  const totalPaginas = Math.ceil(productosFiltrados.length / filas);
+  const inicio = pagina * filas;
+  const fin = inicio + filas;
+  const productosPaginados = productosFiltrados.slice(inicio, fin);
+
   return (
     <>
+      <ModalDelete
+        visible={visible}
+        setVisible={setVisible}
+        titulo={tituloModal}
+        eliminar={descripcionEliminar}
+        funcion={eliminarProducto}
+      />
       <div className="mock-papers">
         <div className="mock-papers__header">
           <div>
             <h1 className="mock-papers__title">Productos</h1>
             <p className="mock-papers__subtitle">
-              Gestión y administración productos odontológicos
+              Gestión y administración de productos odontológicos
             </p>
           </div>
 
@@ -165,6 +324,11 @@ const Productos = () => {
                   type="text"
                   className="input-field input-field--search"
                   placeholder="Buscar..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPagina(0);
+                  }}
                 />
                 <svg
                   className="input-search__icon"
@@ -187,14 +351,27 @@ const Productos = () => {
 
           <button
             className="mock-papers__upload-btn"
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setModo("INS");
+              setProducto({
+                codigo: "",
+                nombre: "",
+                marca: "",
+                cantidad: "",
+                precio: "",
+                lote: "",
+                vencimiento: "",
+                fabricacion: "",
+              });
+              setOpenModal(true);
+            }}
           >
             NUEVO <i className="fas fa-plus" />
           </button>
         </div>
 
         <div className="mock-papers__table-card">
-          <div className="mock-papers__table-wrapper">
+          <div className="mock-papers__table-wrapper" ref={tableWrapperRef}>
             <table className="mock-papers__table">
               <thead>
                 <tr>
@@ -208,40 +385,62 @@ const Productos = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockDoctors.map((doc, index) => (
-                  <tr key={doc.id}>
-                    <td>{String(index + 1).padStart(2, "0")}</td>
-                    <td>{doc.name}</td>
-                    <td>{doc.specialty}</td>
-                    <td>{doc.phone}</td>
-                    <td>{doc.license}</td>
-                    <td>{doc.license}</td>
-                    <td>
-                      <TooltipActions doctorId={doc.id} />
+                {productosPaginados.length > 0 ? (
+                  productosPaginados.map((p, index) => (
+                    <tr key={p.codigo} ref={index === 0 ? rowRef : null}>
+                      <td>{String(inicio + index + 1).padStart(2, "0")}</td>
+                      <td>{p.codigo}</td>
+                      <td>{p.nombre}</td>
+                      <td>{p.marca}</td>
+                      <td>{p.cantidad}</td>
+                      <td>{p.precio}</td>
+                      <td>
+                        <TooltipActions producto={p} />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="busquedaSinresultado" colSpan={7}>
+                      <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
+                      Sin Datos
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="mock-papers__pagination">
-            <button className="mock-papers__arrow-btn">←</button>
-            <span className="mock-papers__page-btn">{11}</span>/
-            <span className="mock-papers__page-btn">{2}</span>
-            <button className="mock-papers__arrow-btn">→</button>
+            <button
+              className="mock-papers__arrow-btn"
+              disabled={pagina === 0}
+              onClick={() => setPagina((p) => Math.max(p - 1, 0))}
+            >
+              ←
+            </button>
+            <span className="mock-papers__page-btn">{pagina + 1}</span>/
+            <span className="mock-papers__page-btn">{totalPaginas}</span>
+            <button
+              className="mock-papers__arrow-btn"
+              disabled={pagina + 1 >= totalPaginas}
+              onClick={() =>
+                setPagina((p) => Math.min(p + 1, totalPaginas - 1))
+              }
+            >
+              →
+            </button>
           </div>
         </div>
       </div>
 
-      {/* MODAL */}
       <div
         className="modal-overlay"
         style={{ display: openModal ? "flex" : "none" }}
       >
         <div className="modal">
           <div className="modal-header">
-            <h2 className="modal-title">Registro de producto</h2>
+            <h2 className="modal-title">Registro de Producto</h2>
             <button className="modal-close" onClick={() => setOpenModal(false)}>
               &times;
             </button>
@@ -254,24 +453,38 @@ const Productos = () => {
                 <input
                   type="text"
                   className="input-field"
+                  name="codigo"
+                  value={producto?.codigo}
+                  onChange={handleChangeProductos}
+                  disabled={modo === "UPD"}
+                  noempty="true"
+                  validar="Ingrese el código"
                   placeholder="Escribe aquí..."
                 />
               </div>
-
               <div className="input-group">
                 <label className="input-label">Nombre</label>
                 <input
                   type="text"
                   className="input-field"
+                  name="nombre"
+                  value={producto?.nombre}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese el nombre"
                   placeholder="Escribe aquí..."
                 />
               </div>
-
               <div className="input-group">
                 <label className="input-label">Marca</label>
                 <input
                   type="text"
                   className="input-field"
+                  name="marca"
+                  value={producto?.marca}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese la marca"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -280,34 +493,67 @@ const Productos = () => {
               <div className="input-group">
                 <label className="input-label">Precio</label>
                 <input
-                  type="text"
+                  type="number"
                   className="input-field"
+                  name="precio"
+                  value={producto?.precio}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese el precio"
                   placeholder="Escribe aquí..."
                 />
               </div>
-
               <div className="input-group">
                 <label className="input-label">Cantidad</label>
                 <input
-                  type="text"
+                  type="number"
                   className="input-field"
+                  name="cantidad"
+                  value={producto?.cantidad}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese la cantidad"
                   placeholder="Escribe aquí..."
                 />
               </div>
               <div className="input-group">
-                <label className="input-label">Vencimiento</label>
-                <input type="date" className="input-field" />
+                <label className="input-label">Lote</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  name="lote"
+                  value={producto?.lote}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese el lote"
+                  placeholder="Escribe aquí..."
+                />
               </div>
             </div>
-
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Descripción</label>
-                <textarea
-                  className="input-textarea"
-                  placeholder="Notas adicionales sobre el producto, indicaciones o advertencias"
-                  rows="3"
-                ></textarea>
+                <label className="input-label">Fecha Fabricación</label>
+                <input
+                  type="date"
+                  className="input-field"
+                  name="fabricacion"
+                  value={producto?.fabricacion}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese la fecha de fabricación"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Fecha Vencimiento</label>
+                <input
+                  type="date"
+                  className="input-field"
+                  name="vencimiento"
+                  value={producto?.vencimiento}
+                  onChange={handleChangeProductos}
+                  noempty="true"
+                  validar="Ingrese la fecha de vencimiento"
+                />
               </div>
             </div>
           </div>
@@ -316,7 +562,9 @@ const Productos = () => {
             <button className="btn-cancel" onClick={() => setOpenModal(false)}>
               Cancelar
             </button>
-            <button className="btn-submit">Guardar</button>
+            <button className="btn-submit" onClick={() => postProductos()}>
+              Guardar
+            </button>
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import Productos from "../pages/Productos";
 import Imagenes from "../pages/Imagenes";
 import Caja from "../pages/Caja";
 import Recetario from "../pages/Recetario";
+import MiCuenta from "../pages/MiCuenta";
 
 const AppRoutes = () => {
   return (
@@ -87,6 +88,16 @@ const AppRoutes = () => {
             <PrivateRoute>
               <Layout>
                 <Recetario />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/micuenta"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <MiCuenta />
               </Layout>
             </PrivateRoute>
           }

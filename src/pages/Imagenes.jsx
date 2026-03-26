@@ -122,7 +122,6 @@ const Imagenes = () => {
           </span>
           {search && <span className="gallery-stats__filter">"{search}"</span>}
         </div>
-        {console.log(filtered)}
         {filtered.length === 0 && (
           <div className="gallery-empty">
             <i className="fas fa-image gallery-empty__icon" />

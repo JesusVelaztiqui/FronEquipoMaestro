@@ -62,6 +62,17 @@ const estadoCalClass = (estado) => {
   }
 };
 
+const formatNumerico = (valor) => {
+  if (!valor && valor !== 0) return "";
+  const num = String(valor).replace(/\D/g, "");
+  if (!num) return "";
+  return Number(num).toLocaleString("es-PY");
+};
+
+const desformatear = (valor) => {
+  return Number(String(valor).replace(/\D/g, "")) || 0;
+};
+
 const Buscador = ({
   label,
   options,
@@ -416,6 +427,7 @@ const Turnos = () => {
   const [descripcionEliminar, setDescripcionEliminar] = useState("");
   const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
   const [labels, setLabels] = useState(LABELS_VACIOS);
+  const [importeDisplay, setImporteDisplay] = useState("");
 
   const [vista, setVista] = useState(
     () => localStorage.getItem("turnos_vista") || "lista",
@@ -427,12 +439,55 @@ const Turnos = () => {
   };
 
   const hoy = new Date();
+  const hoyKey = formatKey(hoy);
   const [calMes, setCalMes] = useState(hoy.getMonth());
   const [calAnio, setCalAnio] = useState(hoy.getFullYear());
   const [diaSeleccionado, setDiaSeleccionado] = useState(null);
 
   const handleChangeTurno = (e) => {
-    setTurnoForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    if (name === "fecha") {
+      if (value < hoyKey) {
+        addToast({
+          type: "warning",
+          title: "Fecha inválida",
+          message: "No se puede agendar un turno en una fecha anterior a hoy.",
+          duration: 3000,
+        });
+        return;
+      }
+      if (turnoForm.estado === "Confirmado" && value > hoyKey) {
+        addToast({
+          type: "warning",
+          title: "Estado inválido",
+          message: "No se puede confirmar un turno con fecha futura.",
+          duration: 3000,
+        });
+        setTurnoForm((prev) => ({
+          ...prev,
+          [name]: value,
+          estado: "Pendiente",
+        }));
+        return;
+      }
+    }
+
+    if (name === "estado" && value === "Confirmado") {
+      const fechaTurno = turnoForm.fecha;
+      if (fechaTurno && fechaTurno > hoyKey) {
+        addToast({
+          type: "warning",
+          title: "Estado inválido",
+          message:
+            "Solo se puede confirmar un turno en el día o después de la fecha del turno.",
+          duration: 3000,
+        });
+        return;
+      }
+    }
+
+    setTurnoForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const resetForm = () => {
@@ -440,6 +495,7 @@ const Turnos = () => {
     setLabels(LABELS_VACIOS);
     setArchivos([]);
     setImagenesExistentes([]);
+    setImporteDisplay("");
   };
 
   const getTurnos = async () => {
@@ -580,6 +636,7 @@ const Turnos = () => {
           porcentajedescuento: t.porcentajedescuento,
           importetotal: t.importetotal,
         });
+        setImporteDisplay(formatNumerico(t.importetotal));
         setLabels({
           paciente: buscarLabelEnLista(listPacientes, t.paciente),
           doctor: buscarLabelEnLista(listDoctores, t.doctor),
@@ -662,6 +719,25 @@ const Turnos = () => {
         type: "error",
         title: "Validación",
         message: "Seleccione un médico",
+        duration: 3000,
+      });
+      return;
+    }
+    if (turnoForm.fecha < hoyKey) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "No se puede agendar un turno en una fecha anterior a hoy.",
+        duration: 3000,
+      });
+      return;
+    }
+    if (turnoForm.estado === "Confirmado" && turnoForm.fecha > hoyKey) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message:
+          "Solo se puede confirmar un turno en el día o después de la fecha del turno.",
         duration: 3000,
       });
       return;
@@ -955,6 +1031,15 @@ const Turnos = () => {
   };
 
   const abrirNuevoCon = (fecha) => {
+    if (fecha < hoyKey) {
+      addToast({
+        type: "warning",
+        title: "Fecha inválida",
+        message: "No se puede agendar un turno en una fecha anterior a hoy.",
+        duration: 3000,
+      });
+      return;
+    }
     setModo("INS");
     resetForm();
     setTurnoForm((prev) => ({ ...prev, fecha }));
@@ -1152,13 +1237,18 @@ const Turnos = () => {
                     <div key={`v-${idx}`} className="cal-day cal-day--vacio" />
                   );
                 const d = parseLocalDate(key);
-                const esHoy = formatKey(hoy) === key;
+                const esHoy = hoyKey === key;
+                const esPasado = key < hoyKey;
                 const lista = turnosPorDia[key] || [];
                 const MAX = 2;
                 return (
                   <div
                     key={key}
-                    className={["cal-day", esHoy ? "cal-day--hoy" : ""]
+                    className={[
+                      "cal-day",
+                      esHoy ? "cal-day--hoy" : "",
+                      esPasado ? "cal-day--pasado" : "",
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     onClick={() => setDiaSeleccionado(key)}
@@ -1346,6 +1436,7 @@ const Turnos = () => {
                   className="input-field"
                   name="fecha"
                   value={turnoForm.fecha}
+                  min={hoyKey}
                   onChange={handleChangeTurno}
                   noempty="true"
                   validar="Ingrese la fecha del turno"
@@ -1375,7 +1466,12 @@ const Turnos = () => {
                   onChange={handleChangeTurno}
                 >
                   <option value="Pendiente">Pendiente</option>
-                  <option value="Confirmado">Confirmado</option>
+                  <option
+                    value="Confirmado"
+                    disabled={turnoForm.fecha > hoyKey}
+                  >
+                    Confirmado
+                  </option>
                   <option value="Cancelado">Cancelado</option>
                 </select>
               </div>
@@ -1388,7 +1484,7 @@ const Turnos = () => {
                   value={turnoForm.tratamiento}
                   onChange={handleChangeTurno}
                   noempty="true"
-                  validar="Ingrese el tratamiento, es importante para el historial del paciente"
+                  validar="Ingrese el tratamiento"
                   placeholder="Ej: Limpieza dental, Extracción, etc."
                 />
               </div>
@@ -1404,7 +1500,7 @@ const Turnos = () => {
                   onChange={handleChangeTurno}
                   placeholder="Notas adicionales sobre el turno, productos utilizados etc..."
                   rows="3"
-                ></textarea>
+                />
               </div>
             </div>
 
@@ -1425,7 +1521,7 @@ const Turnos = () => {
               <div className="input-group">
                 <label className="input-label">Porcentaje a descontar</label>
                 <input
-                  type="text"
+                  type="number"
                   className="input-field"
                   value={turnoForm.porcentajedescuento || ""}
                   onChange={(e) =>
@@ -1441,13 +1537,13 @@ const Turnos = () => {
                 <input
                   type="text"
                   className="input-field"
-                  value={turnoForm.importetotal || ""}
-                  onChange={(e) =>
-                    setTurnoForm((prev) => ({
-                      ...prev,
-                      importetotal: Number(e.target.value) || 0,
-                    }))
-                  }
+                  value={importeDisplay}
+                  onChange={(e) => {
+                    const raw = desformatear(e.target.value);
+                    setImporteDisplay(formatNumerico(raw));
+                    setTurnoForm((prev) => ({ ...prev, importetotal: raw }));
+                  }}
+                  placeholder="0"
                 />
               </div>
             </div>

@@ -30,5 +30,9 @@ export const generarRecetario = `${baseurl}report/recetario`;
 
 export const listarProductos = `${baseurl}productos/listar`;
 export const grabarProductos = `${baseurl}productos/grabar`;
-export const editarProductos = `${baseurl}productos/editar`;
+export const editarProductos = `${baseurl}productos/modificar`;
 export const eliminarProductos = `${baseurl}productos/eliminar`;
+export const recuperarProductos = `${baseurl}productos/recuperar`;
+export const modificarUsuario = `${baseurl}usuario/modificar`;
+export const listarDashboardDoctor = `${baseurl}dahsboard/listarIngEgr`;
+export const listarTurnosDoctor = `${baseurl}dahsboard/listarTurnosDoctor`;
