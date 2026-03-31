@@ -124,7 +124,7 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
             setMenuOpen(false);
           }}
         >
-          <i class="fas fa-user"></i>
+          <i className="fas fa-user"></i>
           <span>Mi Cuenta</span>
         </div>
 
