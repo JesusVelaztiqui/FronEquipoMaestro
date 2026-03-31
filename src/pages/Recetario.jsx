@@ -63,6 +63,31 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
             onFocus={() => setIsOpen(true)}
+            onBlur={() =>
+              setTimeout(() => {
+                setIsOpen(false);
+                setSearchTerm("");
+              }, 150)
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && filteredOptions.length === 1) {
+                e.preventDefault();
+                handleSelect(filteredOptions[0]);
+                const focusable = Array.from(
+                  document.querySelectorAll(
+                    'input:not([disabled]):not([readonly]):not([type="hidden"]), select:not([disabled])'
+                  )
+                ).filter((el) => {
+                  if (["submit", "button", "reset", "checkbox", "radio"].includes(el.type)) return false;
+                  const r = el.getBoundingClientRect();
+                  return r.width > 0 && r.height > 0;
+                });
+                const idx = focusable.indexOf(e.target);
+                if (idx >= 0 && idx < focusable.length - 1) {
+                  focusable[idx + 1].focus();
+                }
+              }
+            }}
           />
           <svg
             className={`dropdown-arrow ${isOpen ? "open" : ""}`}

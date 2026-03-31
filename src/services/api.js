@@ -1,4 +1,5 @@
 import { addToast } from "../components/Tooltip";
+import { ocultarLoader } from "../hooks/LoaderManager";
 
 export const imprimirPdf = async (objeto, url, loader, ocultarLoader) => {
   loader();
@@ -58,13 +59,10 @@ export const sendData = async (url, metodo, params, jsonbody) => {
     });
 
     if (response.status === 403) {
-      throw {
-        status: 403,
-        procesado: new Date().toISOString().split("T")[0],
-        mensaje: "Tu sesión ha expirado. Por favor inicia sesión nuevamente.",
-        url: url,
-        linea: 0,
-      };
+      ocultarLoader();
+      localStorage.removeItem("usuarioMaestro");
+      window.location.replace("/#/login");
+      return new Promise(() => {});
     }
     const json = await response.json();
     return json;

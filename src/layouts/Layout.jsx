@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
+import { useKeyboardNavigation } from "../hooks/useKeyboardNavigation";
 
 const Layout = ({ children }) => {
+  useKeyboardNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="dashboard-container">
