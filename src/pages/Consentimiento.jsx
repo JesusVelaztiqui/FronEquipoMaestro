@@ -5,6 +5,12 @@ import { addToast } from "../components/Tooltip";
 import { generarConsentimiento, listarDoctores, listarPacientes } from "../services/urls";
 import { useNavigate } from "react-router-dom";
 
+const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const fechaLarga = () => {
+  const h = new Date();
+  return `${String(h.getDate()).padStart(2,"0")} de ${meses[h.getMonth()]} de ${h.getFullYear()}`;
+};
+
 const Buscador = ({ label, options, placeholder, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,16 +81,11 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
                   return r.width > 0 && r.height > 0;
                 });
                 const idx = focusable.indexOf(e.target);
-                if (idx >= 0 && idx < focusable.length - 1) {
-                  focusable[idx + 1].focus();
-                }
+                if (idx >= 0 && idx < focusable.length - 1) focusable[idx + 1].focus();
               }
             }}
           />
-          <svg
-            className={`dropdown-arrow ${isOpen ? "open" : ""}`}
-            width="20" height="20" viewBox="0 0 20 20" fill="none"
-          >
+          <svg className={`dropdown-arrow ${isOpen ? "open" : ""}`} width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
@@ -116,29 +117,30 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
 };
 
 const Consentimiento = () => {
-  const [pacienteId, setPacienteId] = useState(null);
+  const [pacienteId, setPacienteId]         = useState(null);
   const [pacienteNombre, setPacienteNombre] = useState("");
-  const [doctorId, setDoctorId] = useState(null);
-  const [doctorNombre, setDoctorNombre] = useState("");
-  const [procedimiento, setProcedimiento] = useState("");
-  const [listPacientes, setListPacientes] = useState([]);
-  const [listDoctores, setListDoctores] = useState([]);
+  const [pacienteRuc, setPacienteRuc]       = useState("");
+  const [doctorId, setDoctorId]             = useState(null);
+  const [doctorNombre, setDoctorNombre]     = useState("");
+  const [doctorLicencia, setDoctorLicencia] = useState("");
+  const [procedimiento, setProcedimiento]   = useState("");
+  const [listPacientes, setListPacientes]   = useState([]);
+  const [listDoctores, setListDoctores]     = useState([]);
   const navigate = useNavigate();
 
-  const getListas = async () => {
-    try {
-      const [resPacientes, resDoctores] = await Promise.all([
-        sendData(listarPacientes, "GET", null, null),
-        sendData(listarDoctores, "GET", null, null),
-      ]);
-      if (resPacientes?.status === 200) setListPacientes(resPacientes.data);
-      if (resDoctores?.status === 200) setListDoctores(resDoctores.data);
-    } catch {
-      navigate("/login");
-    }
-  };
-
   useEffect(() => {
+    const getListas = async () => {
+      try {
+        const [resPac, resDoc] = await Promise.all([
+          sendData(listarPacientes, "GET", null, null),
+          sendData(listarDoctores,  "GET", null, null),
+        ]);
+        if (resPac?.status === 200) setListPacientes(resPac.data);
+        if (resDoc?.status === 200) setListDoctores(resDoc.data);
+      } catch {
+        navigate("/login");
+      }
+    };
     getListas();
   }, []);
 
@@ -163,20 +165,11 @@ const Consentimiento = () => {
     );
   };
 
-  const FieldRow = ({ label, value }) => (
-    <div className="consent-paper__field-row">
-      <span className="consent-paper__field-label">{label}</span>
-      <div className="consent-paper__field-input">
-        <span className={`consent-paper__field-text${!value ? " consent-paper__field-text--placeholder" : ""}`}>
-          {value || "—"}
-        </span>
-        <div className="consent-paper__field-line" />
-      </div>
-    </div>
-  );
+  const ph = (v) => v || "—";
 
   return (
     <div className="consentimiento-page">
+
       {/* ── FORM ── */}
       <div className="consentimiento-form">
         <div>
@@ -193,6 +186,7 @@ const Consentimiento = () => {
             onChange={(p) => {
               setPacienteId(p.id);
               setPacienteNombre(`${p.nombre} ${p.apellido}`);
+              setPacienteRuc(p.ruc || "");
             }}
           />
 
@@ -204,6 +198,7 @@ const Consentimiento = () => {
             onChange={(d) => {
               setDoctorId(d.id);
               setDoctorNombre(`${d.nombre} ${d.apellido}`);
+              setDoctorLicencia(d.licencia || "");
             }}
           />
 
@@ -234,90 +229,156 @@ const Consentimiento = () => {
           </span>
         </div>
 
-        <div className="consent-paper">
-          {/* Header */}
-          <div className="consent-paper__header">
-            <div className="consent-paper__logo-area">
-              <div className="consent-paper__logo-placeholder">
-                <img src="/LogoSinFondo.png" alt="Equipo Maestro" />
+        <div className="cp">
+
+          {/* DOC HEADER */}
+          <div className="cp__doc-header">
+            <div className="cp__brand-col">
+              <img src="/LogoSinFondo.png" alt="Equipo Maestro" className="cp__logo" />
+              <div>
+                <p className="cp__brand-name">Equipo Maestro</p>
+                <p className="cp__brand-sub">Odontologia Multidisciplinar</p>
               </div>
             </div>
-            <h2 className="consent-paper__brand">Equipo Maestro</h2>
-            <p className="consent-paper__brand-sub">Odontologia Multidisciplinar</p>
-            <div className="consent-paper__divider" />
-            <p className="consent-paper__title">Consentimiento Informado</p>
-            <div className="consent-paper__fields">
-              <FieldRow label="Nombre del paciente:" value={pacienteNombre} />
-              <FieldRow label="Doctor/a:" value={doctorNombre ? `Dr/a. ${doctorNombre}` : ""} />
-              <FieldRow label="Procedimiento:" value={procedimiento} />
-            </div>
-            <div className="consent-paper__divider" />
-          </div>
-
-          {/* Body */}
-          <div className="consent-paper__body">
-            <p className="consent-paper__paragraph">
-              Yo,{" "}
-              <strong>{pacienteNombre || "___________________"}</strong>, declaro haber
-              sido informado/a de manera clara y comprensible por el/la{" "}
-              <strong>{doctorNombre ? `Dr/a. ${doctorNombre}` : "___________________"}</strong>{" "}
-              sobre el siguiente procedimiento odontológico:{" "}
-              <strong>{procedimiento || "___________________"}</strong>.
-            </p>
-
-            <p className="consent-paper__paragraph">
-              He sido informado/a de los siguientes aspectos:
-            </p>
-
-            <ul className="consent-paper__list">
-              <li>Naturaleza, objetivos y alcance del procedimiento dental propuesto.</li>
-              <li>Posibles riesgos, complicaciones o efectos secundarios que puedan surgir.</li>
-              <li>Alternativas de tratamiento disponibles y sus respectivas implicaciones.</li>
-              <li>Consecuencias de no realizar el tratamiento indicado.</li>
-              <li>Mi derecho a retirar este consentimiento en cualquier momento, sin que ello afecte la calidad de mi atención.</li>
-            </ul>
-
-            <p className="consent-paper__paragraph">
-              El/La <strong>{doctorNombre ? `Dr/a. ${doctorNombre}` : "profesional tratante"}</strong> ha
-              respondido satisfactoriamente todas mis preguntas e inquietudes respecto al procedimiento.
-            </p>
-
-            <p className="consent-paper__paragraph">
-              En pleno uso de mis facultades mentales y de manera libre y voluntaria,{" "}
-              <strong>OTORGO MI CONSENTIMIENTO</strong> para la realización del procedimiento indicado,
-              comprometiéndome a seguir las indicaciones médicas proporcionadas.
-            </p>
-
-            <div className="consent-paper__section-divider" />
-
-            <div className="consent-paper__signatures">
-              <div className="consent-paper__signature-block">
-                <div className="consent-paper__signature-line" />
-                <span className="consent-paper__signature-name">
-                  {pacienteNombre || "Paciente"}
-                </span>
-                <span className="consent-paper__signature-label">Firma del Paciente</span>
-              </div>
-              <div className="consent-paper__signature-block">
-                <div className="consent-paper__signature-line" />
-                <span className="consent-paper__signature-name">
-                  {doctorNombre ? `Dr/a. ${doctorNombre}` : "Doctor/a"}
-                </span>
-                <span className="consent-paper__signature-label">Firma del Doctor/a</span>
-              </div>
-            </div>
-
-            <div className="consent-paper__date-row">
-              <span className="consent-paper__date-label">Fecha:</span>
-              <div className="consent-paper__date-line" />
+            <div className="cp__title-col">
+              <p className="cp__title">CONSENTIMIENTO INFORMADO</p>
+              <p className="cp__title-sub">Procedimiento Odontologico — Equipo Maestro</p>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="consent-paper__footer">
+          {/* INFO GRID */}
+          <div className="cp__info-grid">
+            <div className="cp__info-cell cp__info-cell--wide">
+              <span className="cp__info-label">NOMBRE DEL PACIENTE</span>
+              <span className="cp__info-value">{ph(pacienteNombre)}</span>
+            </div>
+            <div className="cp__info-cell">
+              <span className="cp__info-label">CI / RUC</span>
+              <span className="cp__info-value">{ph(pacienteRuc)}</span>
+            </div>
+            <div className="cp__info-cell cp__info-cell--wide">
+              <span className="cp__info-label">PROFESIONAL INTERVINIENTE</span>
+              <span className="cp__info-value">{doctorNombre ? `Dr/a. ${doctorNombre}` : "—"}</span>
+            </div>
+            <div className="cp__info-cell">
+              <span className="cp__info-label">N° DE LICENCIA / MATRICULA</span>
+              <span className="cp__info-value">{ph(doctorLicencia)}</span>
+            </div>
+            <div className="cp__info-cell cp__info-cell--fecha">
+              <span className="cp__info-label">FECHA</span>
+              <span className="cp__info-value">{fechaLarga()}</span>
+            </div>
+          </div>
+
+          {/* BODY */}
+          <div className="cp__body">
+
+            {/* Procedimiento */}
+            <p className="cp__green-title">Descripcion del procedimiento a realizar</p>
+            <div className="cp__proc-box">
+              <p className="cp__proc-text">
+                {procedimiento || <em className="cp__placeholder">El procedimiento aparecerá aquí...</em>}
+              </p>
+            </div>
+
+            {/* Secciones */}
+            <div className="cp__block-header">
+              INFORMACION, RIESGOS Y TERMINOS DEL CONSENTIMIENTO
+            </div>
+
+            <div className="cp__section">
+              <p className="cp__section-heading">1. Naturaleza del procedimiento</p>
+              <p className="cp__section-text">
+                El profesional interviniente ha explicado al paciente, de forma clara y en lenguaje comprensible, el procedimiento
+                odontologico descripto anteriormente, su finalidad terapeutica o preventiva, la tecnica a emplearse, el tiempo estimado
+                de realizacion y los materiales o equipos que se utilizaran. El paciente ha tenido la oportunidad de realizar todas las
+                preguntas que considero necesarias.
+              </p>
+            </div>
+
+            <div className="cp__section">
+              <p className="cp__section-heading">2. Riesgos y posibles complicaciones</p>
+              <p className="cp__section-text">
+                Todo procedimiento odontologico conlleva riesgos inherentes propios de la practica clinica que el paciente acepta
+                conocer y asumir. Estos pueden incluir, sin caracter limitativo: molestias o sensibilidad transitoria en la zona tratada,
+                reacciones individuales a materiales, medicamentos o agentes utilizados, variaciones en la evolucion clinica segun la
+                condicion biologica particular de cada paciente, necesidad de tratamientos complementarios o ajustes no previsibles al
+                momento de la consulta, resultados que pueden diferir de los esperados por causas ajenas al profesional, y complicaciones
+                derivadas de condiciones medicas preexistentes no declaradas por el paciente. El profesional actuara en todo momento
+                conforme a la lex artis y con la diligencia debida. Equipo Maestro no asume responsabilidad por circunstancias
+                imprevisibles o ajenas al control clinico razonablemente esperado.
+              </p>
+            </div>
+
+            <div className="cp__section">
+              <p className="cp__section-heading">3. Beneficios esperados del tratamiento</p>
+              <p className="cp__section-text">
+                El profesional ha informado al paciente sobre los beneficios esperados: restablecer la funcion masticatoria, eliminar
+                focos de infeccion o dolor, preservar piezas dentarias, mejorar la estetica o la salud bucodental en general, segun
+                corresponda al procedimiento indicado.
+              </p>
+            </div>
+
+            <div className="cp__section">
+              <p className="cp__section-heading">4. Alternativas terapeuticas</p>
+              <p className="cp__section-text">
+                Se han explicado al paciente las posibles alternativas de tratamiento disponibles, incluyendo las consecuencias de
+                optar por no realizar el procedimiento propuesto, entre ellas el posible agravamiento de la condicion bucal, la progresion
+                de la patologia y la eventual perdida de piezas dentarias.
+              </p>
+            </div>
+
+            <div className="cp__section">
+              <p className="cp__section-heading">5. Derechos del paciente — Ley N° 68 CN Paraguay / Res. SGN 749/2017 MSPBS</p>
+              <ul className="cp__list">
+                <li>El paciente tiene derecho a recibir informacion completa, veraz y comprensible sobre su estado de salud bucal y el tratamiento propuesto.</li>
+                <li>El paciente puede revocar el presente consentimiento en cualquier momento previo al inicio del procedimiento, sin que ello afecte su derecho a continuar recibiendo atencion odontologica.</li>
+                <li>El paciente tiene derecho a solicitar una segunda opinion profesional antes de someterse al procedimiento.</li>
+                <li>El paciente puede solicitar, en todo momento, la explicacion de cualquier aspecto del tratamiento que no comprenda.</li>
+              </ul>
+            </div>
+
+            {/* Declaracion */}
+            <div className="cp__block-header">DECLARACION Y CONSENTIMIENTO DEL PACIENTE</div>
+
+            <p className="cp__declaration">
+              Yo, <strong>{ph(pacienteNombre)}</strong>, con documento de identidad N° <strong>{ph(pacienteRuc)}</strong>, declaro que he
+              leido y comprendido la informacion contenida en el presente formulario. He recibido explicacion verbal del profesional{" "}
+              <strong>{doctorNombre ? `Dr/a. ${doctorNombre}` : "—"}</strong> sobre el procedimiento, sus riesgos, beneficios y alternativas
+              terapeuticas disponibles. He tenido la oportunidad de formular todas las preguntas que consideré necesarias y las mismas fueron
+              respondidas satisfactoriamente. Estando en plenas facultades mentales, de forma libre, voluntaria y sin coaccion de ningun tipo,{" "}
+              <strong>OTORGO MI CONSENTIMIENTO INFORMADO</strong> para la realizacion del procedimiento odontologico descrito en el presente
+              formulario, en la ciudad de Asuncion, Republica del Paraguay, a la fecha indicada.
+            </p>
+
+            {/* Firmas */}
+            <div className="cp__firmas-header">
+              FIRMAS — Ambas partes declaran conformidad con lo expresado en este documento
+            </div>
+
+            <div className="cp__firmas-row">
+              <div className="cp__firma-block">
+                <div className="cp__firma-line" />
+                <p className="cp__firma-role">Firma del Profesional</p>
+                <p className="cp__firma-name">{doctorNombre ? `Dr/a. ${doctorNombre}` : "—"}</p>
+                {doctorLicencia && <p className="cp__firma-sub">Licencia: {doctorLicencia}</p>}
+              </div>
+              <div className="cp__firma-block">
+                <div className="cp__firma-line" />
+                <p className="cp__firma-role">Firma del Paciente / Representante Legal</p>
+                <p className="cp__firma-name">{ph(pacienteNombre)}</p>
+                {pacienteRuc && <p className="cp__firma-sub">CI/RUC: {pacienteRuc}</p>}
+              </div>
+            </div>
+
+          </div>
+
+          {/* FOOTER */}
+          <div className="cp__footer">
             <p>+595 993 300 369 &nbsp;|&nbsp; equipomaestro_py</p>
-            <p>Equipo Maestro &nbsp;|&nbsp; Moises Bertoni N 2839, Asuncion</p>
+            <p>Equipo Maestro &nbsp;|&nbsp; Moises Bertoni N 2839, Asuncion — Paraguay</p>
           </div>
+
         </div>
       </div>
     </div>

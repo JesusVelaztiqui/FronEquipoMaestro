@@ -1,3 +1,5 @@
+// ─── PAGE LAYOUT ─────────────────────────────────────────────────────────────
+
 .consentimiento-page {
   display: flex;
   gap: 28px;
@@ -78,242 +80,293 @@
     align-items: center;
     gap: 6px;
 
-    i {
-      color: var(--color-primario);
-    }
+    i { color: var(--color-primario); }
   }
 }
 
-// ─── A4 PAPER ─────────────────────────────────────────────────────────────────
+// ─── DOCUMENT PAPER (.cp) ────────────────────────────────────────────────────
 
-.consent-paper {
-  width: 540px;
+.cp {
+  width: 100%;
+  max-width: 660px;
   background: #ffffff;
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.07),
     0 10px 30px rgba(0, 0, 0, 0.12);
   border-radius: 2px;
-  display: flex;
-  flex-direction: column;
   font-family: "DejaVu Sans", "Arial", sans-serif;
+  font-size: 9px;
+  color: #222222;
+  overflow: hidden;
 
-  @media (max-width: 640px) {
-    width: 100%;
+  // ── DOC HEADER ──────────────────────────────────────────────────────────────
+
+  &__doc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 14px 20px 12px;
+    border-bottom: 2px solid #2a5c4e;
+    gap: 12px;
   }
 
-  &__header {
-    padding: 18px 36px 14px;
+  &__brand-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex-shrink: 0;
   }
 
-  &__logo-area {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 8px;
+  &__logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
   }
 
-  &__logo-placeholder {
-    width: 70px;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img {
-      width: 70px;
-      height: 70px;
-      object-fit: contain;
-    }
-  }
-
-  &__brand {
-    text-align: center;
-    color: #3a6b5c;
-    font-size: 17px;
+  &__brand-name {
+    font-size: 15px;
     font-weight: 700;
-    margin: 4px 0 2px;
-    letter-spacing: 0.3px;
+    color: #2a5c4e;
+    margin: 0 0 2px;
+    letter-spacing: 0.2px;
   }
 
   &__brand-sub {
-    text-align: center;
+    font-size: 8.5px;
     color: #666666;
-    font-size: 10px;
-    margin-bottom: 10px;
+    margin: 0;
   }
 
-  &__divider {
-    height: 1px;
-    background-color: #cccccc;
-    margin-bottom: 10px;
+  &__title-col {
+    text-align: right;
+    flex-shrink: 0;
   }
 
   &__title {
-    text-align: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    color: #3a6b5c;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin: 6px 0 10px;
+    color: #1a1a1a;
+    margin: 0 0 3px;
+    letter-spacing: 0.5px;
   }
 
-  &__fields {
+  &__title-sub {
+    font-size: 8px;
+    color: #666666;
+    margin: 0;
+  }
+
+  // ── INFO GRID ───────────────────────────────────────────────────────────────
+
+  &__info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #cccccc;
+  }
+
+  &__info-cell {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 10px;
+    gap: 3px;
+    padding: 8px 14px;
+    border-right: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+    min-width: 0;
+
+    &--wide {
+      flex: 2;
+      min-width: 200px;
+    }
+
+    &--fecha {
+      flex: 1;
+      border-right: none;
+      min-width: 100px;
+    }
+
+    &:not(&--wide):not(&--fecha) {
+      flex: 1;
+      min-width: 120px;
+    }
   }
 
-  &__field-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
-  &__field-label {
-    font-size: 10px;
-    color: #333333;
-    white-space: nowrap;
-    padding-bottom: 3px;
-    flex-shrink: 0;
+  &__info-label {
+    font-size: 7px;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
     font-weight: 600;
   }
 
-  &__field-input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__field-text {
-    display: block;
+  &__info-value {
     font-size: 10px;
-    color: #222222;
-    padding-bottom: 2px;
-    min-height: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: 700;
+    color: #111111;
+    word-break: break-word;
   }
 
-  &__field-text--placeholder {
-    color: #cccccc;
+  // ── BODY ────────────────────────────────────────────────────────────────────
+
+  &__body {
+    padding: 12px 20px 16px;
+  }
+
+  &__green-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #2a5c4e;
+    margin: 0 0 6px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #c8ddd8;
+  }
+
+  &__proc-box {
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    min-height: 36px;
+  }
+
+  &__proc-text {
+    font-size: 9px;
+    color: #222222;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__placeholder {
+    color: #bbbbbb;
     font-style: italic;
   }
 
-  &__field-line {
-    height: 1px;
-    background-color: #555555;
-    width: 100%;
+  &__block-header {
+    background-color: #2a5c4e;
+    color: #ffffff;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-align: center;
+    padding: 5px 12px;
+    margin: 10px -20px 8px;
   }
 
-  // ─── BODY ───────────────────────────────────────────────────────────────────
-
-  &__body {
-    padding: 0 36px 20px;
-    flex: 1;
+  &__section {
+    margin-bottom: 7px;
   }
 
-  &__section-divider {
-    height: 1px;
-    background-color: #e0e0e0;
-    margin: 10px 0;
+  &__section-heading {
+    font-size: 9px;
+    font-weight: 700;
+    color: #111111;
+    margin: 0 0 3px;
   }
 
-  &__paragraph {
-    font-size: 10px;
+  &__section-text {
+    font-size: 8.5px;
     color: #333333;
-    line-height: 1.65;
-    margin: 0 0 8px;
+    line-height: 1.6;
+    margin: 0;
     text-align: justify;
   }
 
   &__list {
-    margin: 4px 0 8px 12px;
+    margin: 3px 0 0 8px;
     padding: 0;
     list-style: none;
 
     li {
-      font-size: 10px;
+      font-size: 8.5px;
       color: #333333;
-      line-height: 1.65;
-      margin-bottom: 2px;
+      line-height: 1.6;
+      margin-bottom: 1px;
+      text-align: justify;
 
       &::before {
         content: "• ";
-        color: #3a6b5c;
+        color: #2a5c4e;
         font-weight: 700;
       }
     }
   }
 
-  &__signatures {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 28px;
-    gap: 20px;
+  &__declaration {
+    font-size: 8.5px;
+    color: #222222;
+    line-height: 1.65;
+    text-align: justify;
+    margin: 6px 0 0;
+    font-style: italic;
   }
 
-  &__signature-block {
+  // ── FIRMAS ──────────────────────────────────────────────────────────────────
+
+  &__firmas-header {
+    background-color: #eeeeee;
+    color: #333333;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-align: center;
+    padding: 4px 12px;
+    margin: 12px -20px 0;
+  }
+
+  &__firmas-row {
+    display: flex;
+    gap: 30px;
+    padding: 18px 20px 4px;
+  }
+
+  &__firma-block {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
   }
 
-  &__signature-line {
+  &__firma-line {
     width: 100%;
     height: 1px;
-    background-color: #555555;
+    background-color: #444444;
+    margin-bottom: 4px;
   }
 
-  &__signature-name {
+  &__firma-role {
+    font-size: 7.5px;
+    color: #666666;
+    margin: 0;
+    text-align: center;
+  }
+
+  &__firma-name {
     font-size: 9px;
+    font-weight: 700;
+    color: #111111;
+    margin: 0;
+    text-align: center;
+  }
+
+  &__firma-sub {
+    font-size: 7.5px;
     color: #555555;
-    text-align: center;
-    font-weight: 600;
-  }
-
-  &__signature-label {
-    font-size: 9px;
-    color: #888888;
+    margin: 0;
     text-align: center;
   }
 
-  &__date-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    margin-top: 14px;
-  }
-
-  &__date-label {
-    font-size: 10px;
-    color: #333333;
-    white-space: nowrap;
-    font-weight: 600;
-  }
-
-  &__date-line {
-    flex: 1;
-    height: 1px;
-    background-color: #555555;
-    max-width: 140px;
-  }
-
-  // ─── FOOTER ─────────────────────────────────────────────────────────────────
+  // ── FOOTER ──────────────────────────────────────────────────────────────────
 
   &__footer {
-    background-color: #3a6b5c;
-    padding: 9px 36px;
-    flex-shrink: 0;
-    border-radius: 0 0 2px 2px;
+    background-color: #2a5c4e;
+    padding: 8px 20px;
+    margin-top: 16px;
 
     p {
       text-align: center;
       color: #ffffff;
-      font-size: 9px;
+      font-size: 8px;
       line-height: 1.7;
       margin: 0;
     }
