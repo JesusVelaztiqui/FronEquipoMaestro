@@ -102,6 +102,10 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/consentimiento") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/consentimiento");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-file-signature" />
           <span>Consentimiento</span>

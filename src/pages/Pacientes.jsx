@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { addToast } from "../components/Tooltip";
 import { cargarLoader, ocultarLoader } from "../hooks/LoaderManager";
-import { sendData } from "../services/api";
+import { imprimirPdfGet, sendData } from "../services/api";
 import {
   editarPacientes,
   eliminarPacientes,
+  generarHistorial,
   grabarPacientes,
   listarPacientes,
 } from "../services/urls";
@@ -175,11 +176,17 @@ const Pacientes = () => {
             <span>Editar</span>
           </button>
           <div className="tooltip-divider"></div>
-          <button className="tooltip-item tooltip-item--view">
-            <i className="fas fa-eye"></i>
-            <span>Ver historial</span>
-          </button>
-          <button className="tooltip-item tooltip-item--export">
+          <button
+            className="tooltip-item tooltip-item--export"
+            onClick={() => {
+              setActiveTooltip(null);
+              imprimirPdfGet(
+                `${generarHistorial}?pacienteId=${paciente.id}`,
+                cargarLoader,
+                ocultarLoader,
+              );
+            }}
+          >
             <i className="fas fa-download"></i>
             <span>Descargar historial</span>
           </button>
