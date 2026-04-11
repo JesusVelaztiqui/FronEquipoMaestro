@@ -1,0 +1,424 @@
+// ─── PAGE LAYOUT ─────────────────────────────────────────────────────────────
+
+.presupuesto-page {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+
+  @media (max-width: 968px) {
+    flex-direction: column;
+  }
+}
+
+// ─── FORM LEFT PANEL ─────────────────────────────────────────────────────────
+
+.presupuesto-form {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 968px) {
+    width: 100%;
+  }
+
+  &__card {
+    background-color: var(--color-blanco);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  &__items-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+
+  &__add-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-family);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--color-secundario);
+    }
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+  }
+
+  &__item-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-primario);
+    min-width: 16px;
+    margin-top: 9px;
+  }
+
+  &__item-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+
+    .input-field {
+      font-size: 12px;
+      padding: 7px 10px;
+    }
+  }
+
+  &__item-row {
+    display: flex;
+    gap: 6px;
+
+    .input-group {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .input-field {
+      width: 100%;
+    }
+  }
+
+  &__del-btn {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 13px;
+    margin-top: 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: #fee2e2;
+    }
+  }
+
+  &__btn {
+    width: 100%;
+    padding: 13px 24px;
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-family: var(--font-family);
+
+    &:hover {
+      background-color: var(--color-secundario);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// ─── PREVIEW RIGHT PANEL ─────────────────────────────────────────────────────
+
+.presupuesto-preview {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__label {
+    font-size: 13px;
+    color: var(--color-gris);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    i { color: var(--color-primario); }
+  }
+}
+
+// ─── DOCUMENT PAPER (.pp) ────────────────────────────────────────────────────
+
+.pp {
+  width: 100%;
+  max-width: 660px;
+  background: #ffffff;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    0 10px 30px rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  font-family: "DejaVu Sans", "Arial", sans-serif;
+  font-size: 9px;
+  color: #222222;
+  overflow: hidden;
+
+  // ── DOC HEADER ──────────────────────────────────────────────────────────────
+
+  &__doc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 14px 20px 12px;
+    border-bottom: 2px solid #2a5c4e;
+    gap: 12px;
+  }
+
+  &__brand-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  &__logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  &__brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2a5c4e;
+    margin: 0 0 2px;
+  }
+
+  &__brand-sub {
+    font-size: 8.5px;
+    color: #666666;
+    margin: 0;
+  }
+
+  &__title-col {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 3px;
+    letter-spacing: 0.5px;
+  }
+
+  &__title-sub {
+    font-size: 8px;
+    color: #666666;
+    margin: 0;
+  }
+
+  // ── INFO GRID ───────────────────────────────────────────────────────────────
+
+  &__info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #cccccc;
+  }
+
+  &__info-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 14px;
+    border-right: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+
+    &--wide {
+      flex: 2;
+      min-width: 180px;
+    }
+
+    &--last {
+      flex: 1;
+      border-right: none;
+      min-width: 110px;
+    }
+
+    &:not(&--wide):not(&--last) {
+      flex: 1;
+      min-width: 110px;
+    }
+  }
+
+  &__info-label {
+    font-size: 7px;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+
+  &__info-value {
+    font-size: 10px;
+    font-weight: 700;
+    color: #111111;
+    word-break: break-word;
+  }
+
+  // ── BODY ────────────────────────────────────────────────────────────────────
+
+  &__body {
+    padding: 14px 20px 16px;
+  }
+
+  // ── TABLE ───────────────────────────────────────────────────────────────────
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+  }
+
+  &__th {
+    background-color: #2a5c4e;
+    color: #ffffff;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 6px 10px;
+    text-align: left;
+
+    &--num {
+      text-align: right;
+    }
+
+    &--desc {
+      width: 45%;
+    }
+  }
+
+  &__tr--even {
+    background-color: #f7faf9;
+  }
+
+  &__td {
+    font-size: 8.5px;
+    color: #222222;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e8e8e8;
+
+    &--num {
+      text-align: right;
+    }
+  }
+
+  &__placeholder {
+    color: #bbbbbb;
+  }
+
+  // ── TOTALES ─────────────────────────────────────────────────────────────────
+
+  &__totals {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    border-top: 2px solid #2a5c4e;
+    padding-top: 8px;
+    margin-bottom: 14px;
+  }
+
+  &__total-row {
+    display: flex;
+    gap: 24px;
+    font-size: 8.5px;
+
+    &--final {
+      font-weight: 700;
+      font-size: 10px;
+      border-top: 1px solid #cccccc;
+      padding-top: 4px;
+      margin-top: 2px;
+      color: #2a5c4e;
+    }
+  }
+
+  &__total-label {
+    min-width: 80px;
+    text-align: right;
+    color: #555555;
+    font-weight: 600;
+
+    .pp__total-row--final > & {
+      color: #2a5c4e;
+    }
+  }
+
+  &__total-value {
+    min-width: 120px;
+    text-align: right;
+    color: #111111;
+  }
+
+  &__nota {
+    font-size: 7.5px;
+    color: #888888;
+    line-height: 1.6;
+    text-align: justify;
+    margin: 0;
+    font-style: italic;
+    border-top: 1px solid #eeeeee;
+    padding-top: 8px;
+  }
+
+  // ── FOOTER ──────────────────────────────────────────────────────────────────
+
+  &__footer {
+    background-color: #2a5c4e;
+    padding: 8px 20px;
+
+    p {
+      text-align: center;
+      color: #ffffff;
+      font-size: 8px;
+      line-height: 1.7;
+      margin: 0;
+    }
+  }
+}

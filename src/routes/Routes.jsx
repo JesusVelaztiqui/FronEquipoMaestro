@@ -13,6 +13,7 @@ import Imagenes from "../pages/Imagenes";
 import Caja from "../pages/Caja";
 import Recetario from "../pages/Recetario";
 import Consentimiento from "../pages/Consentimiento";
+import Presupuesto from "../pages/Presupuesto";
 import MiCuenta from "../pages/MiCuenta";
 
 const AppRoutes = () => {
@@ -89,6 +90,16 @@ const AppRoutes = () => {
             <PrivateRoute>
               <Layout>
                 <Recetario />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/presupuesto"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Presupuesto />
               </Layout>
             </PrivateRoute>
           }

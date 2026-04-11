@@ -95,6 +95,10 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
 
         <div
           className={`menu-item ${isActive("/presupuesto") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/presupuesto");
+            setMenuOpen(false);
+          }}
         >
           <i className="fas fa-file-invoice-dollar" />
           <span>Presupuesto</span>

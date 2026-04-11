@@ -29,6 +29,7 @@ export const eliminarCaja = `${baseurl}caja/eliminar`;
 export const generarRecetario = `${baseurl}report/recetario`;
 export const generarHistorial = `${baseurl}report/historial`;
 export const generarConsentimiento = `${baseurl}report/consentimiento`;
+export const generarPresupuesto    = `${baseurl}report/presupuesto`;
 
 export const listarProductos = `${baseurl}productos/listar`;
 export const grabarProductos = `${baseurl}productos/grabar`;
