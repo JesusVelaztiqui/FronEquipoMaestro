@@ -193,12 +193,20 @@ const Recetario = () => {
       addToast({ type: "warning", title: "Atención", message: "Ingrese las indicaciones.", duration: 3000 });
       return;
     }
-    await imprimirPdf(
+    const result = await imprimirPdf(
       { paciente: pacienteNombre, fecha: formatFecha(fecha), observacion: indicaciones },
       generarRecetario,
       cargarLoader,
       ocultarLoader,
     );
+    if (result) {
+      setPacienteId(null);
+      setPacienteNombre("");
+      setFecha(new Date().toISOString().split("T")[0]);
+      setIndicaciones("");
+      setPages([""]);
+      setPaginaActual(0);
+    }
   };
 
   const PaperPage = ({ content, pageNum, totalPages }) => (

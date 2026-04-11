@@ -157,12 +157,21 @@ const Consentimiento = () => {
       addToast({ type: "warning", title: "Atención", message: "Ingrese el procedimiento.", duration: 3000 });
       return;
     }
-    await imprimirPdf(
+    const result = await imprimirPdf(
       { pacienteId, doctorId, procedimiento },
       generarConsentimiento,
       cargarLoader,
       ocultarLoader,
     );
+    if (result) {
+      setPacienteId(null);
+      setPacienteNombre("");
+      setPacienteRuc("");
+      setDoctorId(null);
+      setDoctorNombre("");
+      setDoctorLicencia("");
+      setProcedimiento("");
+    }
   };
 
   const ph = (v) => v || "—";

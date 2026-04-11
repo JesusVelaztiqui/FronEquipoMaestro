@@ -179,7 +179,7 @@ const Presupuesto = () => {
       addToast({ type: "warning", title: "Atención", message: "Complete la descripción de todos los ítems.", duration: 3000 });
       return;
     }
-    await imprimirPdf(
+    const result = await imprimirPdf(
       {
         pacienteId,
         doctorId,
@@ -194,6 +194,16 @@ const Presupuesto = () => {
       cargarLoader,
       ocultarLoader,
     );
+    if (result) {
+      setPacienteId(null);
+      setPacienteNombre("");
+      setPacienteRuc("");
+      setDoctorId(null);
+      setDoctorNombre("");
+      setDoctorLicencia("");
+      setFechaValidez("");
+      setItems([{ id: nextId++, descripcion: "", cantidad: 1, precioUnitario: 0 }]);
+    }
   };
 
   const ph = (v) => v || "—";
