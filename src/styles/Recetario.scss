@@ -1,3 +1,76 @@
+// ─── STEP 1: TYPE SELECTION SCREEN ───────────────────────────────────────────
+
+.recetario-select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 40px;
+
+  &__header {
+    text-align: center;
+  }
+
+  &__cards {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.recetario-tipo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 28px 30px;
+  width: 210px;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  background: var(--color-blanco);
+  cursor: pointer;
+  transition: all 0.22s;
+  text-align: center;
+  font-family: var(--font-family);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    border-color: var(--color-primario);
+    background: rgba(58, 107, 92, 0.04);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(58, 107, 92, 0.15);
+
+    .recetario-tipo-card__icon { color: var(--color-primario); }
+    .recetario-tipo-card__label { color: var(--color-primario); }
+  }
+
+  &__icon {
+    color: #9ca3af;
+    transition: color 0.22s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+    transition: color 0.22s;
+    line-height: 1.2;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: #9ca3af;
+    line-height: 1.4;
+  }
+}
+
+// ─── STEP 2: FORM + PREVIEW ───────────────────────────────────────────────────
+
 .recetario-page {
   display: flex;
   gap: 28px;
@@ -11,14 +84,58 @@
 // ─── FORM LEFT PANEL ─────────────────────────────────────────────────────────
 
 .recetario-form {
-  width: 340px;
+  width: 360px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 
-  @media (max-width: 968px) {
-    width: 100%;
+  @media (max-width: 968px) { width: 100%; }
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    background: var(--color-blanco);
+    color: var(--color-gris);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all 0.18s;
+
+    &:hover {
+      border-color: var(--color-primario);
+      color: var(--color-primario);
+    }
+  }
+
+  &__tipo-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primario);
+    background: rgba(58, 107, 92, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+
+  &__tipo-icon {
+    display: flex;
+    align-items: center;
+    svg { width: 16px; height: 16px; }
   }
 
   &__card {
@@ -32,8 +149,8 @@
   }
 
   &__textarea {
-    min-height: 220px;
-    max-height: 220px;
+    min-height: 120px;
+    max-height: 200px;
     resize: none;
     overflow-y: auto;
     line-height: 1.6;
@@ -61,6 +178,16 @@
       transform: translateY(-1px);
     }
   }
+
+  &__rp-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-primario);
+    background: rgba(58, 107, 92, 0.1);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-left: 6px;
+  }
 }
 
 // ─── PREVIEW RIGHT PANEL ─────────────────────────────────────────────────────
@@ -86,9 +213,7 @@
     align-items: center;
     gap: 6px;
 
-    i {
-      color: var(--color-primario);
-    }
+    i { color: var(--color-primario); }
   }
 
   &__badge {
@@ -99,10 +224,9 @@
     font-size: 11px;
     font-weight: 700;
   }
-
 }
 
-// ─── SLIDER ───────────────────────────────────────────────────────────────────
+// ─── SLIDER ──────────────────────────────────────────────────────────────────
 
 .recetario-slider {
   display: flex;
@@ -114,6 +238,10 @@
     min-width: 0;
     display: flex;
     justify-content: center;
+
+    &--landscape {
+      overflow-x: auto;
+    }
   }
 
   &__arrow {
@@ -175,27 +303,60 @@
   }
 }
 
-// ─── A4 PAPER ─────────────────────────────────────────────────────────────────
+// ─── PAPER BASE ──────────────────────────────────────────────────────────────
 
 .recetario-paper {
-  width: 540px;
-  min-height: 764px;
   background: #ffffff;
   box-shadow:
     0 4px 6px rgba(0, 0, 0, 0.07),
     0 10px 30px rgba(0, 0, 0, 0.12);
   border-radius: 2px;
-  display: flex;
-  flex-direction: column;
   font-family: "DejaVu Sans", "Arial", sans-serif;
 
-  @media (max-width: 640px) {
-    width: 100%;
-    min-height: auto;
+  // ── Portrait ──
+  &--portrait {
+    width: 520px;
+    min-height: 740px;
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      min-height: auto;
+    }
   }
 
+  // ── Landscape (two panels side by side) ──
+  &--landscape {
+    width: 780px;
+    min-height: 520px;
+    display: flex;
+    flex-direction: row;
+
+    @media (max-width: 900px) {
+      width: 100%;
+      flex-direction: column;
+    }
+  }
+
+  // ── Panel inside landscape ──
+  &__panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__vsep {
+    width: 1px;
+    background: #dddddd;
+    flex-shrink: 0;
+    margin: 10px 0;
+  }
+
+  // ── Header ──
   &__header {
-    padding: 18px 36px 12px;
+    padding: 12px 28px 10px;
     flex-shrink: 0;
   }
 
@@ -203,120 +364,80 @@
     display: flex;
     justify-content: center;
     margin-bottom: 8px;
-  }
-
-  &__logo-placeholder {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
     img {
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
       object-fit: contain;
     }
-  }
-
-  &__brand {
-    text-align: center;
-    color: #3a6b5c;
-    font-size: 18px;
-    font-weight: 700;
-    margin: 6px 0 3px;
-    letter-spacing: 0.3px;
-  }
-
-  &__brand-sub {
-    text-align: center;
-    color: #666666;
-    font-size: 11px;
-    margin-bottom: 10px;
   }
 
   &__divider {
     height: 1px;
     background-color: #cccccc;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
   }
 
   &__patient-row {
     display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    margin-bottom: 8px;
-  }
-
-  &__field {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-
-    &--wide {
-      flex: 1;
-    }
-
-    &--narrow {
-      flex-shrink: 0;
-      width: 130px;
-    }
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-size: 9px;
   }
 
   &__field-label {
-    font-size: 10px;
-    color: #333333;
+    color: #555555;
     white-space: nowrap;
-    padding-bottom: 3px;
     flex-shrink: 0;
+
+    &.ml { margin-left: 6px; }
   }
 
-  &__field-input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__field-text {
-    display: block;
-    font-size: 10px;
-    color: #333333;
-    padding-bottom: 2px;
-    min-height: 14px;
+  &__field-value {
+    color: #222222;
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 160px;
   }
 
-  &__field-line {
-    height: 1px;
-    background-color: #555555;
-    width: 100%;
+  // ── Content ──
+  &__content {
+    flex: 1;
+    padding: 8px 28px 14px;
+    min-height: 480px;
   }
 
   &__section-title {
     font-size: 11px;
     font-weight: 700;
     color: #333333;
-    margin-top: 10px;
-    margin-bottom: 0;
+    margin: 0 0 8px 0;
+
+    &.rp {
+      color: #3a6b5c;
+      font-style: italic;
+    }
   }
 
-  &__content {
-    flex: 1;
-    padding: 10px 36px 16px;
-    min-height: 600px;
+  &__separator {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 14px 0 12px;
   }
 
   &__line {
-    font-size: 11px;
+    font-size: 10px;
     color: #222222;
-    line-height: 1.2;
+    line-height: 1.5;
     margin: 0;
     word-break: break-word;
   }
 
   &__placeholder {
-    font-size: 11px;
+    font-size: 10px;
     color: #cccccc;
     font-style: italic;
     line-height: 1.65;
@@ -325,7 +446,7 @@
 
   &__page-num {
     text-align: right;
-    padding: 0 36px 6px;
+    padding: 0 28px 6px;
     font-size: 9px;
     color: #aaaaaa;
     flex-shrink: 0;
@@ -333,14 +454,14 @@
 
   &__footer {
     background-color: #3a6b5c;
-    padding: 9px 36px;
+    padding: 7px 28px;
     flex-shrink: 0;
     border-radius: 0 0 2px 2px;
 
     p {
       text-align: center;
       color: #ffffff;
-      font-size: 9px;
+      font-size: 8px;
       line-height: 1.7;
       margin: 0;
     }
@@ -353,11 +474,11 @@
   position: fixed;
   top: -9999px;
   left: -9999px;
-  width: 468px;
+  width: 464px;
   font-family: "DejaVu Sans", "Arial", sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   color: #222222;
-  line-height: 1.2;
+  line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
   visibility: hidden;

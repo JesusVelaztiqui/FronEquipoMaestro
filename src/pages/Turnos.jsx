@@ -426,6 +426,7 @@ const FORM_VACIO = {
   descuentodoctor: 0,
   porcentajedescuento: 0,
   importetotal: 0,
+  consultorio: 0,
 };
 
 const LABELS_VACIOS = { paciente: "", doctor: "", descuentodoctor: "" };
@@ -453,6 +454,8 @@ const Turnos = () => {
   const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
   const [labels, setLabels] = useState(LABELS_VACIOS);
   const [importeDisplay, setImporteDisplay] = useState("");
+  const [fechaOriginal, setFechaOriginal] = useState("");
+  const [estadoOriginal, setEstadoOriginal] = useState("");
 
   const [vista, setVista] = useState(
     () => localStorage.getItem("turnos_vista") || "lista",
@@ -473,7 +476,16 @@ const Turnos = () => {
     const { name, value } = e.target;
 
     if (name === "fecha") {
-      if (value < hoyKey) {
+      if (modo === "UPD" && estadoOriginal === "Confirmado") {
+        addToast({
+          type: "warning",
+          title: "Fecha bloqueada",
+          message: "No se puede modificar la fecha de un turno ya confirmado.",
+          duration: 3000,
+        });
+        return;
+      }
+      if (modo === "INS" && value < hoyKey) {
         addToast({
           type: "warning",
           title: "Fecha inválida",
@@ -481,6 +493,18 @@ const Turnos = () => {
           duration: 3000,
         });
         return;
+      }
+      if (modo === "UPD" && estadoOriginal !== "Confirmado") {
+        const minFecha = fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
+        if (value < minFecha) {
+          addToast({
+            type: "warning",
+            title: "Fecha inválida",
+            message: "La nueva fecha no puede ser anterior a la fecha original del turno.",
+            duration: 3000,
+          });
+          return;
+        }
       }
       if (turnoForm.estado === "Confirmado" && value > hoyKey) {
         addToast({
@@ -521,6 +545,8 @@ const Turnos = () => {
     setArchivos([]);
     setImagenesExistentes([]);
     setImporteDisplay("");
+    setFechaOriginal("");
+    setEstadoOriginal("");
   };
 
   const getTurnos = async () => {
@@ -648,6 +674,8 @@ const Turnos = () => {
       );
       if (response.status === 200) {
         const t = response.data;
+        setFechaOriginal(t.fecha);
+        setEstadoOriginal(t.estado);
         setTurnoForm({
           id: t.id,
           paciente: t.paciente,
@@ -660,6 +688,7 @@ const Turnos = () => {
           descuentodoctor: t.descuentodoctor,
           porcentajedescuento: t.porcentajedescuento,
           importetotal: t.importetotal,
+          consultorio: t.consultorio || 0,
         });
         setImporteDisplay(formatNumerico(t.importetotal));
         setLabels({
@@ -748,7 +777,7 @@ const Turnos = () => {
       });
       return;
     }
-    if (turnoForm.fecha < hoyKey) {
+    if (modo === "INS" && turnoForm.fecha < hoyKey) {
       addToast({
         type: "error",
         title: "Validación",
@@ -756,6 +785,27 @@ const Turnos = () => {
         duration: 3000,
       });
       return;
+    }
+    if (modo === "UPD" && estadoOriginal === "Confirmado" && turnoForm.fecha !== fechaOriginal) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "No se puede modificar la fecha de un turno ya confirmado.",
+        duration: 3000,
+      });
+      return;
+    }
+    if (modo === "UPD" && estadoOriginal !== "Confirmado") {
+      const minFecha = fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
+      if (turnoForm.fecha < minFecha) {
+        addToast({
+          type: "error",
+          title: "Validación",
+          message: "La nueva fecha no puede ser anterior a la fecha original del turno.",
+          duration: 3000,
+        });
+        return;
+      }
     }
     if (turnoForm.estado === "Confirmado" && turnoForm.fecha > hoyKey) {
       addToast({
@@ -1144,6 +1194,7 @@ const Turnos = () => {
                     <th>Médico</th>
                     <th>Fecha</th>
                     <th>Hora</th>
+                    <th>Consultorio</th>
                     <th>Tratamiento</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -1159,6 +1210,7 @@ const Turnos = () => {
                         <td>{turno.doctor}</td>
                         <td>{turno.fecha}</td>
                         <td>{turno.hora}</td>
+                        <td>{turno.consultorio || "-"}</td>
                         <td>{turno.tratamiento}</td>
                         <td>
                           <span
@@ -1174,7 +1226,7 @@ const Turnos = () => {
                     ))
                   ) : (
                     <tr>
-                      <td className="busquedaSinresultado" colSpan={9}>
+                      <td className="busquedaSinresultado" colSpan={10}>
                         <i className="fa-solid fa-file-circle-exclamation"></i>{" "}
                         Sin Datos
                       </td>
@@ -1455,13 +1507,29 @@ const Turnos = () => {
                 }
               />
               <div className="input-group">
-                <label className="input-label">Fecha</label>
+                <label className="input-label">
+                  Fecha
+                  {modo === "UPD" && estadoOriginal === "Confirmado" && (
+                    <span style={{ marginLeft: 6, fontSize: 11, color: "#e53e3e", fontWeight: 600 }}>
+                      (bloqueada — turno confirmado)
+                    </span>
+                  )}
+                </label>
                 <input
                   type="date"
                   className="input-field"
                   name="fecha"
                   value={turnoForm.fecha}
-                  min={hoyKey}
+                  min={
+                    modo === "INS"
+                      ? hoyKey
+                      : estadoOriginal === "Confirmado"
+                        ? turnoForm.fecha
+                        : fechaOriginal && fechaOriginal < hoyKey
+                          ? fechaOriginal
+                          : hoyKey
+                  }
+                  disabled={modo === "UPD" && estadoOriginal === "Confirmado"}
                   onChange={handleChangeTurno}
                   noempty="true"
                   validar="Ingrese la fecha del turno"
@@ -1480,6 +1548,23 @@ const Turnos = () => {
                   onChange={handleChangeTurno}
                   noempty="true"
                   validar="Ingrese la hora del turno"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Consultorio</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  name="consultorio"
+                  value={turnoForm.consultorio || ""}
+                  onChange={(e) => {
+                    const soloNumeros = e.target.value.replace(/\D/g, "");
+                    setTurnoForm((prev) => ({
+                      ...prev,
+                      consultorio: soloNumeros ? Number(soloNumeros) : 0,
+                    }));
+                  }}
+                  placeholder="Nº consultorio"
                 />
               </div>
               <div className="input-group">
