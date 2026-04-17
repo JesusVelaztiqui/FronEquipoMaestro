@@ -300,6 +300,44 @@
     font-style: italic;
   }
 
+  // ── EXCLUSIONES ─────────────────────────────────────────────────────────────
+
+  &__exclusiones-header {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #2a5c4e;
+    margin: 10px 0 5px;
+    padding-bottom: 3px;
+    border-top: 1px solid #c8ddd8;
+    border-bottom: 1px solid #c8ddd8;
+    padding-top: 6px;
+  }
+
+  &__exclusiones-box {
+    border: 1.2px dashed #b0c8c0;
+    border-radius: 3px;
+    min-height: 64px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    background: #fafffe;
+  }
+
+  &__exclusiones-text {
+    font-size: 9px;
+    color: #222222;
+    line-height: 1.65;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  &__exclusiones-placeholder {
+    font-size: 8.5px;
+    color: #bbbbbb;
+    font-style: italic;
+    margin: 0;
+    line-height: 1.6;
+  }
+
   // ── FIRMAS ──────────────────────────────────────────────────────────────────
 
   &__firmas-header {

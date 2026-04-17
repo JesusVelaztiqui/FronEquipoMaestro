@@ -124,6 +124,7 @@ const Consentimiento = () => {
   const [doctorNombre, setDoctorNombre]     = useState("");
   const [doctorLicencia, setDoctorLicencia] = useState("");
   const [procedimiento, setProcedimiento]   = useState("");
+  const [exclusiones, setExclusiones]       = useState("");
   const [listPacientes, setListPacientes]   = useState([]);
   const [listDoctores, setListDoctores]     = useState([]);
   const navigate = useNavigate();
@@ -158,7 +159,7 @@ const Consentimiento = () => {
       return;
     }
     const result = await imprimirPdf(
-      { pacienteId, doctorId, procedimiento },
+      { pacienteId, doctorId, procedimiento, exclusiones },
       generarConsentimiento,
       cargarLoader,
       ocultarLoader,
@@ -171,6 +172,7 @@ const Consentimiento = () => {
       setDoctorNombre("");
       setDoctorLicencia("");
       setProcedimiento("");
+      setExclusiones("");
     }
   };
 
@@ -219,6 +221,20 @@ const Consentimiento = () => {
               value={procedimiento}
               onChange={(e) => setProcedimiento(e.target.value)}
               placeholder="Ej: Extracción dental, Endodoncia..."
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">
+              Exclusiones / Consideraciones particulares
+              <span style={{ marginLeft: 6, fontSize: 11, color: "#9ca3af", fontWeight: 400 }}>(opcional)</span>
+            </label>
+            <textarea
+              className="input-textarea"
+              value={exclusiones}
+              onChange={(e) => setExclusiones(e.target.value)}
+              rows={4}
+              placeholder="Indique aquí exclusiones o limitaciones específicas del caso (ej: no se garantiza la conservación de la pieza, resultado sujeto a respuesta biológica individual, etc.). Si lo deja en blanco, el PDF incluirá el espacio vacío para completar a mano."
             />
           </div>
 
@@ -298,53 +314,65 @@ const Consentimiento = () => {
             <div className="cp__section">
               <p className="cp__section-heading">1. Naturaleza del procedimiento</p>
               <p className="cp__section-text">
-                El profesional interviniente ha explicado al paciente, de forma clara y en lenguaje comprensible, el procedimiento
-                odontologico descripto anteriormente, su finalidad terapeutica o preventiva, la tecnica a emplearse, el tiempo estimado
-                de realizacion y los materiales o equipos que se utilizaran. El paciente ha tenido la oportunidad de realizar todas las
-                preguntas que considero necesarias.
+                El profesional ha explicado al paciente, en lenguaje comprensible, el procedimiento a realizar, su finalidad terapeutica,
+                la tecnica a emplear, el tiempo estimado de duracion y los materiales o equipos a utilizar. El paciente ha podido formular
+                todas las consultas que considero necesarias.
               </p>
             </div>
 
             <div className="cp__section">
               <p className="cp__section-heading">2. Riesgos y posibles complicaciones</p>
               <p className="cp__section-text">
-                Todo procedimiento odontologico conlleva riesgos inherentes propios de la practica clinica que el paciente acepta
-                conocer y asumir. Estos pueden incluir, sin caracter limitativo: molestias o sensibilidad transitoria en la zona tratada,
-                reacciones individuales a materiales, medicamentos o agentes utilizados, variaciones en la evolucion clinica segun la
-                condicion biologica particular de cada paciente, necesidad de tratamientos complementarios o ajustes no previsibles al
-                momento de la consulta, resultados que pueden diferir de los esperados por causas ajenas al profesional, y complicaciones
-                derivadas de condiciones medicas preexistentes no declaradas por el paciente. El profesional actuara en todo momento
-                conforme a la lex artis y con la diligencia debida. Equipo Maestro no asume responsabilidad por circunstancias
-                imprevisibles o ajenas al control clinico razonablemente esperado.
+                Todo procedimiento conlleva riesgos inherentes a la practica clinica que el paciente acepta conocer y asumir, incluyendo
+                sin caracter limitativo: molestias o sensibilidad transitoria, reacciones a materiales o medicamentos empleados, variaciones
+                en la evolucion segun la condicion biologica individual, necesidad de tratamientos complementarios no previsibles, resultados
+                que pueden diferir de los esperados por causas ajenas al profesional, y complicaciones derivadas de condiciones medicas
+                preexistentes no declaradas. El profesional actuara conforme a la lex artis. Equipo Maestro no asume responsabilidad por
+                circunstancias ajenas al control clinico razonablemente esperado.
               </p>
             </div>
 
             <div className="cp__section">
               <p className="cp__section-heading">3. Beneficios esperados del tratamiento</p>
               <p className="cp__section-text">
-                El profesional ha informado al paciente sobre los beneficios esperados: restablecer la funcion masticatoria, eliminar
-                focos de infeccion o dolor, preservar piezas dentarias, mejorar la estetica o la salud bucodental en general, segun
-                corresponda al procedimiento indicado.
+                El profesional ha informado al paciente sobre los beneficios esperados segun el procedimiento indicado, que pueden incluir:
+                restablecer la funcion, eliminar focos infecciosos o dolorosos, preservar estructuras dentarias y mejorar la salud
+                bucodental general.
               </p>
             </div>
 
             <div className="cp__section">
               <p className="cp__section-heading">4. Alternativas terapeuticas</p>
               <p className="cp__section-text">
-                Se han explicado al paciente las posibles alternativas de tratamiento disponibles, incluyendo las consecuencias de
-                optar por no realizar el procedimiento propuesto, entre ellas el posible agravamiento de la condicion bucal, la progresion
-                de la patologia y la eventual perdida de piezas dentarias.
+                Se han explicado las posibles alternativas de tratamiento disponibles y las consecuencias de no realizar el procedimiento
+                propuesto, incluyendo el posible agravamiento de la condicion y la eventual perdida de estructuras dentarias afectadas.
               </p>
             </div>
 
             <div className="cp__section">
               <p className="cp__section-heading">5. Derechos del paciente — Ley N° 68 CN Paraguay / Res. SGN 749/2017 MSPBS</p>
               <ul className="cp__list">
-                <li>El paciente tiene derecho a recibir informacion completa, veraz y comprensible sobre su estado de salud bucal y el tratamiento propuesto.</li>
-                <li>El paciente puede revocar el presente consentimiento en cualquier momento previo al inicio del procedimiento, sin que ello afecte su derecho a continuar recibiendo atencion odontologica.</li>
-                <li>El paciente tiene derecho a solicitar una segunda opinion profesional antes de someterse al procedimiento.</li>
-                <li>El paciente puede solicitar, en todo momento, la explicacion de cualquier aspecto del tratamiento que no comprenda.</li>
+                <li>Derecho a recibir informacion completa y comprensible sobre su condicion y el tratamiento propuesto.</li>
+                <li>Derecho a revocar este consentimiento en cualquier momento previo al inicio del procedimiento.</li>
+                <li>Derecho a solicitar una segunda opinion profesional antes de someterse al tratamiento.</li>
+                <li>La informacion clinica es confidencial y esta protegida por el secreto profesional.</li>
               </ul>
+            </div>
+
+            {/* Exclusiones */}
+            <div className="cp__exclusiones-header">
+              Exclusiones y consideraciones particulares del tratamiento
+            </div>
+            <p className="cp__section-text" style={{ marginBottom: 6 }}>
+              El profesional declara las siguientes exclusiones o limitaciones específicas aplicables al presente caso:
+            </p>
+            <div className="cp__exclusiones-box">
+              {exclusiones
+                ? <p className="cp__exclusiones-text">{exclusiones}</p>
+                : <p className="cp__exclusiones-placeholder">
+                    (espacio para completar a mano o ingresar en el formulario)
+                  </p>
+              }
             </div>
 
             {/* Declaracion */}
@@ -353,11 +381,11 @@ const Consentimiento = () => {
             <p className="cp__declaration">
               Yo, <strong>{ph(pacienteNombre)}</strong>, con documento de identidad N° <strong>{ph(pacienteRuc)}</strong>, declaro que he
               leido y comprendido la informacion contenida en el presente formulario. He recibido explicacion verbal del profesional{" "}
-              <strong>{doctorNombre ? `Dr/a. ${doctorNombre}` : "—"}</strong> sobre el procedimiento, sus riesgos, beneficios y alternativas
-              terapeuticas disponibles. He tenido la oportunidad de formular todas las preguntas que consideré necesarias y las mismas fueron
-              respondidas satisfactoriamente. Estando en plenas facultades mentales, de forma libre, voluntaria y sin coaccion de ningun tipo,{" "}
-              <strong>OTORGO MI CONSENTIMIENTO INFORMADO</strong> para la realizacion del procedimiento odontologico descrito en el presente
-              formulario, en la ciudad de Asuncion, Republica del Paraguay, a la fecha indicada.
+              <strong>{doctorNombre ? `Dr/a. ${doctorNombre}` : "—"}</strong> sobre el procedimiento, sus riesgos, beneficios, alternativas
+              terapeuticas y las exclusiones o limitaciones particulares indicadas. He podido formular todas las preguntas que consideré
+              necesarias y fueron respondidas satisfactoriamente. Estando en plenas facultades mentales, de forma libre, voluntaria y sin
+              coaccion,{" "}<strong>OTORGO MI CONSENTIMIENTO INFORMADO</strong> para la realizacion del procedimiento descripto, en la ciudad
+              de Asuncion, Republica del Paraguay, a la fecha indicada.
             </p>
 
             {/* Firmas */}
