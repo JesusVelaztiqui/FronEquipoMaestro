@@ -24,7 +24,7 @@ export function formatearFechaHora(isoString) {
   const ss = String(fecha.getSeconds()).padStart(2, "0");
 
   return {
-    fecha: `${MM}/${dd}/${YYYY}`,
+    fecha: `${dd}/${MM}/${YYYY}`,
     hora: `${HH}:${mm}:${ss}`,
   };
 }

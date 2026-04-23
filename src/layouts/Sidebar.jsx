@@ -8,6 +8,8 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
   const currentRoute = location.pathname.toLowerCase();
   const { clearUser } = useUserStore();
   const isActive = (path) => currentRoute === path.toLowerCase();
+  const usuario = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
+  const esDr = usuario?.role === "dr";
 
   return (
     <aside
@@ -72,16 +74,18 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
           <i className="fas fa-boxes-stacked" />
           <span>Productos</span>
         </div>
-        <div
-          className={`menu-item ${isActive("/caja") ? "active" : ""}`}
-          onClick={() => {
-            navigate("/caja");
-            setMenuOpen(false);
-          }}
-        >
-          <i className="fas fa-hand-holding-usd"></i>
-          <span>Caja</span>
-        </div>
+        {esDr && (
+          <div
+            className={`menu-item ${isActive("/caja") ? "active" : ""}`}
+            onClick={() => {
+              navigate("/caja");
+              setMenuOpen(false);
+            }}
+          >
+            <i className="fas fa-hand-holding-usd"></i>
+            <span>Caja</span>
+          </div>
+        )}
         <div
           className={`menu-item ${isActive("/recetario") ? "active" : ""}`}
           onClick={() => {

@@ -21,7 +21,8 @@ export const eliminarImagenTurno = `${baseurl}turnos/imagenes`;
 
 export const listarAuditoria = `${baseurl}auditoria/listar`;
 
-export const listarCaja = `${baseurl}caja/listar`;
+export const listarCaja  = `${baseurl}caja/listar`;
+export const detalleCaja = `${baseurl}caja/detalle`;
 export const grabarCaja = `${baseurl}caja/grabar`;
 export const editarCaja = `${baseurl}caja/editar`;
 export const eliminarCaja = `${baseurl}caja/eliminar`;

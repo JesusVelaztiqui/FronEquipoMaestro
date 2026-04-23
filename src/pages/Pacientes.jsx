@@ -39,6 +39,8 @@ const Pacientes = () => {
     celular: "",
     mail: "",
     direccion: "",
+    tutornombre: "",
+    tutorcelular: "",
   });
 
   const getPacientes = async () => {
@@ -357,11 +359,13 @@ const Pacientes = () => {
                 celular: "",
                 mail: "",
                 direccion: "",
+                tutornombre: "",
+                tutorcelular: "",
               });
               setOpenModal(true);
             }}
           >
-            NUEVO <i className="fas fa-plus" />
+            NUEVO <i className="fas fa-plus"/>
           </button>
         </div>
 
@@ -441,6 +445,16 @@ const Pacientes = () => {
           </div>
 
           <div className="modal-body">
+            {(() => {
+              const edad = paciente?.fechanacimiento
+                ? Math.floor(
+                    (new Date() - new Date(paciente.fechanacimiento)) /
+                      (1000 * 60 * 60 * 24 * 365.25),
+                  )
+                : null;
+              const esMenor = edad !== null && edad < 18;
+              return (
+                <>
             <div className="modal-row">
               <div className="input-group">
                 <label className="input-label">Nombre</label>
@@ -490,14 +504,7 @@ const Pacientes = () => {
                 <input
                   type="text"
                   className="input-field"
-                  value={
-                    paciente?.fechanacimiento
-                      ? Math.floor(
-                          (new Date() - new Date(paciente.fechanacimiento)) /
-                            (1000 * 60 * 60 * 24 * 365.25),
-                        )
-                      : ""
-                  }
+                  value={edad ?? ""}
                   disabled
                   placeholder="Edad"
                 />
@@ -561,6 +568,48 @@ const Pacientes = () => {
                 />
               </div>
             </div>
+
+            {esMenor && (
+              <>
+                <div className="modal-row">
+                  <div style={{ width: "100%", borderTop: "1px solid #e5e7eb", margin: "4px 0 8px" }} />
+                </div>
+                <div className="modal-row">
+                  <div className="input-group" style={{ gridColumn: "1 / -1" }}>
+                    <label className="input-label" style={{ fontWeight: 600, color: "#6b7280" }}>
+                      Datos del Tutor <span style={{ fontWeight: 400, fontSize: "0.8rem" }}>(paciente menor de edad)</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="modal-row">
+                  <div className="input-group">
+                    <label className="input-label">Nombre del Tutor</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      name="tutornombre"
+                      value={paciente?.tutornombre}
+                      onChange={handleChangePacientes}
+                      placeholder="Escribe aquí..."
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Teléfono del Tutor</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      name="tutorcelular"
+                      value={paciente?.tutorcelular}
+                      onChange={handleChangePacientes}
+                      placeholder="Escribe aquí..."
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+                </>
+              );
+            })()}
           </div>
 
           <div className="modal-footer">

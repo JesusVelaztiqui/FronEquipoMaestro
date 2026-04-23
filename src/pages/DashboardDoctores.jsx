@@ -92,10 +92,10 @@ const DahsboardDoctores = () => {
 
   const hoy = new Date().toISOString().split("T")[0];
   const turnosPendientes = turnos.filter(
-    (t) => t.estado !== "Confirmado" && t.estado !== "Cancelado",
+    (t) => t.fecha === hoy && t.estado === "Confirmado",
   );
   const turnosAtendidos = turnos.filter(
-    (t) => t.fecha === hoy && t.estado === "Confirmado",
+    (t) => t.fecha === hoy && t.estado === "Atendido",
   );
 
   return (
@@ -153,6 +153,12 @@ const DahsboardDoctores = () => {
                     <div className="transaction-name">{t.paciente}</div>
                     <div className="transaction-time">
                       hoy, {formatHora(t.hora)}
+                      {t.consultorio && (
+                        <span style={{ marginLeft: 8 }}>
+                          <i className="fas fa-door-open" /> Consultorio{" "}
+                          {t.consultorio}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="transaction-status pending">{t.estado}</div>
@@ -173,6 +179,12 @@ const DahsboardDoctores = () => {
                     <div className="transaction-name">{t.paciente}</div>
                     <div className="transaction-time">
                       hoy, {formatHora(t.hora)}
+                      {t.consultorio && (
+                        <span style={{ marginLeft: 8 }}>
+                          <i className="fas fa-door-open" /> Consultorio{" "}
+                          {t.consultorio}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="transaction-status completed">Completado</div>

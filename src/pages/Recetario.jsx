@@ -102,10 +102,10 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
           <input
             type="text"
             className="input-field search-input"
-            placeholder={selectedLabel || placeholder}
-            value={searchTerm}
+            placeholder={placeholder}
+            value={isOpen ? searchTerm : selectedLabel}
             onChange={(e) => { setSearchTerm(e.target.value); setIsOpen(true); }}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => { setSearchTerm(""); setIsOpen(true); }}
             onBlur={() => setTimeout(() => { setIsOpen(false); setSearchTerm(""); }, 150)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && filteredOptions.length === 1) {
@@ -119,7 +119,7 @@ const Buscador = ({ label, options, placeholder, value, onChange }) => {
           </svg>
         </div>
         {isOpen && (
-          <div className="dropdown-menu">
+          <div className="dropdown-menu" onMouseDown={(e) => e.preventDefault()}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div

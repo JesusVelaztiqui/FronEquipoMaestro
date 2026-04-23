@@ -16,6 +16,7 @@ import {
 } from "../services/urls";
 import { NoEmpty } from "../components/NoEmpty";
 import ModalDelete from "../components/ModalDelete";
+import { formatoFecha } from "../components/Formatos";
 
 const MESES = [
   "Enero",
@@ -57,6 +58,8 @@ const estadoCalClass = (estado) => {
       return "confirmado";
     case "CANCELADO":
       return "cancelado";
+    case "ATENDIDO":
+      return "atendido";
     default:
       return "pendiente";
   }
@@ -134,13 +137,13 @@ const Buscador = ({
           <input
             type="text"
             className="input-field search-input"
-            placeholder={selectedLabel || placeholder}
-            value={searchTerm}
+            placeholder={placeholder}
+            value={isOpen ? searchTerm : selectedLabel}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setIsOpen(true);
             }}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => { setSearchTerm(""); setIsOpen(true); }}
             onBlur={() =>
               setTimeout(() => {
                 setIsOpen(false);
@@ -153,10 +156,15 @@ const Buscador = ({
                 handleSelect(filteredOptions[0]);
                 const focusable = Array.from(
                   document.querySelectorAll(
-                    'input:not([disabled]):not([readonly]):not([type="hidden"]), select:not([disabled])'
-                  )
+                    'input:not([disabled]):not([readonly]):not([type="hidden"]), select:not([disabled])',
+                  ),
                 ).filter((el) => {
-                  if (["submit", "button", "reset", "checkbox", "radio"].includes(el.type)) return false;
+                  if (
+                    ["submit", "button", "reset", "checkbox", "radio"].includes(
+                      el.type,
+                    )
+                  )
+                    return false;
                   const r = el.getBoundingClientRect();
                   return r.width > 0 && r.height > 0;
                 });
@@ -183,7 +191,7 @@ const Buscador = ({
           </svg>
         </div>
         {isOpen && (
-          <div className="dropdown-menu">
+          <div className="dropdown-menu" onMouseDown={(e) => e.preventDefault()}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div
@@ -219,6 +227,140 @@ const Buscador = ({
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+const TimePicker = ({ value, onChange, name }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selHour, setSelHour] = useState("");
+  const [selMin, setSelMin] = useState("");
+  const wrapRef = useRef(null);
+  const hourColRef = useRef(null);
+  const minColRef = useRef(null);
+
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+  const minutes = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
+
+  useEffect(() => {
+    if (value) {
+      const [h, m] = value.split(":");
+      setSelHour(h || "");
+      setSelMin(m || "");
+    } else {
+      setSelHour("");
+      setSelMin("");
+    }
+  }, [value]);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (hourColRef.current && selHour) {
+        const idx = hours.indexOf(selHour);
+        hourColRef.current.scrollTop = Math.max(0, idx * 37 - 74);
+      }
+      if (minColRef.current && selMin) {
+        const idx = minutes.indexOf(selMin);
+        minColRef.current.scrollTop = Math.max(0, idx * 37 - 74);
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const pickHour = (h) => {
+    setSelHour(h);
+    const m = selMin || "00";
+    onChange({ target: { name, value: `${h}:${m}` } });
+    if (selMin) setIsOpen(false);
+  };
+
+  const pickMin = (m) => {
+    setSelMin(m);
+    const h = selHour || "08";
+    onChange({ target: { name, value: `${h}:${m}` } });
+    if (selHour) setIsOpen(false);
+  };
+
+  const colHeader = {
+    padding: "7px 0",
+    fontSize: 11,
+    color: "#9ca3af",
+    fontWeight: 700,
+    textAlign: "center",
+    borderBottom: "1px solid #f3f4f6",
+    letterSpacing: "0.06em",
+  };
+
+  const itemBase = {
+    padding: "9px 0",
+    cursor: "pointer",
+    fontSize: 14,
+    textAlign: "center",
+    transition: "background-color 0.12s",
+  };
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
+      <div className="select-input" style={{ cursor: "pointer" }} onClick={() => setIsOpen((o) => !o)}>
+        <input
+          type="text"
+          className="input-field"
+          readOnly
+          placeholder="HH:MM"
+          value={value || ""}
+          style={{ cursor: "pointer", paddingRight: 40 }}
+        />
+        <svg
+          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }}
+          width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div
+          onMouseDown={(e) => e.preventDefault()}
+          style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "white", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)", zIndex: 1000, display: "flex", overflow: "hidden" }}
+        >
+          <div ref={hourColRef} style={{ flex: 1, maxHeight: 220, overflowY: "auto", borderRight: "1px solid #f3f4f6" }}>
+            <div style={colHeader}>HORA</div>
+            {hours.map((h) => (
+              <div
+                key={h}
+                onClick={() => pickHour(h)}
+                onMouseEnter={(e) => { if (selHour !== h) e.currentTarget.style.backgroundColor = "#f9fafb"; }}
+                onMouseLeave={(e) => { if (selHour !== h) e.currentTarget.style.backgroundColor = "transparent"; }}
+                style={{ ...itemBase, backgroundColor: selHour === h ? "#a3b8a1" : "transparent", color: selHour === h ? "white" : "#374151", fontWeight: selHour === h ? 600 : 400 }}
+              >
+                {h}
+              </div>
+            ))}
+          </div>
+          <div ref={minColRef} style={{ flex: 1, maxHeight: 220, overflowY: "auto" }}>
+            <div style={colHeader}>MIN</div>
+            {minutes.map((m) => (
+              <div
+                key={m}
+                onClick={() => pickMin(m)}
+                onMouseEnter={(e) => { if (selMin !== m) e.currentTarget.style.backgroundColor = "#f9fafb"; }}
+                onMouseLeave={(e) => { if (selMin !== m) e.currentTarget.style.backgroundColor = "transparent"; }}
+                style={{ ...itemBase, backgroundColor: selMin === m ? "#a3b8a1" : "transparent", color: selMin === m ? "white" : "#374151", fontWeight: selMin === m ? 600 : 400 }}
+              >
+                {m}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -424,12 +566,17 @@ const FORM_VACIO = {
   tratamiento: "",
   observacion: "",
   descuentodoctor: 0,
+  doctor2: 0,
   porcentajedescuento: 0,
   importetotal: 0,
+  importerecibido: 0,
+  importelaboratorio: 0,
+  saldo: 0,
   consultorio: 0,
+  horahasta: "",
 };
 
-const LABELS_VACIOS = { paciente: "", doctor: "", descuentodoctor: "" };
+const LABELS_VACIOS = { paciente: "", doctor: "", doctor2: "" };
 
 const Turnos = () => {
   const userData = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
@@ -454,6 +601,8 @@ const Turnos = () => {
   const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
   const [labels, setLabels] = useState(LABELS_VACIOS);
   const [importeDisplay, setImporteDisplay] = useState("");
+  const [importeRecibidoDisplay, setImporteRecibidoDisplay] = useState("");
+  const [importeLaboratorioDisplay, setImporteLaboratorioDisplay] = useState("");
   const [fechaOriginal, setFechaOriginal] = useState("");
   const [estadoOriginal, setEstadoOriginal] = useState("");
 
@@ -470,6 +619,7 @@ const Turnos = () => {
   const hoyKey = formatKey(hoy);
   const [calMes, setCalMes] = useState(hoy.getMonth());
   const [calAnio, setCalAnio] = useState(hoy.getFullYear());
+  const [calFiltroConsultorio, setCalFiltroConsultorio] = useState(0);
   const [diaSeleccionado, setDiaSeleccionado] = useState(null);
 
   const handleChangeTurno = (e) => {
@@ -495,12 +645,14 @@ const Turnos = () => {
         return;
       }
       if (modo === "UPD" && estadoOriginal !== "Confirmado") {
-        const minFecha = fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
+        const minFecha =
+          fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
         if (value < minFecha) {
           addToast({
             type: "warning",
             title: "Fecha inválida",
-            message: "La nueva fecha no puede ser anterior a la fecha original del turno.",
+            message:
+              "La nueva fecha no puede ser anterior a la fecha original del turno.",
             duration: 3000,
           });
           return;
@@ -545,6 +697,8 @@ const Turnos = () => {
     setArchivos([]);
     setImagenesExistentes([]);
     setImporteDisplay("");
+    setImporteRecibidoDisplay("");
+    setImporteLaboratorioDisplay("");
     setFechaOriginal("");
     setEstadoOriginal("");
   };
@@ -685,16 +839,23 @@ const Turnos = () => {
           estado: t.estado,
           tratamiento: t.tratamiento,
           observacion: t.observacion,
-          descuentodoctor: t.descuentodoctor,
+          descuentodoctor: 0,
+          doctor2: t.doctor2 || 0,
           porcentajedescuento: t.porcentajedescuento,
           importetotal: t.importetotal,
+          importerecibido: t.importerecibido || 0,
+          importelaboratorio: t.importelaboratorio || 0,
+          saldo: t.saldo || 0,
           consultorio: t.consultorio || 0,
+          horahasta: t.horahasta || "",
         });
         setImporteDisplay(formatNumerico(t.importetotal));
+        setImporteRecibidoDisplay(formatNumerico(t.importerecibido || 0));
+        setImporteLaboratorioDisplay(formatNumerico(t.importelaboratorio || 0));
         setLabels({
           paciente: buscarLabelEnLista(listPacientes, t.paciente),
           doctor: buscarLabelEnLista(listDoctores, t.doctor),
-          descuentodoctor: buscarLabelEnLista(listDoctores, t.descuentodoctor),
+          doctor2: t.doctor2 ? buscarLabelEnLista(listDoctores, t.doctor2) : "",
         });
         setArchivos([]);
         await getImagenesTurno(t.id);
@@ -772,7 +933,7 @@ const Turnos = () => {
       addToast({
         type: "error",
         title: "Validación",
-        message: "Seleccione un médico",
+        message: "Seleccione un dr",
         duration: 3000,
       });
       return;
@@ -786,7 +947,11 @@ const Turnos = () => {
       });
       return;
     }
-    if (modo === "UPD" && estadoOriginal === "Confirmado" && turnoForm.fecha !== fechaOriginal) {
+    if (
+      modo === "UPD" &&
+      estadoOriginal === "Confirmado" &&
+      turnoForm.fecha !== fechaOriginal
+    ) {
       addToast({
         type: "error",
         title: "Validación",
@@ -796,33 +961,29 @@ const Turnos = () => {
       return;
     }
     if (modo === "UPD" && estadoOriginal !== "Confirmado") {
-      const minFecha = fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
+      const minFecha =
+        fechaOriginal && fechaOriginal < hoyKey ? fechaOriginal : hoyKey;
       if (turnoForm.fecha < minFecha) {
         addToast({
           type: "error",
           title: "Validación",
-          message: "La nueva fecha no puede ser anterior a la fecha original del turno.",
+          message:
+            "La nueva fecha no puede ser anterior a la fecha original del turno.",
           duration: 3000,
         });
         return;
       }
     }
-    if (turnoForm.estado === "Confirmado" && turnoForm.fecha > hoyKey) {
-      addToast({
-        type: "error",
-        title: "Validación",
-        message:
-          "Solo se puede confirmar un turno en el día o después de la fecha del turno.",
-        duration: 3000,
-      });
-      return;
-    }
     try {
       cargarLoader();
       const payload = {
         ...turnoForm,
+        horahasta: turnoForm.horahasta || turnoForm.hora,
         porcentajedescuento: Number(turnoForm.porcentajedescuento) || 0,
         importetotal: Number(turnoForm.importetotal) || 0,
+        importerecibido: Number(turnoForm.importerecibido) || 0,
+        importelaboratorio: Number(turnoForm.importelaboratorio) || 0,
+        saldo: (Number(turnoForm.importetotal) || 0) - (Number(turnoForm.importerecibido) || 0),
       };
       const formData = new FormData();
       formData.append("turnos", JSON.stringify(payload));
@@ -927,6 +1088,8 @@ const Turnos = () => {
         return "turno-estado--pendiente";
       case "CANCELADO":
         return "turno-estado--cancelado";
+      case "ATENDIDO":
+        return "turno-estado--atendido";
       default:
         return "";
     }
@@ -1095,9 +1258,8 @@ const Turnos = () => {
     setCalAnio(a);
   };
 
-  const turnosDrawer = diaSeleccionado
-    ? turnosPorDia[diaSeleccionado] || []
-    : [];
+  const turnosDrawer = (diaSeleccionado ? turnosPorDia[diaSeleccionado] || [] : [])
+    .filter((t) => calFiltroConsultorio === 0 || Number(t.consultorio) === calFiltroConsultorio);
 
   const formatFechaDrawer = (key) => {
     const d = parseLocalDate(key);
@@ -1160,7 +1322,7 @@ const Turnos = () => {
               <input
                 type="text"
                 className="input-field input-field--search"
-                placeholder="Buscar por paciente o médico..."
+                placeholder="Buscar por paciente o doctores..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -1191,7 +1353,7 @@ const Turnos = () => {
                     <th>N°</th>
                     <th>Id turno</th>
                     <th>Paciente</th>
-                    <th>Médico</th>
+                    <th>Doctor</th>
                     <th>Fecha</th>
                     <th>Hora</th>
                     <th>Consultorio</th>
@@ -1208,7 +1370,7 @@ const Turnos = () => {
                         <td>{turno.id}</td>
                         <td>{turno.paciente}</td>
                         <td>{turno.doctor}</td>
-                        <td>{turno.fecha}</td>
+                        <td>{formatoFecha(turno.fecha, "dd/MM/yyyy")}</td>
                         <td>{turno.hora}</td>
                         <td>{turno.consultorio || "-"}</td>
                         <td>{turno.tratamiento}</td>
@@ -1278,6 +1440,21 @@ const Turnos = () => {
                     <div className="cal-legend__dot cal-legend__dot--cancelado" />
                     Cancelado
                   </div>
+                  <div className="cal-legend__item">
+                    <div className="cal-legend__dot cal-legend__dot--atendido" />
+                    Atendido
+                  </div>
+                </div>
+                <div className="cal-filtro-consultorio">
+                  {[{ val: 0, label: "Todos" }, { val: 1, label: "Cons. 1" }, { val: 2, label: "Cons. 2" }].map(({ val, label }) => (
+                    <button
+                      key={val}
+                      className={`cal-filtro-consultorio__btn ${calFiltroConsultorio === val ? "active" : ""}`}
+                      onClick={() => setCalFiltroConsultorio(val)}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
                 <div className="cal-nav__controls">
                   <button
@@ -1316,7 +1493,9 @@ const Turnos = () => {
                 const d = parseLocalDate(key);
                 const esHoy = hoyKey === key;
                 const esPasado = key < hoyKey;
-                const lista = turnosPorDia[key] || [];
+                const lista = (turnosPorDia[key] || []).filter(
+                  (t) => calFiltroConsultorio === 0 || Number(t.consultorio) === calFiltroConsultorio,
+                );
                 const MAX = 2;
                 return (
                   <div
@@ -1405,7 +1584,7 @@ const Turnos = () => {
                     <div className="cal-card__row">
                       <i className="fas fa-stethoscope" />
                       <div>
-                        <span className="cal-card__lbl">Médico</span>
+                        <span className="cal-card__lbl">Doctor</span>
                         {t.doctor}
                       </div>
                     </div>
@@ -1494,9 +1673,9 @@ const Turnos = () => {
                 }
               />
               <Buscador
-                label="Médico"
+                label="Doctor"
                 options={listDoctores}
-                placeholder="Seleccionar médico"
+                placeholder="Seleccionar Doctor"
                 value={turnoForm.doctor}
                 labelExterno={labels.doctor}
                 onLabelChange={(lbl) =>
@@ -1506,11 +1685,51 @@ const Turnos = () => {
                   setTurnoForm((prev) => ({ ...prev, doctor: val }))
                 }
               />
+              <div style={{ position: "relative" }}>
+                <Buscador
+                  label="Doctor 2 (opcional)"
+                  options={listDoctores}
+                  placeholder="Seleccionar Doctor 2"
+                  value={turnoForm.doctor2 || 0}
+                  labelExterno={labels.doctor2}
+                  onLabelChange={(lbl) =>
+                    setLabels((prev) => ({ ...prev, doctor2: lbl }))
+                  }
+                  onChange={(val) =>
+                    setTurnoForm((prev) => ({ ...prev, doctor2: val }))
+                  }
+                />
+                {turnoForm.doctor2 > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTurnoForm((prev) => ({ ...prev, doctor2: 0 }));
+                      setLabels((prev) => ({ ...prev, doctor2: "" }));
+                    }}
+                    style={{
+                      position: "absolute", top: 0, right: 0,
+                      background: "none", border: "none", cursor: "pointer",
+                      color: "#9ca3af", fontSize: 12, fontWeight: 700,
+                      padding: "2px 4px", lineHeight: 1,
+                    }}
+                    title="Quitar doctor 2"
+                  >
+                    ✕ Quitar
+                  </button>
+                )}
+              </div>
               <div className="input-group">
                 <label className="input-label">
                   Fecha
                   {modo === "UPD" && estadoOriginal === "Confirmado" && (
-                    <span style={{ marginLeft: 6, fontSize: 11, color: "#e53e3e", fontWeight: 600 }}>
+                    <span
+                      style={{
+                        marginLeft: 6,
+                        fontSize: 11,
+                        color: "#e53e3e",
+                        fontWeight: 600,
+                      }}
+                    >
                       (bloqueada — turno confirmado)
                     </span>
                   )}
@@ -1540,14 +1759,18 @@ const Turnos = () => {
             <div className="modal-row">
               <div className="input-group">
                 <label className="input-label">Hora</label>
-                <input
-                  type="time"
-                  className="input-field"
+                <TimePicker
                   name="hora"
                   value={turnoForm.hora}
                   onChange={handleChangeTurno}
-                  noempty="true"
-                  validar="Ingrese la hora del turno"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Hora Hasta</label>
+                <TimePicker
+                  name="horahasta"
+                  value={turnoForm.horahasta}
+                  onChange={handleChangeTurno}
                 />
               </div>
               <div className="input-group">
@@ -1576,13 +1799,9 @@ const Turnos = () => {
                   onChange={handleChangeTurno}
                 >
                   <option value="Pendiente">Pendiente</option>
-                  <option
-                    value="Confirmado"
-                    disabled={turnoForm.fecha > hoyKey}
-                  >
-                    Confirmado
-                  </option>
+                  <option value="Confirmado">Confirmado</option>
                   <option value="Cancelado">Cancelado</option>
+                  <option value="Atendido">Atendido</option>
                 </select>
               </div>
               <div className="input-group">
@@ -1615,19 +1834,6 @@ const Turnos = () => {
             </div>
 
             <div className="modal-row">
-              <Buscador
-                label="Descontar al Médico"
-                options={listDoctores}
-                placeholder="Seleccionar médico"
-                value={turnoForm.descuentodoctor}
-                labelExterno={labels.descuentodoctor}
-                onLabelChange={(lbl) =>
-                  setLabels((prev) => ({ ...prev, descuentodoctor: lbl }))
-                }
-                onChange={(val) =>
-                  setTurnoForm((prev) => ({ ...prev, descuentodoctor: val }))
-                }
-              />
               <div className="input-group">
                 <label className="input-label">Porcentaje a descontar</label>
                 <input
@@ -1653,6 +1859,47 @@ const Turnos = () => {
                     setImporteDisplay(formatNumerico(raw));
                     setTurnoForm((prev) => ({ ...prev, importetotal: raw }));
                   }}
+                  placeholder="0"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Importe Recibido</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={importeRecibidoDisplay}
+                  onChange={(e) => {
+                    const raw = desformatear(e.target.value);
+                    setImporteRecibidoDisplay(formatNumerico(raw));
+                    setTurnoForm((prev) => ({ ...prev, importerecibido: raw }));
+                  }}
+                  placeholder="0"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Importe Laboratorio</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={importeLaboratorioDisplay}
+                  onChange={(e) => {
+                    const raw = desformatear(e.target.value);
+                    setImporteLaboratorioDisplay(formatNumerico(raw));
+                    setTurnoForm((prev) => ({ ...prev, importelaboratorio: raw }));
+                  }}
+                  placeholder="0"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Saldo</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={formatNumerico(
+                    (Number(turnoForm.importetotal) || 0) -
+                    (Number(turnoForm.importerecibido) || 0)
+                  )}
+                  disabled
                   placeholder="0"
                 />
               </div>

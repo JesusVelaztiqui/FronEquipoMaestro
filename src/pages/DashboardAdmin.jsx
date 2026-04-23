@@ -185,7 +185,7 @@ const AdminDashboard = () => {
 
           <div className="transaction-list">
             {dash?.turnos
-              ?.filter((e) => e.estado === "Pendiente")
+              ?.filter((e) => e.estado === "Confirmado")
               ?.map((t) => (
                 <div className="transaction-item" key={t.id}>
                   <div className="transaction-icon">
@@ -200,6 +200,12 @@ const AdminDashboard = () => {
                       <span className="transaction-doctor">
                         <i className="fas fa-user-md" /> {t.doctor}
                       </span>
+                      {t.consultorio && (
+                        <span className="transaction-doctor">
+                          <i className="fas fa-door-open" /> Conultorio{" "}
+                          {t.consultorio}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="transaction-status pending">{t.estado}</div>
@@ -224,7 +230,7 @@ const AdminDashboard = () => {
 
           <div className="transaction-list">
             {dash?.turnos
-              ?.filter((e) => e.estado === "Confirmado")
+              ?.filter((e) => e.estado === "Atendido")
               ?.map((t) => (
                 <div className="transaction-item" key={t.id}>
                   <div className="transaction-icon">
@@ -239,6 +245,12 @@ const AdminDashboard = () => {
                       <span className="transaction-doctor">
                         <i className="fas fa-user-md" /> {t.doctor}
                       </span>
+                      {t.consultorio && (
+                        <span className="transaction-doctor">
+                          <i className="fas fa-door-open" /> Consultorio{" "}
+                          {t.consultorio}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="transaction-status completed">{t.estado}</div>

@@ -65,6 +65,42 @@
   gap: 10px;
 }
 
+.cal-filtro-consultorio {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-primario);
+  border-radius: 6px;
+  overflow: hidden;
+
+  &__btn {
+    font-family: var(--font-family);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border: none;
+    border-right: 1px solid var(--color-primario);
+    background: var(--color-blanco);
+    color: var(--color-secundario);
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.12s, color 0.12s;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &:hover:not(.active) {
+      background: var(--color-fondo);
+    }
+
+    &.active {
+      background: var(--color-primario);
+      color: var(--color-blanco);
+    }
+  }
+}
+
 .cal-nav__controls {
   display: flex;
   align-items: center;
@@ -142,6 +178,9 @@
 }
 .cal-legend__dot--cancelado {
   background: #b05050;
+}
+.cal-legend__dot--atendido {
+  background: #3b82f6;
 }
 
 .cal-grid {
@@ -265,6 +304,13 @@
 }
 .cal-chip--cancelado .cal-chip__dot {
   background: #b05050;
+}
+.cal-chip--atendido {
+  background: #eff6ff;
+  color: #1e40af;
+}
+.cal-chip--atendido .cal-chip__dot {
+  background: #3b82f6;
 }
 
 .cal-day__mas {
@@ -440,6 +486,10 @@
 .cal-card__badge--cancelado {
   background: #fdf0f0;
   color: #7a2a2a;
+}
+.cal-card__badge--atendido {
+  background: #eff6ff;
+  color: #1e40af;
 }
 
 .cal-card__row {
