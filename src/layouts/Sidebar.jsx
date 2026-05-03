@@ -52,7 +52,16 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
           <i className="fas fa-users" />
           <span>Pacientes</span>
         </div>
-
+        <div
+          className={`menu-item ${isActive("/tratamiento") ? "active" : ""}`}
+          onClick={() => {
+            navigate("/tratamiento");
+            setMenuOpen(false);
+          }}
+        >
+          <i className="fas fa-tooth" />
+          <span>Tratamientos</span>
+        </div>
         <div
           className={`menu-item ${isActive("/turnos") ? "active" : ""}`}
           onClick={() => {
@@ -86,6 +95,7 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
             <span>Caja</span>
           </div>
         )}
+
         <div
           className={`menu-item ${isActive("/recetario") ? "active" : ""}`}
           onClick={() => {

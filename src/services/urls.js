@@ -21,8 +21,11 @@ export const eliminarImagenTurno = `${baseurl}turnos/imagenes`;
 
 export const listarAuditoria = `${baseurl}auditoria/listar`;
 
-export const listarCaja  = `${baseurl}caja/listar`;
-export const detalleCaja = `${baseurl}caja/detalle`;
+export const listarCaja         = `${baseurl}caja/listar`;
+export const detalleCaja        = `${baseurl}caja/detalle`;
+export const insumosHistorialCaja = `${baseurl}caja/insumos-historial`;
+export const laboratorioHistorialCaja = `${baseurl}caja/laboratorio-historial`;
+export const resumenPeriodoCaja = `${baseurl}caja/resumen-periodo`;
 export const grabarCaja = `${baseurl}caja/grabar`;
 export const editarCaja = `${baseurl}caja/editar`;
 export const eliminarCaja = `${baseurl}caja/eliminar`;
@@ -31,6 +34,12 @@ export const generarRecetario = `${baseurl}report/recetario`;
 export const generarHistorial = `${baseurl}report/historial`;
 export const generarConsentimiento = `${baseurl}report/consentimiento`;
 export const generarPresupuesto    = `${baseurl}report/presupuesto`;
+
+export const listarTratamiento           = `${baseurl}tratamiento/listar`;
+export const listarTratamientoPorPaciente = `${baseurl}tratamiento/listarPorPaciente`;
+export const grabarTratamiento           = `${baseurl}tratamiento/grabar`;
+export const editarTratamiento           = `${baseurl}tratamiento/editar`;
+export const eliminarTratamiento         = `${baseurl}tratamiento/eliminar`;
 
 export const listarProductos = `${baseurl}productos/listar`;
 export const grabarProductos = `${baseurl}productos/grabar`;

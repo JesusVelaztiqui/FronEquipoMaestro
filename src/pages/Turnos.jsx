@@ -12,6 +12,7 @@ import {
   listarImagenesTurno,
   listarPacientes,
   listarTurnos,
+  listarTratamientoPorPaciente,
   recuperarTurno,
 } from "../services/urls";
 import { NoEmpty } from "../components/NoEmpty";
@@ -563,7 +564,7 @@ const FORM_VACIO = {
   fecha: "",
   hora: "",
   estado: "Pendiente",
-  tratamiento: "",
+  tratamiento: 0,
   observacion: "",
   descuentodoctor: 0,
   doctor2: 0,
@@ -576,7 +577,7 @@ const FORM_VACIO = {
   horahasta: "",
 };
 
-const LABELS_VACIOS = { paciente: "", doctor: "", doctor2: "" };
+const LABELS_VACIOS = { paciente: "", doctor: "", doctor2: "", tratamiento: "" };
 
 const Turnos = () => {
   const userData = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
@@ -593,6 +594,7 @@ const Turnos = () => {
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [listPacientes, setListPacientes] = useState([]);
   const [listDoctores, setListDoctores] = useState([]);
+  const [listTratamientos, setListTratamientos] = useState([]);
   const [archivos, setArchivos] = useState([]);
   const [imagenesExistentes, setImagenesExistentes] = useState([]);
   const [visible, setVisible] = useState(false);
@@ -605,6 +607,7 @@ const Turnos = () => {
   const [importeLaboratorioDisplay, setImporteLaboratorioDisplay] = useState("");
   const [fechaOriginal, setFechaOriginal] = useState("");
   const [estadoOriginal, setEstadoOriginal] = useState("");
+  const [saldoDisponible, setSaldoDisponible] = useState(null);
 
   const [vista, setVista] = useState(
     () => localStorage.getItem("turnos_vista") || "lista",
@@ -701,6 +704,8 @@ const Turnos = () => {
     setImporteLaboratorioDisplay("");
     setFechaOriginal("");
     setEstadoOriginal("");
+    setListTratamientos([]);
+    setSaldoDisponible(null);
   };
 
   const getTurnos = async () => {
@@ -790,6 +795,18 @@ const Turnos = () => {
     }
   };
 
+  const getTratamientosPorPaciente = async (pacienteId) => {
+    if (!pacienteId) { setListTratamientos([]); return []; }
+    try {
+      const response = await sendData(listarTratamientoPorPaciente, "GET", `?paciente=${pacienteId}`, null);
+      if (response.status === 200) {
+        setListTratamientos(response.data || []);
+        return response.data || [];
+      }
+    } catch { /* silencioso */ }
+    return [];
+  };
+
   const getImagenesTurno = async (idTurno) => {
     try {
       cargarLoader();
@@ -849,14 +866,22 @@ const Turnos = () => {
           consultorio: t.consultorio || 0,
           horahasta: t.horahasta || "",
         });
-        setImporteDisplay(formatNumerico(t.importetotal));
         setImporteRecibidoDisplay(formatNumerico(t.importerecibido || 0));
         setImporteLaboratorioDisplay(formatNumerico(t.importelaboratorio || 0));
+        const tratamientosDelPaciente = await getTratamientosPorPaciente(t.paciente);
+        const tratEncontrado = tratamientosDelPaciente.find((tr) => tr.id === t.tratamiento);
+        const importetotalReal = tratEncontrado ? tratEncontrado.importetotal : 0;
+        setTurnoForm((prev) => ({ ...prev, importetotal: importetotalReal }));
+        setImporteDisplay(formatNumerico(importetotalReal));
         setLabels({
           paciente: buscarLabelEnLista(listPacientes, t.paciente),
           doctor: buscarLabelEnLista(listDoctores, t.doctor),
           doctor2: t.doctor2 ? buscarLabelEnLista(listDoctores, t.doctor2) : "",
+          tratamiento: tratEncontrado ? tratEncontrado.descripcion : "",
         });
+        setSaldoDisponible(
+          tratEncontrado ? tratEncontrado.saldo + (t.importerecibido || 0) : null
+        );
         setArchivos([]);
         await getImagenesTurno(t.id);
         setModo("UPD");
@@ -938,6 +963,24 @@ const Turnos = () => {
       });
       return;
     }
+    if (!turnoForm.tratamiento) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "Seleccione un tratamiento",
+        duration: 3000,
+      });
+      return;
+    }
+    if (saldoDisponible !== null && Number(turnoForm.importerecibido) > saldoDisponible) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: `El importe recibido supera el saldo pendiente de ${Number(saldoDisponible).toLocaleString("es-PY")} Gs.`,
+        duration: 3000,
+      });
+      return;
+    }
     if (modo === "INS" && turnoForm.fecha < hoyKey) {
       addToast({
         type: "error",
@@ -976,14 +1019,13 @@ const Turnos = () => {
     }
     try {
       cargarLoader();
+      const { importetotal, saldo, ...resto } = turnoForm;
       const payload = {
-        ...turnoForm,
+        ...resto,
         horahasta: turnoForm.horahasta || turnoForm.hora,
         porcentajedescuento: Number(turnoForm.porcentajedescuento) || 0,
-        importetotal: Number(turnoForm.importetotal) || 0,
         importerecibido: Number(turnoForm.importerecibido) || 0,
         importelaboratorio: Number(turnoForm.importelaboratorio) || 0,
-        saldo: (Number(turnoForm.importetotal) || 0) - (Number(turnoForm.importerecibido) || 0),
       };
       const formData = new FormData();
       formData.append("turnos", JSON.stringify(payload));
@@ -1373,7 +1415,7 @@ const Turnos = () => {
                         <td>{formatoFecha(turno.fecha, "dd/MM/yyyy")}</td>
                         <td>{turno.hora}</td>
                         <td>{turno.consultorio || "-"}</td>
-                        <td>{turno.tratamiento}</td>
+                        <td>{turno.descripcionTratamiento || "—"}</td>
                         <td>
                           <span
                             className={`turno-estado ${getEstadoClass(turno.estado)}`}
@@ -1588,12 +1630,12 @@ const Turnos = () => {
                         {t.doctor}
                       </div>
                     </div>
-                    {t.tratamiento && (
+                    {t.descripcionTratamiento && (
                       <div className="cal-card__row">
                         <i className="fas fa-tooth" />
                         <div>
                           <span className="cal-card__lbl">Tratamiento</span>
-                          {t.tratamiento}
+                          {t.descripcionTratamiento}
                         </div>
                       </div>
                     )}
@@ -1668,9 +1710,12 @@ const Turnos = () => {
                 onLabelChange={(lbl) =>
                   setLabels((prev) => ({ ...prev, paciente: lbl }))
                 }
-                onChange={(val) =>
-                  setTurnoForm((prev) => ({ ...prev, paciente: val }))
-                }
+                onChange={(val) => {
+                  setTurnoForm((prev) => ({ ...prev, paciente: val, tratamiento: 0, importetotal: 0 }));
+                  setLabels((prev) => ({ ...prev, tratamiento: "" }));
+                  setImporteDisplay("");
+                  getTratamientosPorPaciente(val);
+                }}
               />
               <Buscador
                 label="Doctor"
@@ -1804,19 +1849,35 @@ const Turnos = () => {
                   <option value="Atendido">Atendido</option>
                 </select>
               </div>
-              <div className="input-group">
-                <label className="input-label">Tratamiento</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  name="tratamiento"
-                  value={turnoForm.tratamiento}
-                  onChange={handleChangeTurno}
-                  noempty="true"
-                  validar="Ingrese el tratamiento"
-                  placeholder="Ej: Limpieza dental, Extracción, etc."
-                />
-              </div>
+              <Buscador
+                label="Tratamiento"
+                options={listTratamientos.map((t) => ({
+                  id: t.id,
+                  nombre: t.descripcion || "",
+                  apellido: "",
+                  label: t.descripcion || "",
+                }))}
+                placeholder={turnoForm.paciente ? "Seleccionar tratamiento" : "Primero seleccione un paciente"}
+                value={turnoForm.tratamiento}
+                labelExterno={labels.tratamiento}
+                onLabelChange={(lbl) =>
+                  setLabels((prev) => ({ ...prev, tratamiento: lbl }))
+                }
+                onChange={(val) => {
+                  const trat = listTratamientos.find((t) => t.id === val);
+                  setTurnoForm((prev) => ({
+                    ...prev,
+                    tratamiento: val,
+                    importetotal: trat ? trat.importetotal : prev.importetotal,
+                    importerecibido: 0,
+                  }));
+                  if (trat) {
+                    setImporteDisplay(formatNumerico(trat.importetotal));
+                    setSaldoDisponible(trat.saldo);
+                    setImporteRecibidoDisplay("");
+                  }
+                }}
+              />
             </div>
 
             <div className="modal-row">
@@ -1870,6 +1931,15 @@ const Turnos = () => {
                   value={importeRecibidoDisplay}
                   onChange={(e) => {
                     const raw = desformatear(e.target.value);
+                    if (saldoDisponible !== null && raw > saldoDisponible) {
+                      addToast({
+                        type: "warning",
+                        title: "Importe inválido",
+                        message: `El saldo pendiente es ${Number(saldoDisponible).toLocaleString("es-PY")} Gs.`,
+                        duration: 3000,
+                      });
+                      return;
+                    }
                     setImporteRecibidoDisplay(formatNumerico(raw));
                     setTurnoForm((prev) => ({ ...prev, importerecibido: raw }));
                   }}
@@ -1896,8 +1966,9 @@ const Turnos = () => {
                   type="text"
                   className="input-field"
                   value={formatNumerico(
-                    (Number(turnoForm.importetotal) || 0) -
-                    (Number(turnoForm.importerecibido) || 0)
+                    saldoDisponible !== null
+                      ? saldoDisponible - (Number(turnoForm.importerecibido) || 0)
+                      : 0
                   )}
                   disabled
                   placeholder="0"

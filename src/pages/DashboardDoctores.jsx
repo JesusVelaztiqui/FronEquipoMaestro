@@ -5,19 +5,17 @@ import { addToast } from "../components/Tooltip";
 import { listarDashboardDoctor, listarTurnos } from "../services/urls";
 import { useNavigate } from "react-router-dom";
 
-const formatGuarani = (valor) => "₲ " + Number(valor).toLocaleString("es-PY");
 const formatHora = (hora) => (hora ? hora.substring(0, 5) : "");
 
 const DahsboardDoctores = () => {
   const navigate = useNavigate();
   const usuario = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
-  const mesActual = new Date().getMonth() + 1;
 
   const [datos, setDatos] = useState({
-    ingresoMes: 0,
-    egresoMes: 0,
-    ingresoAnual: 0,
-    egresoAnual: 0,
+    atendidosHoy: 0,
+    atendidosMes: 0,
+    atendidosAnio: 0,
+    tasaAsistencia: 0,
   });
   const [turnos, setTurnos] = useState([]);
 
@@ -25,7 +23,7 @@ const DahsboardDoctores = () => {
     try {
       cargarLoader();
       const response = await sendData(
-        `${listarDashboardDoctor}?mes=${mesActual}&id=${usuario?.id}`,
+        `${listarDashboardDoctor}?id=${usuario?.id}`,
         "GET",
         null,
         null,
@@ -33,21 +31,11 @@ const DahsboardDoctores = () => {
       if (response?.status === 200) {
         setDatos(response?.data);
       } else {
-        addToast({
-          type: "error",
-          title: "Error",
-          message: response?.mensaje,
-          duration: 3000,
-        });
+        addToast({ type: "error", title: "Error", message: response?.mensaje, duration: 3000 });
       }
     } catch (error) {
       navigate("/login");
-      addToast({
-        type: "error",
-        title: "Error",
-        message: error,
-        duration: 3000,
-      });
+      addToast({ type: "error", title: "Error", message: error, duration: 3000 });
     } finally {
       ocultarLoader();
     }
@@ -65,21 +53,11 @@ const DahsboardDoctores = () => {
       if (response?.status === 200) {
         setTurnos(response?.data || []);
       } else {
-        addToast({
-          type: "error",
-          title: "Error",
-          message: response?.mensaje,
-          duration: 3000,
-        });
+        addToast({ type: "error", title: "Error", message: response?.mensaje, duration: 3000 });
       }
     } catch (error) {
       navigate("/login");
-      addToast({
-        type: "error",
-        title: "Error",
-        message: error,
-        duration: 3000,
-      });
+      addToast({ type: "error", title: "Error", message: error, duration: 3000 });
     } finally {
       ocultarLoader();
     }
@@ -91,12 +69,24 @@ const DahsboardDoctores = () => {
   }, []);
 
   const hoy = new Date().toISOString().split("T")[0];
+  const mesActual = new Date().getMonth();
+  const anioActual = new Date().getFullYear();
+
+  const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
   const turnosPendientes = turnos.filter(
     (t) => t.fecha === hoy && t.estado === "Confirmado",
   );
-  const turnosAtendidos = turnos.filter(
+  const turnosAtendidosHoy = turnos.filter(
     (t) => t.fecha === hoy && t.estado === "Atendido",
   );
+
+  const tasaColor =
+    datos.tasaAsistencia >= 80
+      ? "#22c55e"
+      : datos.tasaAsistencia >= 50
+      ? "#f59e0b"
+      : "#ef4444";
 
   return (
     <>
@@ -112,85 +102,104 @@ const DahsboardDoctores = () => {
       <div className="cards-grid">
         <div className="transfer-card">
           <div className="card-icon">
-            <i className="fas fa-credit-card" />
+            <i className="fas fa-user-check" />
           </div>
-          <div className="card-label">Total de Ingresos mensual</div>
-          <div className="card-amount">{formatGuarani(datos.ingresoMes)}</div>
+          <div className="card-label">Pacientes atendidos hoy</div>
+          <div className="card-amount">{datos.atendidosHoy}</div>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+            {new Date().toLocaleDateString("es-PY", { day: "2-digit", month: "long" })}
+          </div>
         </div>
+
         <div className="transfer-card">
           <div className="card-icon">
-            <i className="fas fa-upload" />
+            <i className="fas fa-calendar-check" />
           </div>
-          <div className="card-label">Total Egreso mensual</div>
-          <div className="card-amount">{formatGuarani(datos.egresoMes)}</div>
+          <div className="card-label">Pacientes atendidos en el mes</div>
+          <div className="card-amount">{datos.atendidosMes}</div>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+            {MESES[mesActual]} {anioActual}
+          </div>
         </div>
+
         <div className="transfer-card">
           <div className="card-icon">
-            <i className="fas fa-building" />
+            <i className="fas fa-chart-line" />
           </div>
-          <div className="card-label">Total Ingreso Anual</div>
-          <div className="card-amount">{formatGuarani(datos.ingresoAnual)}</div>
+          <div className="card-label">Pacientes atendidos en el año</div>
+          <div className="card-amount">{datos.atendidosAnio}</div>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+            {anioActual}
+          </div>
         </div>
+
         <div className="transfer-card">
           <div className="card-icon">
-            <i className="fas fa-building" />
+            <i className="fas fa-percentage" style={{ color: tasaColor }} />
           </div>
-          <div className="card-label">Total Egreso Anual</div>
-          <div className="card-amount">{formatGuarani(datos.egresoAnual)}</div>
+          <div className="card-label">Tasa de asistencia del mes</div>
+          <div className="card-amount" style={{ color: tasaColor }}>
+            {datos.tasaAsistencia}%
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+            Atendidos vs cancelados — {MESES[mesActual]}
+          </div>
         </div>
       </div>
 
       <div className="transactions-grid">
         <div className="transaction-section">
-          <h2 className="section-title">Siguientes Turnos hoy</h2>
-          {turnosPendientes.length > 0
-            ? turnosPendientes.map((t) => (
-                <div className="transaction-item" key={t.id}>
-                  <div className="transaction-icon">
-                    <i className="fas fa-user" />
-                  </div>
-                  <div className="transaction-details">
-                    <div className="transaction-name">{t.paciente}</div>
-                    <div className="transaction-time">
-                      hoy, {formatHora(t.hora)}
-                      {t.consultorio && (
-                        <span style={{ marginLeft: 8 }}>
-                          <i className="fas fa-door-open" /> Consultorio{" "}
-                          {t.consultorio}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="transaction-status pending">{t.estado}</div>
+          <h2 className="section-title">Turnos pendientes hoy</h2>
+          {turnosPendientes.length > 0 ? (
+            turnosPendientes.map((t) => (
+              <div className="transaction-item" key={t.id}>
+                <div className="transaction-icon">
+                  <i className="fas fa-user" />
                 </div>
-              ))
-            : ""}
+                <div className="transaction-details">
+                  <div className="transaction-name">{t.paciente}</div>
+                  <div className="transaction-time">
+                    {formatHora(t.hora)}
+                    {t.consultorio && (
+                      <span style={{ marginLeft: 8 }}>
+                        <i className="fas fa-door-open" /> Consultorio {t.consultorio}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="transaction-status pending">{t.estado}</div>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Sin turnos pendientes para hoy</p>
+          )}
         </div>
 
         <div className="transaction-section">
-          <h2 className="section-title">Pacientes Atendidos Hoy</h2>
-          {turnosAtendidos.length > 0
-            ? turnosAtendidos.map((t) => (
-                <div className="transaction-item" key={t.id}>
-                  <div className="transaction-icon">
-                    <i className="fas fa-user" />
-                  </div>
-                  <div className="transaction-details">
-                    <div className="transaction-name">{t.paciente}</div>
-                    <div className="transaction-time">
-                      hoy, {formatHora(t.hora)}
-                      {t.consultorio && (
-                        <span style={{ marginLeft: 8 }}>
-                          <i className="fas fa-door-open" /> Consultorio{" "}
-                          {t.consultorio}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="transaction-status completed">Completado</div>
+          <h2 className="section-title">Pacientes atendidos hoy</h2>
+          {turnosAtendidosHoy.length > 0 ? (
+            turnosAtendidosHoy.map((t) => (
+              <div className="transaction-item" key={t.id}>
+                <div className="transaction-icon">
+                  <i className="fas fa-user" />
                 </div>
-              ))
-            : ""}
+                <div className="transaction-details">
+                  <div className="transaction-name">{t.paciente}</div>
+                  <div className="transaction-time">
+                    {formatHora(t.hora)}
+                    {t.consultorio && (
+                      <span style={{ marginLeft: 8 }}>
+                        <i className="fas fa-door-open" /> Consultorio {t.consultorio}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="transaction-status completed">Atendido</div>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Sin pacientes atendidos hoy</p>
+          )}
         </div>
       </div>
     </>
