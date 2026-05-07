@@ -26,9 +26,6 @@ export const detalleCaja        = `${baseurl}caja/detalle`;
 export const insumosHistorialCaja = `${baseurl}caja/insumos-historial`;
 export const laboratorioHistorialCaja = `${baseurl}caja/laboratorio-historial`;
 export const resumenPeriodoCaja = `${baseurl}caja/resumen-periodo`;
-export const grabarCaja = `${baseurl}caja/grabar`;
-export const editarCaja = `${baseurl}caja/editar`;
-export const eliminarCaja = `${baseurl}caja/eliminar`;
 
 export const generarRecetario = `${baseurl}report/recetario`;
 export const generarHistorial = `${baseurl}report/historial`;
@@ -45,7 +42,5 @@ export const listarProductos = `${baseurl}productos/listar`;
 export const grabarProductos = `${baseurl}productos/grabar`;
 export const editarProductos = `${baseurl}productos/modificar`;
 export const eliminarProductos = `${baseurl}productos/eliminar`;
-export const recuperarProductos = `${baseurl}productos/recuperar`;
 export const modificarUsuario = `${baseurl}usuario/modificar`;
 export const listarDashboardDoctor = `${baseurl}dahsboard/listarIngEgr`;
-export const listarTurnosDoctor = `${baseurl}dahsboard/listarTurnosDoctor`;

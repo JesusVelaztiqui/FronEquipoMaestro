@@ -972,6 +972,15 @@ const Turnos = () => {
       });
       return;
     }
+    if (!turnoForm.hora) {
+      addToast({
+        type: "error",
+        title: "Validación",
+        message: "Ingrese la hora del turno",
+        duration: 3000,
+      });
+      return;
+    }
     if (saldoDisponible !== null && Number(turnoForm.importerecibido) > saldoDisponible) {
       addToast({
         type: "error",
