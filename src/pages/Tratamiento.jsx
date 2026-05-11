@@ -140,7 +140,7 @@ const FORM_VACIO = {
   importetotal: 0,
   saldo: 0,
   fechainicio: "",
-  fechafin: "1999/01/01",
+  fechafin: "",
   estado: "En proceso",
   descripcion: "",
 };
@@ -211,7 +211,12 @@ const Tratamiento = () => {
     try {
       cargarLoader();
       const url = modo === "INS" ? grabarTratamiento : editarTratamiento;
-      const res = await sendData(url, "POST", null, form);
+      const payload = {
+        ...form,
+        fechainicio: form.fechainicio || null,
+        fechafin:    form.fechafin    || null,
+      };
+      const res = await sendData(url, "POST", null, payload);
       if (res.status === 200) {
         await getLista();
         addToast({

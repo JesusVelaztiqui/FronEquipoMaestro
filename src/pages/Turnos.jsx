@@ -1910,12 +1910,14 @@ const Turnos = () => {
                   type="number"
                   className="input-field"
                   value={turnoForm.porcentajedescuento || ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const pct = Number(e.target.value) || 0;
                     setTurnoForm((prev) => ({
                       ...prev,
-                      porcentajedescuento: Number(e.target.value) || 0,
-                    }))
-                  }
+                      porcentajedescuento: pct,
+                      descuentodoctor: Math.round((prev.importerecibido || 0) * pct / 100),
+                    }));
+                  }}
                 />
               </div>
               <div className="input-group">
@@ -1950,7 +1952,11 @@ const Turnos = () => {
                       return;
                     }
                     setImporteRecibidoDisplay(formatNumerico(raw));
-                    setTurnoForm((prev) => ({ ...prev, importerecibido: raw }));
+                    setTurnoForm((prev) => ({
+                      ...prev,
+                      importerecibido: raw,
+                      descuentodoctor: Math.round(raw * (prev.porcentajedescuento || 0) / 100),
+                    }));
                   }}
                   placeholder="0"
                 />
