@@ -546,21 +546,8 @@ const Caja = () => {
           </div>
         </div>
 
-        {/* 4 summary cards */}
+        {/* summary cards */}
         <div className="caja-summary caja-summary--4">
-          <div className="caja-summary-card">
-            <div className="caja-summary-card__icon caja-summary-card__icon--total">
-              <i className="fas fa-file-invoice-dollar" />
-            </div>
-            <div>
-              <p className="caja-summary-card__label">Total Bruto</p>
-              <p className="caja-summary-card__value">{formatGs(periodo?.totalBruto ?? data.totalBruto)}</p>
-              <p className="caja-summary-card__sub">
-                {filtroMes ? `${MESES_ES[Number(filtroMes)]} ` : ""}{filtroAnio || new Date().getFullYear()}
-              </p>
-            </div>
-          </div>
-
           <div
             className="caja-summary-card"
             style={{ cursor: "pointer" }}
