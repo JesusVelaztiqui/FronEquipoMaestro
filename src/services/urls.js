@@ -21,11 +21,18 @@ export const eliminarImagenTurno = `${baseurl}turnos/imagenes`;
 
 export const listarAuditoria = `${baseurl}auditoria/listar`;
 
-export const listarCaja         = `${baseurl}caja/listar`;
-export const detalleCaja        = `${baseurl}caja/detalle`;
-export const insumosHistorialCaja = `${baseurl}caja/insumos-historial`;
+export const listarCaja               = `${baseurl}caja/listar`;
+export const detalleCaja              = `${baseurl}caja/detalle`;
+export const insumosHistorialCaja     = `${baseurl}caja/insumos-historial`;
 export const laboratorioHistorialCaja = `${baseurl}caja/laboratorio-historial`;
-export const resumenPeriodoCaja = `${baseurl}caja/resumen-periodo`;
+export const resumenPeriodoCaja       = `${baseurl}caja/resumen-periodo`;
+export const cajaSoloMeses            = `${baseurl}caja/solo-meses`;
+export const cajaDetalleSolo          = `${baseurl}caja/detalle-solo`;
+export const cajaCompartidoMeses      = `${baseurl}caja/compartido-meses`;
+export const cajaDetalleCompartido    = `${baseurl}caja/detalle-compartido`;
+export const cajaAdminResumen    = `${baseurl}caja/admin-resumen`;
+export const cajaAdminDetalle    = `${baseurl}caja/admin-detalle`;
+export const cajaAdminLabDetalle = `${baseurl}caja/admin-lab-detalle`;
 
 export const generarRecetario = `${baseurl}report/recetario`;
 export const generarHistorial = `${baseurl}report/historial`;

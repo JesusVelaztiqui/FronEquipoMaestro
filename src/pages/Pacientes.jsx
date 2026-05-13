@@ -219,11 +219,19 @@ const Pacientes = () => {
     if (!validate()) return;
     try {
       cargarLoader();
+      const payload = {
+        ...paciente,
+        fechanacimiento: paciente.fechanacimiento || null,
+        ruc: paciente.ruc || "",
+        celular: paciente.celular || "",
+        mail: paciente.mail || "",
+        direccion: paciente.direccion || "",
+      };
       const response = await sendData(
         modo === "INS" ? grabarPacientes : editarPacientes,
         "POST",
         null,
-        paciente,
+        payload,
       );
       if (response.status === 200) {
         await getPacientes();
@@ -492,8 +500,6 @@ const Pacientes = () => {
                   name="fechanacimiento"
                   value={paciente?.fechanacimiento}
                   onChange={handleChangePacientes}
-                  noempty="true"
-                  validar="Ingrese la fecha de nacimiento"
                 />
               </div>
             </div>
@@ -518,8 +524,6 @@ const Pacientes = () => {
                   name="ruc"
                   value={paciente?.ruc}
                   onChange={handleChangePacientes}
-                  noempty="true"
-                  validar="Ingrese la cédula o ruc"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -532,8 +536,6 @@ const Pacientes = () => {
                   name="celular"
                   value={paciente?.celular}
                   onChange={handleChangePacientes}
-                  noempty="true"
-                  validar="Ingrese el nro de celular"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -548,8 +550,6 @@ const Pacientes = () => {
                   name="mail"
                   value={paciente?.mail}
                   onChange={handleChangePacientes}
-                  noempty="true"
-                  validar="Ingrese el E-mail"
                   placeholder="Escribe aquí..."
                 />
               </div>
@@ -562,8 +562,6 @@ const Pacientes = () => {
                   name="direccion"
                   value={paciente?.direccion}
                   onChange={handleChangePacientes}
-                  noempty="true"
-                  validar="Ingrese la dirección"
                   placeholder="Escribe aquí..."
                 />
               </div>

@@ -9,7 +9,8 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
   const { clearUser } = useUserStore();
   const isActive = (path) => currentRoute === path.toLowerCase();
   const usuario = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
-  const esDr = usuario?.role === "dr";
+  const esDr    = usuario?.role === "dr";
+  const esAdmin = usuario?.role === "admin";
 
   return (
     <aside
@@ -83,7 +84,7 @@ const Sidebar = ({ menuOpen, setMenuOpen }) => {
           <i className="fas fa-boxes-stacked" />
           <span>Productos</span>
         </div>
-        {esDr && (
+        {(esDr || esAdmin) && (
           <div
             className={`menu-item ${isActive("/caja") ? "active" : ""}`}
             onClick={() => {
