@@ -585,28 +585,27 @@ const Turnos = () => {
     return `${String(nh).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
+  // true si el doctor participa en ese turno (como doctor principal o como doctor2)
+  const doctorEnTurno = (t, doctorId) =>
+    String(t.doctor) === String(doctorId) ||
+    (t.doctor2 && String(t.doctor2) === String(doctorId));
+
   const calcularProximaHora = (fecha) => {
-    if (!fecha) return "";
+    if (!fecha || !turnoForm.doctor) return "";
     const fechaNorm = normFecha(fecha);
-
-    const turnosDia = turnos.filter((t) => {
-      return (
-        normFecha(t.fecha) === fechaNorm &&
-        (t.estado || "").toLowerCase() !== "cancelado"
-      );
-    });
-
+    const turnosDia = turnos.filter((t) =>
+      normFecha(t.fecha) === fechaNorm &&
+      (t.estado || "").toLowerCase() !== "cancelado" &&
+      doctorEnTurno(t, turnoForm.doctor)
+    );
     if (turnosDia.length === 0) return "";
-
     let maxFin = "";
     for (const t of turnosDia) {
       const desde = normHora(t.hora);
       const hasta = normHora(t.horahasta);
-      // si horahasta no existe o es igual a hora, estimamos +1h
       const fin = hasta && hasta > desde ? hasta : sumarUnaHora(desde);
       if (fin > maxFin) maxFin = fin;
     }
-
     return maxFin;
   };
 
@@ -655,18 +654,15 @@ const Turnos = () => {
           message: "No se puede confirmar un turno con fecha futura.",
           duration: 3000,
         });
-        const proxConf = modo === "INS" ? calcularProximaHora(value) : "";
         setTurnoForm((prev) => ({
           ...prev,
           [name]: value,
           estado: "Pendiente",
-          ...(modo === "INS" && proxConf ? { hora: proxConf } : {}),
         }));
         return;
       }
       if (modo === "INS") {
-        const prox = calcularProximaHora(value);
-        setTurnoForm((prev) => ({ ...prev, fecha: value, hora: prox || prev.hora }));
+        setTurnoForm((prev) => ({ ...prev, fecha: value }));
         return;
       }
     }
@@ -1020,6 +1016,51 @@ const Turnos = () => {
         return;
       }
     }
+    // Validar que ningún doctor se encime con otro turno
+    if (turnoForm.fecha && turnoForm.hora) {
+      const horaDesde = turnoForm.hora;
+      const horaHasta = turnoForm.horahasta && turnoForm.horahasta > turnoForm.hora
+        ? turnoForm.horahasta
+        : sumarUnaHora(turnoForm.hora);
+
+      const turnosConflicto = turnos.filter((t) => {
+        if ((t.estado || "").toLowerCase() === "cancelado") return false;
+        if (normFecha(t.fecha) !== turnoForm.fecha) return false;
+        if (modo === "UPD" && t.id === turnoForm.id) return false;
+        const tDesde = normHora(t.hora);
+        const tHasta = normHora(t.horahasta) && normHora(t.horahasta) > tDesde
+          ? normHora(t.horahasta)
+          : sumarUnaHora(tDesde);
+        return horaDesde < tHasta && horaHasta > tDesde;
+      });
+
+      if (turnoForm.doctor) {
+        const c = turnosConflicto.find((t) => doctorEnTurno(t, turnoForm.doctor));
+        if (c) {
+          addToast({
+            type: "error",
+            title: "Doctor ocupado",
+            message: `El doctor ya tiene un turno de ${normHora(c.hora)} a ${normHora(c.horahasta) || sumarUnaHora(normHora(c.hora))}`,
+            duration: 4000,
+          });
+          return;
+        }
+      }
+
+      if (turnoForm.doctor2 && Number(turnoForm.doctor2) !== 0) {
+        const c = turnosConflicto.find((t) => doctorEnTurno(t, turnoForm.doctor2));
+        if (c) {
+          addToast({
+            type: "error",
+            title: "Segundo doctor ocupado",
+            message: `El segundo doctor ya tiene un turno de ${normHora(c.hora)} a ${normHora(c.horahasta) || sumarUnaHora(normHora(c.hora))}`,
+            duration: 4000,
+          });
+          return;
+        }
+      }
+    }
+
     try {
       cargarLoader();
       const { importetotal, saldo, ...resto } = turnoForm;
@@ -1324,8 +1365,7 @@ const Turnos = () => {
     }
     setModo("INS");
     resetForm();
-    const prox = calcularProximaHora(fecha);
-    setTurnoForm((prev) => ({ ...prev, fecha, hora: prox || "" }));
+    setTurnoForm((prev) => ({ ...prev, fecha, hora: "" }));
     setOpenModal(true);
   };
 
@@ -1383,8 +1423,7 @@ const Turnos = () => {
             onClick={() => {
               setModo("INS");
               resetForm();
-              const prox = calcularProximaHora(hoyKey);
-              setTurnoForm((prev) => ({ ...prev, fecha: hoyKey, hora: prox || "" }));
+              setTurnoForm((prev) => ({ ...prev, fecha: hoyKey, hora: "" }));
               setOpenModal(true);
             }}
           >
@@ -1829,7 +1868,6 @@ const Turnos = () => {
                   name="hora"
                   value={turnoForm.hora}
                   onChange={handleChangeTurno}
-                  minTime={modo === "INS" ? proximaHoraDisponible : null}
                 />
               </div>
               <div className="input-group">
