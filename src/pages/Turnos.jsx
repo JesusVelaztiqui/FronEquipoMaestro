@@ -516,6 +516,7 @@ const LABELS_VACIOS = { paciente: "", doctor: "", doctor2: "", tratamiento: "" }
 
 const Turnos = () => {
   const userData = JSON.parse(localStorage.getItem("usuarioMaestro") || "{}");
+  const esDr = userData?.role === "dr";
   const navigate = useNavigate();
   const { validate, clearErrors } = NoEmpty();
   const [modo, setModo] = useState("INS");
@@ -543,6 +544,9 @@ const Turnos = () => {
   const [fechaOriginal, setFechaOriginal] = useState("");
   const [estadoOriginal, setEstadoOriginal] = useState("");
   const [saldoDisponible, setSaldoDisponible] = useState(null);
+
+  // Filtro exclusivo del rol dr: "mios" = solo sus turnos, "todos" = todos los turnos
+  const [filtroDoctor, setFiltroDoctor] = useState("mios");
 
   const [vista, setVista] = useState(
     () => localStorage.getItem("turnos_vista") || "lista",
@@ -701,10 +705,13 @@ const Turnos = () => {
   const getTurnos = async () => {
     try {
       cargarLoader();
+      // Si el dr pidió "Todos", consultamos como admin para traer todos los turnos;
+      // si pidió "Mis turnos" (o es otro rol) se mantiene el comportamiento original.
+      const rolConsulta = esDr && filtroDoctor === "todos" ? "admin" : userData?.role;
       const response = await sendData(
         listarTurnos,
         "GET",
-        `?rol=${userData?.role}&id=${userData?.id}`,
+        `?rol=${rolConsulta}&id=${userData?.id}`,
         null,
       );
       if (response.status === 200) {
@@ -1272,7 +1279,6 @@ const Turnos = () => {
   };
 
   useEffect(() => {
-    getTurnos();
     getPacientes();
     getDoctores();
     const handleClickOutside = (e) => {
@@ -1281,6 +1287,12 @@ const Turnos = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  // Carga inicial de turnos y recarga cuando el dr alterna entre "Mis turnos" / "Todos"
+  useEffect(() => {
+    getTurnos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroDoctor]);
 
   const turnosFiltrados = (turnos || []).filter((t) => {
     const b = search.toLowerCase();
@@ -1402,6 +1414,29 @@ const Turnos = () => {
               <i className="fas fa-calendar-alt" /> Calendario
             </button>
           </div>
+
+          {esDr && (
+            <div className="view-toggle">
+              <button
+                className={`view-toggle__btn ${filtroDoctor === "mios" ? "active" : ""}`}
+                onClick={() => {
+                  setFiltroDoctor("mios");
+                  setPagina(0);
+                }}
+              >
+                <i className="fas fa-user-md" /> Mis turnos
+              </button>
+              <button
+                className={`view-toggle__btn ${filtroDoctor === "todos" ? "active" : ""}`}
+                onClick={() => {
+                  setFiltroDoctor("todos");
+                  setPagina(0);
+                }}
+              >
+                <i className="fas fa-users" /> Todos
+              </button>
+            </div>
+          )}
 
           {vista === "lista" && (
             <div className="mock-papers__search">
