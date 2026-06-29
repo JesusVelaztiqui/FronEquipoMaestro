@@ -44,6 +44,10 @@ const DIAS_LARGO = [
   "Sábado",
 ];
 
+// Configuración de agenda (solo front): hora de apertura y duración por defecto del turno
+const HORA_APERTURA = "08:00";
+const DURACION_SLOT_MIN = 30;
+
 const parseLocalDate = (str) => {
   if (!str) return null;
   const [y, m, d] = str.split("-").map(Number);
@@ -545,8 +549,17 @@ const Turnos = () => {
   const [estadoOriginal, setEstadoOriginal] = useState("");
   const [saldoDisponible, setSaldoDisponible] = useState(null);
 
-  // Filtro exclusivo del rol dr: "mios" = solo sus turnos, "todos" = todos los turnos
-  const [filtroDoctor, setFiltroDoctor] = useState("mios");
+  // Turnos reales de los doctores elegidos en el modal (consultados por id) para
+  // autocompletar el horario y validar el solape de AMBOS doctores. Forma: { [idDoctor]: [...] }
+  const [turnosPorDoctor, setTurnosPorDoctor] = useState({});
+  // true cuando el usuario editó la hora a mano: en ese caso no se autocompleta
+  const horaManualRef = useRef(false);
+  // para omitir el primer disparo del effect del selector (la carga inicial ya la hace el mount)
+  const primerRenderTurnos = useRef(true);
+
+  // Filtro exclusivo del rol dr: id del doctor cuyos turnos se muestran.
+  // Por defecto el doctor logueado; puede cambiarse desde el selector de la cabecera.
+  const [doctorSeleccionado, setDoctorSeleccionado] = useState(userData?.id || 0);
 
   const [vista, setVista] = useState(
     () => localStorage.getItem("turnos_vista") || "lista",
@@ -589,34 +602,83 @@ const Turnos = () => {
     return `${String(nh).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  // true si el doctor participa en ese turno (como doctor principal o como doctor2)
-  const doctorEnTurno = (t, doctorId) =>
-    String(t.doctor) === String(doctorId) ||
-    (t.doctor2 && String(t.doctor2) === String(doctorId));
-
-  const calcularProximaHora = (fecha) => {
-    if (!fecha || !turnoForm.doctor) return "";
-    const fechaNorm = normFecha(fecha);
-    const turnosDia = turnos.filter((t) =>
-      normFecha(t.fecha) === fechaNorm &&
-      (t.estado || "").toLowerCase() !== "cancelado" &&
-      doctorEnTurno(t, turnoForm.doctor)
-    );
-    if (turnosDia.length === 0) return "";
-    let maxFin = "";
-    for (const t of turnosDia) {
-      const desde = normHora(t.hora);
-      const hasta = normHora(t.horahasta);
-      const fin = hasta && hasta > desde ? hasta : sumarUnaHora(desde);
-      if (fin > maxFin) maxFin = fin;
-    }
-    return maxFin;
+  const sumarMinutos = (hhMM, mins) => {
+    if (!hhMM || hhMM.length < 5) return "";
+    const [h, m] = hhMM.split(":").map(Number);
+    const total = (h * 60 + m + mins) % 1440;
+    const nh = Math.floor(total / 60);
+    const nm = total % 60;
+    return `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
   };
 
-  const proximaHoraDisponible = modo === "INS" ? calcularProximaHora(turnoForm.fecha) : null;
+  // Hora actual redondeada hacia arriba al próximo bloque de 30 min (10:00 → 10:00, 10:17 → 10:30)
+  const horaActualRedondeada = () => {
+    const ahora = new Date();
+    let h = ahora.getHours();
+    let m = ahora.getMinutes();
+    if (m === 0) {
+      // se mantiene
+    } else if (m <= 30) {
+      m = 30;
+    } else {
+      m = 0;
+      h = (h + 1) % 24;
+    }
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+
+  // Consulta al back (solo lectura) los turnos de cada doctor indicado, por id.
+  // El endpoint con rol != 'admin' devuelve los turnos donde doctor = id OR doctor2 = id,
+  // así que cubre al doctor tanto si participa como principal como si es el segundo.
+  const cargarTurnosDeDoctores = async (ids) => {
+    const unicos = [
+      ...new Set((ids || []).filter((x) => Number(x) > 0).map(String)),
+    ];
+    const mapa = {};
+    await Promise.all(
+      unicos.map(async (id) => {
+        try {
+          const r = await sendData(listarTurnos, "GET", `?rol=dr&id=${id}`, null);
+          mapa[id] = r?.status === 200 && Array.isArray(r.data) ? r.data : [];
+        } catch {
+          mapa[id] = [];
+        }
+      }),
+    );
+    setTurnosPorDoctor(mapa);
+    return mapa;
+  };
+
+  // Próximo hueco libre considerando los turnos de TODOS los doctores indicados.
+  // Si no hay turnos ese día arranca en la apertura; si es hoy y ya pasó, arranca desde ahora.
+  const calcularSiguienteHorario = (fecha, mapaTurnos, ids) => {
+    const fechaNorm = normFecha(fecha);
+    const unicos = [
+      ...new Set((ids || []).filter((x) => Number(x) > 0).map(String)),
+    ];
+    let base = HORA_APERTURA;
+    for (const id of unicos) {
+      for (const t of mapaTurnos[id] || []) {
+        if (normFecha(t.fecha) !== fechaNorm) continue;
+        if ((t.estado || "").toLowerCase() === "cancelado") continue;
+        const desde = normHora(t.hora);
+        const hasta = normHora(t.horahasta);
+        const fin = hasta && hasta > desde ? hasta : sumarUnaHora(desde);
+        if (fin > base) base = fin;
+      }
+    }
+    if (fechaNorm === hoyKey) {
+      const ahora = horaActualRedondeada();
+      if (ahora > base) base = ahora;
+    }
+    return { hora: base, horahasta: sumarMinutos(base, DURACION_SLOT_MIN) };
+  };
 
   const handleChangeTurno = (e) => {
     const { name, value } = e.target;
+
+    // El usuario editó la hora a mano → respetar su valor (no autocompletar)
+    if (name === "hora" || name === "horahasta") horaManualRef.current = true;
 
     if (name === "fecha") {
       if (modo === "UPD" && estadoOriginal === "Confirmado") {
@@ -658,6 +720,7 @@ const Turnos = () => {
           message: "No se puede confirmar un turno con fecha futura.",
           duration: 3000,
         });
+        horaManualRef.current = false;
         setTurnoForm((prev) => ({
           ...prev,
           [name]: value,
@@ -666,6 +729,8 @@ const Turnos = () => {
         return;
       }
       if (modo === "INS") {
+        // Nueva fecha = contexto nuevo → se vuelve a autocompletar el horario
+        horaManualRef.current = false;
         setTurnoForm((prev) => ({ ...prev, fecha: value }));
         return;
       }
@@ -700,18 +765,21 @@ const Turnos = () => {
     setEstadoOriginal("");
     setListTratamientos([]);
     setSaldoDisponible(null);
+    setTurnosPorDoctor({});
+    horaManualRef.current = false;
   };
 
   const getTurnos = async () => {
     try {
       cargarLoader();
-      // Si el dr pidió "Todos", consultamos como admin para traer todos los turnos;
-      // si pidió "Mis turnos" (o es otro rol) se mantiene el comportamiento original.
-      const rolConsulta = esDr && filtroDoctor === "todos" ? "admin" : userData?.role;
+      // Para el rol dr se traen los turnos del doctor seleccionado en el selector
+      // (por defecto, el logueado). El back, con rol != 'admin', devuelve los turnos
+      // donde doctor = id OR doctor2 = id. Para otros roles se mantiene el comportamiento original.
+      const idConsulta = esDr ? doctorSeleccionado || userData?.id : userData?.id;
       const response = await sendData(
         listarTurnos,
         "GET",
-        `?rol=${rolConsulta}&id=${userData?.id}`,
+        `?rol=${userData?.role}&id=${idConsulta}`,
         null,
       );
       if (response.status === 200) {
@@ -1023,48 +1091,54 @@ const Turnos = () => {
         return;
       }
     }
-    // Validar que ningún doctor se encime con otro turno
+    // Validar que ningún doctor (principal o segundo) se encime con otro turno.
+    // Se consultan los turnos reales de cada doctor por id (el back filtra doctor = id OR doctor2 = id),
+    // así que cubre a ambos doctores estén donde estén.
     if (turnoForm.fecha && turnoForm.hora) {
       const horaDesde = turnoForm.hora;
       const horaHasta = turnoForm.horahasta && turnoForm.horahasta > turnoForm.hora
         ? turnoForm.horahasta
         : sumarUnaHora(turnoForm.hora);
 
-      const turnosConflicto = turnos.filter((t) => {
-        if ((t.estado || "").toLowerCase() === "cancelado") return false;
-        if (normFecha(t.fecha) !== turnoForm.fecha) return false;
-        if (modo === "UPD" && t.id === turnoForm.id) return false;
-        const tDesde = normHora(t.hora);
-        const tHasta = normHora(t.horahasta) && normHora(t.horahasta) > tDesde
-          ? normHora(t.horahasta)
-          : sumarUnaHora(tDesde);
-        return horaDesde < tHasta && horaHasta > tDesde;
-      });
+      const mapaConflicto = await cargarTurnosDeDoctores([
+        turnoForm.doctor,
+        turnoForm.doctor2,
+      ]);
 
-      if (turnoForm.doctor) {
-        const c = turnosConflicto.find((t) => doctorEnTurno(t, turnoForm.doctor));
-        if (c) {
-          addToast({
-            type: "error",
-            title: "Doctor ocupado",
-            message: `El doctor ya tiene un turno de ${normHora(c.hora)} a ${normHora(c.horahasta) || sumarUnaHora(normHora(c.hora))}`,
-            duration: 4000,
-          });
-          return;
-        }
+      const buscarSolape = (doctorId) => {
+        if (!doctorId || Number(doctorId) === 0) return null;
+        return (mapaConflicto[String(doctorId)] || []).find((t) => {
+          if ((t.estado || "").toLowerCase() === "cancelado") return false;
+          if (normFecha(t.fecha) !== turnoForm.fecha) return false;
+          if (modo === "UPD" && t.id === turnoForm.id) return false;
+          const tDesde = normHora(t.hora);
+          const tHasta = normHora(t.horahasta) && normHora(t.horahasta) > tDesde
+            ? normHora(t.horahasta)
+            : sumarUnaHora(tDesde);
+          return horaDesde < tHasta && horaHasta > tDesde;
+        });
+      };
+
+      const c1 = buscarSolape(turnoForm.doctor);
+      if (c1) {
+        addToast({
+          type: "error",
+          title: "Doctor ocupado",
+          message: `El doctor ya tiene un turno de ${normHora(c1.hora)} a ${normHora(c1.horahasta) || sumarUnaHora(normHora(c1.hora))}`,
+          duration: 4000,
+        });
+        return;
       }
 
-      if (turnoForm.doctor2 && Number(turnoForm.doctor2) !== 0) {
-        const c = turnosConflicto.find((t) => doctorEnTurno(t, turnoForm.doctor2));
-        if (c) {
-          addToast({
-            type: "error",
-            title: "Segundo doctor ocupado",
-            message: `El segundo doctor ya tiene un turno de ${normHora(c.hora)} a ${normHora(c.horahasta) || sumarUnaHora(normHora(c.hora))}`,
-            duration: 4000,
-          });
-          return;
-        }
+      const c2 = buscarSolape(turnoForm.doctor2);
+      if (c2) {
+        addToast({
+          type: "error",
+          title: "Segundo doctor ocupado",
+          message: `El segundo doctor ya tiene un turno de ${normHora(c2.hora)} a ${normHora(c2.horahasta) || sumarUnaHora(normHora(c2.hora))}`,
+          duration: 4000,
+        });
+        return;
       }
     }
 
@@ -1281,18 +1355,60 @@ const Turnos = () => {
   useEffect(() => {
     getPacientes();
     getDoctores();
+    getTurnos(); // carga por defecto los turnos del doctor logueado al entrar
     const handleClickOutside = (e) => {
       if (!e.target.closest(".tooltip-wrapper")) setActiveTooltip(null);
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Carga inicial de turnos y recarga cuando el dr alterna entre "Mis turnos" / "Todos"
+  // Recarga los turnos SOLO cuando el dr cambia de doctor en el selector
+  // (el primer render ya cargó por defecto desde el effect de montaje).
   useEffect(() => {
+    if (primerRenderTurnos.current) {
+      primerRenderTurnos.current = false;
+      return;
+    }
     getTurnos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtroDoctor]);
+  }, [doctorSeleccionado]);
+
+  // (1) Trae los turnos reales de los doctores elegidos en el modal (por id), para
+  // disponibilidad y validación. Async, pero solo actualiza el almacén de datos.
+  useEffect(() => {
+    if (!openModal || modo !== "INS") return;
+    cargarTurnosDeDoctores([turnoForm.doctor, turnoForm.doctor2]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openModal, modo, turnoForm.doctor, turnoForm.doctor2]);
+
+  // (2) Autocompleta Hora / Hora Hasta de forma SÍNCRONA según la fecha y la
+  // disponibilidad ya cargada. Al cambiar la fecha recalcula en el acto (sin carrera async).
+  // Respeta la edición manual: si el usuario ya tocó la hora, no la sobreescribe.
+  useEffect(() => {
+    if (!openModal || modo !== "INS") return;
+    if (!turnoForm.fecha) return;
+    if (horaManualRef.current) return;
+    const { hora, horahasta } = calcularSiguienteHorario(
+      turnoForm.fecha,
+      turnosPorDoctor,
+      [turnoForm.doctor, turnoForm.doctor2],
+    );
+    setTurnoForm((prev) =>
+      prev.hora === hora && prev.horahasta === horahasta
+        ? prev
+        : { ...prev, hora, horahasta },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    openModal,
+    modo,
+    turnoForm.fecha,
+    turnoForm.doctor,
+    turnoForm.doctor2,
+    turnosPorDoctor,
+  ]);
 
   const turnosFiltrados = (turnos || []).filter((t) => {
     const b = search.toLowerCase();
@@ -1416,26 +1532,28 @@ const Turnos = () => {
           </div>
 
           {esDr && (
-            <div className="view-toggle">
-              <button
-                className={`view-toggle__btn ${filtroDoctor === "mios" ? "active" : ""}`}
-                onClick={() => {
-                  setFiltroDoctor("mios");
-                  setPagina(0);
-                }}
-              >
-                <i className="fas fa-user-md" /> Mis turnos
-              </button>
-              <button
-                className={`view-toggle__btn ${filtroDoctor === "todos" ? "active" : ""}`}
-                onClick={() => {
-                  setFiltroDoctor("todos");
-                  setPagina(0);
-                }}
-              >
-                <i className="fas fa-users" /> Todos
-              </button>
-            </div>
+            <select
+              className="turnos-doctor-select"
+              value={doctorSeleccionado}
+              onChange={(e) => {
+                setDoctorSeleccionado(Number(e.target.value));
+                setPagina(0);
+                setDiaSeleccionado(null);
+              }}
+              title="Ver turnos por doctor"
+            >
+              <option value={userData?.id}>
+                {`${userData?.nombre || ""} ${userData?.apellido || ""}`.trim()}{" "}
+                (Mis turnos)
+              </option>
+              {listDoctores
+                .filter((d) => String(d.id) !== String(userData?.id))
+                .map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.nombre} {d.apellido}
+                  </option>
+                ))}
+            </select>
           )}
 
           {vista === "lista" && (
@@ -1891,14 +2009,7 @@ const Turnos = () => {
 
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">
-                  Hora
-                  {modo === "INS" && proximaHoraDisponible && (
-                    <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
-                      (desde {proximaHoraDisponible})
-                    </span>
-                  )}
-                </label>
+                <label className="input-label">Hora</label>
                 <TimePicker
                   name="hora"
                   value={turnoForm.hora}
