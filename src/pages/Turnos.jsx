@@ -237,31 +237,19 @@ const Buscador = ({
 };
 
 const TimePicker = ({ value, onChange, name, minTime }) => {
-  const handleKeyDown = (e) => {
-    if (["Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)) return;
-
-    if (e.key === "Backspace") {
-      e.preventDefault();
-      const digits = (value || "").replace(":", "");
-      const newDigits = digits.slice(0, -1);
-      let formatted = newDigits;
-      if (newDigits.length > 2) formatted = newDigits.slice(0, 2) + ":" + newDigits.slice(2);
-      onChange({ target: { name, value: formatted } });
-      return;
+  // Procesa el valor por el evento input (funciona en móvil Y escritorio). El enfoque
+  // anterior con onKeyDown se rompía en teclados de celular, que mandan key="Unidentified".
+  // Deja solo dígitos, valida hora <= 23 y minutos <= 59, y formatea como HH:MM.
+  const handleChange = (e) => {
+    let digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+    if (digits.length >= 2 && parseInt(digits.slice(0, 2), 10) > 23) {
+      digits = "23" + digits.slice(2);
     }
-
-    if (!/^\d$/.test(e.key)) { e.preventDefault(); return; }
-
-    e.preventDefault();
-    const digits = (value || "").replace(":", "");
-    // si ya está completo, el nuevo dígito reinicia
-    const base = digits.length >= 4 ? "" : digits;
-    const newDigits = base + e.key;
-    if (newDigits.length >= 2 && parseInt(newDigits.slice(0, 2)) > 23) return;
-    if (newDigits.length >= 4 && parseInt(newDigits.slice(2, 4)) > 59) return;
-
-    let formatted = newDigits;
-    if (newDigits.length > 2) formatted = newDigits.slice(0, 2) + ":" + newDigits.slice(2);
+    if (digits.length >= 4 && parseInt(digits.slice(2, 4), 10) > 59) {
+      digits = digits.slice(0, 2) + "59";
+    }
+    const formatted =
+      digits.length > 2 ? digits.slice(0, 2) + ":" + digits.slice(2) : digits;
     onChange({ target: { name, value: formatted } });
   };
 
@@ -294,11 +282,11 @@ const TimePicker = ({ value, onChange, name, minTime }) => {
   return (
     <input
       type="text"
+      inputMode="numeric"
       className="input-field"
       placeholder="HH:MM"
       value={(value || "").slice(0, 5)}
-      onKeyDown={handleKeyDown}
-      onChange={() => {}}
+      onChange={handleChange}
       onBlur={handleBlur}
       maxLength={5}
     />
@@ -603,15 +591,6 @@ const Turnos = () => {
     return `${String(nh).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
-  const sumarMinutos = (hhMM, mins) => {
-    if (!hhMM || hhMM.length < 5) return "";
-    const [h, m] = hhMM.split(":").map(Number);
-    const total = (h * 60 + m + mins) % 1440;
-    const nh = Math.floor(total / 60);
-    const nm = total % 60;
-    return `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
-  };
-
   // Hora actual redondeada hacia arriba al próximo bloque de 30 min (10:00 → 10:00, 10:17 → 10:30)
   const horaActualRedondeada = () => {
     const ahora = new Date();
@@ -650,29 +629,60 @@ const Turnos = () => {
     return mapa;
   };
 
-  // Próximo hueco libre considerando los turnos de TODOS los doctores indicados.
-  // Si no hay turnos ese día arranca en la apertura; si es hoy y ya pasó, arranca desde ahora.
+  // Primer hueco libre de 30 min considerando los turnos de TODOS los doctores indicados.
+  // Arranca en la apertura (08:00); si es hoy y ya pasó, en la próxima media hora desde ahora.
+  // Camina de a 30 min y devuelve el primer slot que NO se encima con ningún turno de esos
+  // doctores. Sin tope de cierre (hasta fin del día). Todo en minutos para no romper en medianoche.
   const calcularSiguienteHorario = (fecha, mapaTurnos, ids) => {
     const fechaNorm = normFecha(fecha);
     const unicos = [
       ...new Set((ids || []).filter((x) => Number(x) > 0).map(String)),
     ];
-    let base = HORA_APERTURA;
+    const aMin = (hhMM) => {
+      const [h, m] = hhMM.split(":").map(Number);
+      return h * 60 + m;
+    };
+    const deMin = (min) =>
+      `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+    // Intervalos ocupados [desde, fin) en minutos. Si el turno no tiene "hora hasta",
+    // se asume +1h (igual que la validación al grabar), para no sugerir un slot que luego rechace.
+    const ocupados = [];
     for (const id of unicos) {
       for (const t of mapaTurnos[id] || []) {
         if (normFecha(t.fecha) !== fechaNorm) continue;
         if ((t.estado || "").toLowerCase() === "cancelado") continue;
         const desde = normHora(t.hora);
+        if (!desde) continue;
         const hasta = normHora(t.horahasta);
-        const fin = hasta && hasta > desde ? hasta : sumarUnaHora(desde);
-        if (fin > base) base = fin;
+        const dMin = aMin(desde);
+        const fMin = hasta && aMin(hasta) > dMin ? aMin(hasta) : dMin + 60;
+        ocupados.push([dMin, fMin]);
       }
     }
+
+    // Punto de partida: apertura; si es hoy y ya pasó, la próxima media hora desde ahora.
+    let inicioMin = aMin(HORA_APERTURA);
     if (fechaNorm === hoyKey) {
-      const ahora = horaActualRedondeada();
-      if (ahora > base) base = ahora;
+      const ahoraMin = aMin(horaActualRedondeada());
+      if (ahoraMin > inicioMin) inicioMin = ahoraMin;
     }
-    return { hora: base, horahasta: sumarMinutos(base, DURACION_SLOT_MIN) };
+
+    // Camina de a 30 min hasta el fin del día buscando el primer slot libre para todos.
+    for (
+      let tMin = inicioMin;
+      tMin + DURACION_SLOT_MIN <= 24 * 60;
+      tMin += DURACION_SLOT_MIN
+    ) {
+      const finMin = tMin + DURACION_SLOT_MIN;
+      const libre = !ocupados.some(([od, of_]) => tMin < of_ && finMin > od);
+      if (libre) return { hora: deMin(tMin), horahasta: deMin(finMin) };
+    }
+    // Caso extremo (día completo ocupado): devuelve el inicio; la validación al grabar avisará.
+    return {
+      hora: deMin(inicioMin),
+      horahasta: deMin(inicioMin + DURACION_SLOT_MIN),
+    };
   };
 
   // Autocompleta Hora / Hora Hasta de forma IMPERATIVA (setState directo, sin depender
