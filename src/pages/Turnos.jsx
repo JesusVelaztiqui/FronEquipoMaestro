@@ -484,6 +484,107 @@ const FileUpload = ({
   );
 };
 
+/**
+ * Selector de tratamientos: cards multi-selección. Se monta por encima del modal
+ * de turno, así que usa su propio overlay con z-index más alto.
+ */
+const ModalTratamientos = ({
+  abierto,
+  tratamientos,
+  seleccionados,
+  onCerrar,
+  onConfirmar,
+}) => {
+  const [sel, setSel] = useState([]);
+
+  // Solo al abrir: `seleccionados` llega como array nuevo en cada render del padre
+  // y si estuviera en las deps pisaría lo que el usuario va tildando.
+  useEffect(() => {
+    if (abierto) setSel(seleccionados.map((t) => t.id));
+  }, [abierto]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!abierto) return null;
+
+  const toggle = (id) =>
+    setSel((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  return (
+    <div className="modal-overlay modal-overlay--encima" style={{ display: "flex" }}>
+      <div className="modal modal--tratamientos">
+        <div className="modal-header">
+          <h2 className="modal-title">Tratamientos del paciente</h2>
+          <button className="modal-close" onClick={onCerrar}>
+            &times;
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {tratamientos.length === 0 ? (
+            <div className="trat-picker__vacio">
+              <i className="fa-solid fa-file-circle-exclamation" />
+              El paciente no tiene tratamientos cargados
+            </div>
+          ) : (
+            <>
+              <p className="trat-picker__ayuda">
+                Tocá las tarjetas para agregar uno o más tratamientos a este turno.
+              </p>
+              <div className="trat-picker">
+                {tratamientos.map((t) => {
+                  const activo = sel.includes(t.id);
+                  return (
+                    <button
+                      type="button"
+                      key={t.id}
+                      className={`trat-card ${activo ? "trat-card--activa" : ""}`}
+                      onClick={() => toggle(t.id)}
+                    >
+                      <span className="trat-card__check">
+                        <i
+                          className={`fa-solid ${activo ? "fa-circle-check" : "fa-circle"}`}
+                        />
+                      </span>
+                      <span className="trat-card__body">
+                        <span className="trat-card__titulo">
+                          {t.descripcion || `Tratamiento ${t.id}`}
+                        </span>
+                        <span className="trat-card__datos">
+                          <span>
+                            <small>Importe total</small>
+                            {formatNumerico(t.importetotal)} Gs.
+                          </span>
+                          <span>
+                            <small>Saldo pendiente</small>
+                            {formatNumerico(t.saldo)} Gs.
+                          </span>
+                        </span>
+                      </span>
+                      {t.estado && (
+                        <span className="trat-card__estado">{t.estado}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn-cancel" onClick={onCerrar}>
+            Cancelar
+          </button>
+          <button className="btn-submit" onClick={() => onConfirmar(sel)}>
+            Confirmar{sel.length > 0 ? ` (${sel.length})` : ""}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FORM_VACIO = {
   id: 0,
   paciente: 0,
@@ -530,12 +631,22 @@ const Turnos = () => {
   const [descripcionEliminar, setDescripcionEliminar] = useState("");
   const [turnoForm, setTurnoForm] = useState(FORM_VACIO);
   const [labels, setLabels] = useState(LABELS_VACIOS);
-  const [importeDisplay, setImporteDisplay] = useState("");
-  const [importeRecibidoDisplay, setImporteRecibidoDisplay] = useState("");
-  const [importeLaboratorioDisplay, setImporteLaboratorioDisplay] = useState("");
   const [fechaOriginal, setFechaOriginal] = useState("");
   const [estadoOriginal, setEstadoOriginal] = useState("");
-  const [saldoDisponible, setSaldoDisponible] = useState(null);
+  // Un turno puede tener 1..N tratamientos. Cada línea lleva sus propios importes.
+  // saldoBase = saldo pendiente del tratamiento disponible para este turno.
+  const [tratamientosSel, setTratamientosSel] = useState([]);
+  const [openTratModal, setOpenTratModal] = useState(false);
+
+  const importeTotalSuma = tratamientosSel.reduce(
+    (acc, t) => acc + (Number(t.importetotal) || 0),
+    0,
+  );
+
+  const actualizarLinea = (idTrat, cambios) =>
+    setTratamientosSel((prev) =>
+      prev.map((t) => (t.id === idTrat ? { ...t, ...cambios } : t)),
+    );
 
   // true cuando el usuario editó la hora a mano: en ese caso no se autocompleta
   const horaManualRef = useRef(false);
@@ -789,13 +900,11 @@ const Turnos = () => {
     setLabels(LABELS_VACIOS);
     setArchivos([]);
     setImagenesExistentes([]);
-    setImporteDisplay("");
-    setImporteRecibidoDisplay("");
-    setImporteLaboratorioDisplay("");
     setFechaOriginal("");
     setEstadoOriginal("");
     setListTratamientos([]);
-    setSaldoDisponible(null);
+    setTratamientosSel([]);
+    setOpenTratModal(false);
     turnosPorDoctorRef.current = {};
     horaManualRef.current = false;
   };
@@ -965,22 +1074,50 @@ const Turnos = () => {
           consultorio: t.consultorio || 0,
           horahasta: String(t.horahasta || "").slice(0, 5),
         });
-        setImporteRecibidoDisplay(formatNumerico(t.importerecibido || 0));
-        setImporteLaboratorioDisplay(formatNumerico(t.importelaboratorio || 0));
         const tratamientosDelPaciente = await getTratamientosPorPaciente(t.paciente);
-        const tratEncontrado = tratamientosDelPaciente.find((tr) => tr.id === t.tratamiento);
-        const importetotalReal = tratEncontrado ? tratEncontrado.importetotal : 0;
-        setTurnoForm((prev) => ({ ...prev, importetotal: importetotalReal }));
-        setImporteDisplay(formatNumerico(importetotalReal));
+
+        // El back devuelve el detalle por tratamiento. Para turnos viejos manda una
+        // sola línea armada con la cabecera, así que este mismo camino sirve para ambos.
+        const detalle =
+          Array.isArray(t.tratamientos) && t.tratamientos.length > 0
+            ? t.tratamientos
+            : t.tratamiento
+              ? [
+                  {
+                    tratamiento: t.tratamiento,
+                    porcentajedescuento: t.porcentajedescuento || 0,
+                    importerecibido: t.importerecibido || 0,
+                    importelaboratorio: t.importelaboratorio || 0,
+                  },
+                ]
+              : [];
+
+        setTratamientosSel(
+          detalle.map((d) => {
+            const trat = tratamientosDelPaciente.find((tr) => tr.id === d.tratamiento);
+            const recibido = d.importerecibido || 0;
+            return {
+              id: d.tratamiento,
+              descripcion: trat?.descripcion || d.descripcion || `Tratamiento ${d.tratamiento}`,
+              importetotal: trat?.importetotal || 0,
+              // El saldo que trae el tratamiento ya tiene descontado lo cobrado en este
+              // turno, así que se lo devolvemos para poder reeditarlo sin falso tope.
+              saldoBase: trat ? trat.saldo + recibido : recibido,
+              porcentajedescuento: d.porcentajedescuento || 0,
+              importerecibido: recibido,
+              importelaboratorio: d.importelaboratorio || 0,
+              recibidoDisplay: formatNumerico(recibido),
+              laboratorioDisplay: formatNumerico(d.importelaboratorio || 0),
+            };
+          }),
+        );
+
         setLabels({
           paciente: buscarLabelEnLista(listPacientes, t.paciente),
           doctor: buscarLabelEnLista(listDoctores, t.doctor),
           doctor2: t.doctor2 ? buscarLabelEnLista(listDoctores, t.doctor2) : "",
-          tratamiento: tratEncontrado ? tratEncontrado.descripcion : "",
+          tratamiento: "",
         });
-        setSaldoDisponible(
-          tratEncontrado ? tratEncontrado.saldo + (t.importerecibido || 0) : null
-        );
         setArchivos([]);
         await getImagenesTurno(t.id);
         setModo("UPD");
@@ -1080,12 +1217,15 @@ const Turnos = () => {
       });
       return;
     }
-    if (saldoDisponible !== null && Number(turnoForm.importerecibido) > saldoDisponible) {
+    const lineaExcedida = tratamientosSel.find(
+      (t) => Number(t.importerecibido) > Number(t.saldoBase),
+    );
+    if (lineaExcedida) {
       addToast({
         type: "error",
         title: "Validación",
-        message: `El importe recibido supera el saldo pendiente de ${Number(saldoDisponible).toLocaleString("es-PY")} Gs.`,
-        duration: 3000,
+        message: `En "${lineaExcedida.descripcion}" el importe recibido supera el saldo pendiente de ${Number(lineaExcedida.saldoBase).toLocaleString("es-PY")} Gs.`,
+        duration: 4000,
       });
       return;
     }
@@ -1179,12 +1319,30 @@ const Turnos = () => {
     try {
       cargarLoader();
       const { importetotal, saldo, ...resto } = turnoForm;
+      // El detalle es la fuente de verdad; los totales de cabecera los recalcula el
+      // back a partir de él, pero se mandan igual para no cambiar el contrato previo.
+      const detalle = tratamientosSel.map((t) => ({
+        tratamiento: t.id,
+        porcentajedescuento: Number(t.porcentajedescuento) || 0,
+        importerecibido: Number(t.importerecibido) || 0,
+        importelaboratorio: Number(t.importelaboratorio) || 0,
+      }));
+      const totalRecibido = detalle.reduce((a, d) => a + d.importerecibido, 0);
+      const totalLaboratorio = detalle.reduce((a, d) => a + d.importelaboratorio, 0);
+      const totalDescuento = detalle.reduce(
+        (a, d) => a + Math.round((d.importerecibido * d.porcentajedescuento) / 100),
+        0,
+      );
       const payload = {
         ...resto,
         horahasta: turnoForm.horahasta || turnoForm.hora,
-        porcentajedescuento: Number(turnoForm.porcentajedescuento) || 0,
-        importerecibido: Number(turnoForm.importerecibido) || 0,
-        importelaboratorio: Number(turnoForm.importelaboratorio) || 0,
+        tratamiento: detalle.length > 0 ? detalle[0].tratamiento : 0,
+        tratamientos: detalle,
+        descuentodoctor: totalDescuento,
+        porcentajedescuento:
+          totalRecibido > 0 ? Math.round((totalDescuento * 100) / totalRecibido) : 0,
+        importerecibido: totalRecibido,
+        importelaboratorio: totalLaboratorio,
       };
       const formData = new FormData();
       formData.append("turnos", JSON.stringify(payload));
@@ -1943,7 +2101,7 @@ const Turnos = () => {
                 onChange={(val) => {
                   setTurnoForm((prev) => ({ ...prev, paciente: val, tratamiento: 0, importetotal: 0 }));
                   setLabels((prev) => ({ ...prev, tratamiento: "" }));
-                  setImporteDisplay("");
+                  setTratamientosSel([]);
                   getTratamientosPorPaciente(val);
                 }}
               />
@@ -2080,57 +2238,21 @@ const Turnos = () => {
                   <option value="Atendido">Atendido</option>
                 </select>
               </div>
-              <div style={{ position: "relative" }}>
-                <Buscador
-                  label="Tratamiento"
-                  options={listTratamientos.map((t) => ({
-                    id: t.id,
-                    nombre: t.descripcion || "",
-                    apellido: "",
-                    label: t.descripcion || "",
-                  }))}
-                  placeholder={turnoForm.paciente ? "Seleccionar tratamiento" : "Primero seleccione un paciente"}
-                  value={turnoForm.tratamiento}
-                  labelExterno={labels.tratamiento}
-                  onLabelChange={(lbl) =>
-                    setLabels((prev) => ({ ...prev, tratamiento: lbl }))
-                  }
-                  onChange={(val) => {
-                    const trat = listTratamientos.find((t) => t.id === val);
-                    setTurnoForm((prev) => ({
-                      ...prev,
-                      tratamiento: val,
-                      importetotal: trat ? trat.importetotal : prev.importetotal,
-                      importerecibido: 0,
-                    }));
-                    if (trat) {
-                      setImporteDisplay(formatNumerico(trat.importetotal));
-                      setSaldoDisponible(trat.saldo);
-                      setImporteRecibidoDisplay("");
-                    }
-                  }}
-                />
-                {turnoForm.tratamiento > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTurnoForm((prev) => ({ ...prev, tratamiento: 0, importetotal: 0, importerecibido: 0 }));
-                      setLabels((prev) => ({ ...prev, tratamiento: "" }));
-                      setImporteDisplay("");
-                      setImporteRecibidoDisplay("");
-                      setSaldoDisponible(null);
-                    }}
-                    style={{
-                      position: "absolute", top: 0, right: 0,
-                      background: "none", border: "none", cursor: "pointer",
-                      color: "#9ca3af", fontSize: 12, fontWeight: 700,
-                      padding: "2px 4px", lineHeight: 1,
-                    }}
-                    title="Quitar tratamiento"
-                  >
-                    ✕ Quitar
-                  </button>
-                )}
+              <div className="input-group">
+                <label className="input-label">Tratamientos</label>
+                <button
+                  type="button"
+                  className="trat-trigger"
+                  disabled={!turnoForm.paciente}
+                  onClick={() => setOpenTratModal(true)}
+                >
+                  <i className="fa-solid fa-tooth" />
+                  {!turnoForm.paciente
+                    ? "Primero seleccione un paciente"
+                    : tratamientosSel.length === 0
+                      ? "Seleccionar tratamientos"
+                      : `${tratamientosSel.length} tratamiento${tratamientosSel.length > 1 ? "s" : ""} seleccionado${tratamientosSel.length > 1 ? "s" : ""}`}
+                </button>
               </div>
             </div>
 
@@ -2150,87 +2272,121 @@ const Turnos = () => {
 
             <div className="modal-row">
               <div className="input-group">
-                <label className="input-label">Porcentaje a descontar</label>
-                <input
-                  type="number"
-                  className="input-field"
-                  value={turnoForm.porcentajedescuento || ""}
-                  onChange={(e) => {
-                    const pct = Number(e.target.value) || 0;
-                    setTurnoForm((prev) => ({
-                      ...prev,
-                      porcentajedescuento: pct,
-                      descuentodoctor: Math.round((prev.importerecibido || 0) * pct / 100),
-                    }));
-                  }}
-                />
-              </div>
-              <div className="input-group">
                 <label className="input-label">Importe Total</label>
                 <input
                   type="text"
                   className="input-field"
-                  value={importeDisplay}
-                  disabled
-                  placeholder="0"
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Importe Recibido</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  value={importeRecibidoDisplay}
-                  onChange={(e) => {
-                    const raw = desformatear(e.target.value);
-                    if (saldoDisponible !== null && raw > saldoDisponible) {
-                      addToast({
-                        type: "warning",
-                        title: "Importe inválido",
-                        message: `El saldo pendiente es ${Number(saldoDisponible).toLocaleString("es-PY")} Gs.`,
-                        duration: 3000,
-                      });
-                      return;
-                    }
-                    setImporteRecibidoDisplay(formatNumerico(raw));
-                    setTurnoForm((prev) => ({
-                      ...prev,
-                      importerecibido: raw,
-                      descuentodoctor: Math.round(raw * (prev.porcentajedescuento || 0) / 100),
-                    }));
-                  }}
-                  placeholder="0"
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Importe Laboratorio</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  value={importeLaboratorioDisplay}
-                  onChange={(e) => {
-                    const raw = desformatear(e.target.value);
-                    setImporteLaboratorioDisplay(formatNumerico(raw));
-                    setTurnoForm((prev) => ({ ...prev, importelaboratorio: raw }));
-                  }}
-                  placeholder="0"
-                />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Saldo</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  value={formatNumerico(
-                    saldoDisponible !== null
-                      ? saldoDisponible - (Number(turnoForm.importerecibido) || 0)
-                      : 0
-                  )}
+                  value={formatNumerico(importeTotalSuma)}
                   disabled
                   placeholder="0"
                 />
               </div>
             </div>
+
+            {tratamientosSel.length === 0 ? (
+              <div className="trat-linea__vacio">
+                <i className="fa-solid fa-tooth" />
+                Seleccione al menos un tratamiento para cargar los importes.
+              </div>
+            ) : (
+              tratamientosSel.map((linea, idx) => {
+                const saldoLinea =
+                  Number(linea.saldoBase) - (Number(linea.importerecibido) || 0);
+                return (
+                  <div className="trat-linea" key={linea.id}>
+                    <div className="trat-linea__head">
+                      <span className="trat-linea__titulo">
+                        <span className="trat-linea__idx">{idx + 1}</span>
+                        {linea.descripcion}
+                      </span>
+                      <span className="trat-linea__total">
+                        Total: {formatNumerico(linea.importetotal)} Gs.
+                      </span>
+                      <button
+                        type="button"
+                        className="trat-linea__quitar"
+                        title="Quitar tratamiento"
+                        onClick={() =>
+                          setTratamientosSel((prev) =>
+                            prev.filter((t) => t.id !== linea.id),
+                          )
+                        }
+                      >
+                        <i className="fa-solid fa-xmark" /> Quitar
+                      </button>
+                    </div>
+
+                    <div className="modal-row">
+                      <div className="input-group">
+                        <label className="input-label">Porcentaje a descontar</label>
+                        <input
+                          type="number"
+                          className="input-field"
+                          value={linea.porcentajedescuento || ""}
+                          onChange={(e) =>
+                            actualizarLinea(linea.id, {
+                              porcentajedescuento: Number(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="input-group">
+                        <label className="input-label">Importe Recibido</label>
+                        <input
+                          type="text"
+                          className="input-field"
+                          value={linea.recibidoDisplay}
+                          onChange={(e) => {
+                            const raw = desformatear(e.target.value);
+                            if (raw > Number(linea.saldoBase)) {
+                              addToast({
+                                type: "warning",
+                                title: "Importe inválido",
+                                message: `El saldo pendiente de "${linea.descripcion}" es ${Number(linea.saldoBase).toLocaleString("es-PY")} Gs.`,
+                                duration: 3000,
+                              });
+                              return;
+                            }
+                            actualizarLinea(linea.id, {
+                              importerecibido: raw,
+                              recibidoDisplay: formatNumerico(raw),
+                            });
+                          }}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="input-group">
+                        <label className="input-label">Importe Laboratorio</label>
+                        <input
+                          type="text"
+                          className="input-field"
+                          value={linea.laboratorioDisplay}
+                          onChange={(e) => {
+                            const raw = desformatear(e.target.value);
+                            actualizarLinea(linea.id, {
+                              importelaboratorio: raw,
+                              laboratorioDisplay: formatNumerico(raw),
+                            });
+                          }}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="input-group">
+                        <label className="input-label">Saldo</label>
+                        <input
+                          type="text"
+                          className="input-field"
+                          value={formatNumerico(saldoLinea)}
+                          disabled
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
 
             <div className="modal-row">
               <div className="input-group">
@@ -2254,6 +2410,39 @@ const Turnos = () => {
           </div>
         </div>
       </div>
+
+      <ModalTratamientos
+        abierto={openTratModal}
+        tratamientos={listTratamientos}
+        seleccionados={tratamientosSel}
+        onCerrar={() => setOpenTratModal(false)}
+        onConfirmar={(ids) => {
+          // Mantiene los importes ya cargados de los que siguen elegidos y
+          // agrega los nuevos en blanco, en el orden en que están listados.
+          setTratamientosSel(
+            ids
+              .map((id) => {
+                const yaEstaba = tratamientosSel.find((t) => t.id === id);
+                if (yaEstaba) return yaEstaba;
+                const trat = listTratamientos.find((t) => t.id === id);
+                if (!trat) return null;
+                return {
+                  id: trat.id,
+                  descripcion: trat.descripcion || `Tratamiento ${trat.id}`,
+                  importetotal: trat.importetotal || 0,
+                  saldoBase: trat.saldo || 0,
+                  porcentajedescuento: 0,
+                  importerecibido: 0,
+                  importelaboratorio: 0,
+                  recibidoDisplay: "",
+                  laboratorioDisplay: "",
+                };
+              })
+              .filter(Boolean),
+          );
+          setOpenTratModal(false);
+        }}
+      />
     </>
   );
 };
