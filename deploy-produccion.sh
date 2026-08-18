@@ -55,10 +55,25 @@ hacer() {
   return 1
 }
 
-remoto() { ssh -o ConnectTimeout=15 "$SERVIDOR" "$@"; }
+# Una sola conexión SSH reutilizada por todos los pasos (ControlMaster). Sin esto,
+# con autenticación por contraseña te la pediría una vez por cada comando remoto.
+SSH_CTL="${TMPDIR:-/tmp}/deploy-em-$$"
+SSH_OPTS=(-o ConnectTimeout=15
+          -o ControlMaster=auto
+          -o ControlPath="$SSH_CTL"
+          -o ControlPersist=15m)
+
+cerrar_ssh() {
+  ssh -o ControlPath="$SSH_CTL" -O exit "$SERVIDOR" 2>/dev/null || true
+  rm -f "$SSH_CTL"
+}
+trap cerrar_ssh EXIT
+
+remoto() { ssh "${SSH_OPTS[@]}" "$SERVIDOR" "$@"; }
 
 # --------------------------- verificaciones --------------------------------
 paso "Conectando a $SERVIDOR"
+echo "  (si pide contraseña, se ingresa UNA sola vez para todo el deploy)"
 remoto "echo conectado" >/dev/null || morir "no pude conectar por SSH a $SERVIDOR"
 ok "SSH ok"
 
