@@ -142,21 +142,29 @@ if hacer back; then
 
   paso "Backend: reiniciando el proceso"
   # El back corre suelto (no systemd): se baja el proceso viejo y se levanta el nuevo.
-  PID_VIEJO="$(remoto "pgrep -f 'java -jar $JAR_REMOTO' || true" | tr -d '[:space:]')"
-  if [ -n "$PID_VIEJO" ]; then
-    remoto "kill $PID_VIEJO" || true
-    for _ in 1 2 3 4 5 6 7 8 9 10; do
-      remoto "kill -0 $PID_VIEJO 2>/dev/null" || break
-      sleep 1
-    done
-    remoto "kill -0 $PID_VIEJO 2>/dev/null" && { remoto "kill -9 $PID_VIEJO" || true; sleep 2; }
-    ok "proceso anterior detenido (PID $PID_VIEJO)"
-  else
-    aviso "no encontré el proceso anterior corriendo"
-  fi
-
-  remoto "mv '$JAR_DIR/${JAR_NOMBRE}.nuevo' '$JAR_REMOTO'"
-  remoto "cd '$JAR_DIR' && setsid nohup java -jar '$JAR_REMOTO' >> '$JAR_DIR/app.log' 2>&1 < /dev/null &" || true
+  #
+  # ⚠️ NUNCA con `ssh host "pkill -f 'java -jar ...'"`. Al pasar el comando como
+  # argumento, el shell remoto lleva ese mismo texto en su línea de comando, así que
+  # pkill/pgrep coinciden CON EL PROPIO SHELL: mata el backend y se mata a sí mismo,
+  # el arranque no se ejecuta y producción queda caída. (Pasó el 2026-08-18.)
+  # Por eso el script va por stdin: el proceso remoto se llama solo `bash -s`.
+  ssh "${SSH_OPTS[@]}" "$SERVIDOR" 'bash -s' <<REMOTO
+PID=\$(pgrep -f "java -jar $JAR_REMOTO" || true)
+if [ -n "\$PID" ]; then
+  kill \$PID
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    kill -0 \$PID 2>/dev/null || break
+    sleep 1
+  done
+  kill -0 \$PID 2>/dev/null && kill -9 \$PID
+  echo "  proceso anterior detenido (PID \$PID)"
+else
+  echo "  no había proceso anterior corriendo"
+fi
+mv '$JAR_DIR/${JAR_NOMBRE}.nuevo' '$JAR_REMOTO'
+cd '$JAR_DIR'
+setsid nohup java -jar '$JAR_REMOTO' >> '$JAR_DIR/app.log' 2>&1 < /dev/null &
+REMOTO
 
   paso "Backend: esperando que levante en el puerto $PUERTO_BACK"
   ARRIBA=0
@@ -167,11 +175,20 @@ if hacer back; then
   if [ "$ARRIBA" != "1" ]; then
     echo -e "\n${ROJO}--- últimas líneas de $JAR_DIR/app.log ---${OFF}"
     remoto "tail -n 40 '$JAR_DIR/app.log'" || true
-    echo -e "\n${AMAR}Para volver al jar anterior:${OFF}"
-    echo "  ssh $SERVIDOR \"pkill -f 'java -jar $JAR_REMOTO'; cp '$JAR_DIR/${JAR_NOMBRE}.bak_${STAMP}' '$JAR_REMOTO'; cd '$JAR_DIR' && setsid nohup java -jar '$JAR_REMOTO' >> app.log 2>&1 &\""
+    echo -e "\n${AMAR}Para volver al jar anterior, pegá este bloque completo:${OFF}"
+    cat <<AYUDA
+  ssh $SERVIDOR 'bash -s' <<'FIN'
+  PID=\$(pgrep -f "java -jar $JAR_REMOTO" || true)
+  [ -n "\$PID" ] && kill \$PID && sleep 5
+  cp '$JAR_DIR/${JAR_NOMBRE}.bak_${STAMP}' '$JAR_REMOTO'
+  cd '$JAR_DIR'
+  setsid nohup java -jar '$JAR_REMOTO' >> app.log 2>&1 </dev/null &
+  sleep 25; pgrep -af "java -jar $JAR_DIR"; ss -tln | grep $PUERTO_BACK
+  FIN
+AYUDA
     morir "el backend no levantó"
   fi
-  ok "backend escuchando en $PUERTO_BACK (PID $(remoto "pgrep -f 'java -jar $JAR_REMOTO' | head -1"))"
+  ok "backend escuchando en $PUERTO_BACK (PID $(ssh "${SSH_OPTS[@]}" "$SERVIDOR" 'bash -s' <<< "pgrep -f \"java -jar $JAR_REMOTO\" | head -1"))"
 fi
 
 # ------------------------------ FRONTEND -----------------------------------

@@ -53,6 +53,56 @@ Config en `/etc/nginx/sites-enabled/`. El backend tiene context-path
 
 ---
 
+## Trampas del servidor
+
+Cosas que ya costaron una caída de producción. Leelas antes de tocar el backend.
+
+### 1. Reemplazar el `.jar` NO actualiza nada
+
+La JVM carga el jar **en memoria al arrancar**. Podés subir el jar nuevo, ver la
+fecha de hoy con `ls -la`, verificar el md5, y el backend seguir respondiendo con
+el código viejo. **Hasta que el proceso no se reinicia, no cambió nada.**
+
+Cómo se detecta: el PID sigue siendo el mismo de antes.
+
+```bash
+ssh root@45.55.201.134 "ls -la /opt/app/jar/*.jar && pgrep -af 'java -jar'"
+```
+
+Si el jar es de hoy pero el PID lleva semanas de uptime, es esto.
+
+### 2. Nunca `ssh host "pkill -f 'java -jar ...'"`
+
+**Esto tira producción.** Al pasar el comando como argumento de `ssh`, el shell
+remoto (`bash -c <comando>`) lleva ese texto **en su propia línea de comando**.
+`pkill -f` / `pgrep -f` buscan sobre la línea de comando completa, así que
+coinciden con el proceso Java **y con el shell que los está ejecutando**:
+
+1. `pkill` mata el backend.
+2. `pkill` se mata a sí mismo.
+3. El resto del comando —el arranque— nunca se ejecuta.
+4. El backend queda caído y no ves ningún error: el comando termina en
+   4 segundos sin imprimir nada.
+
+Síntoma en la web: `net::ERR_FAILED` en las llamadas al backend, y de rebote un
+error de CORS (`No 'Access-Control-Allow-Origin' header`). **El CORS es un
+síntoma, no la causa**: si el backend no responde, no hay cabeceras que mandar.
+
+**La forma correcta** es mandar el script por la entrada estándar, así el proceso
+remoto se llama solo `bash -s` y no puede coincidir consigo mismo:
+
+```bash
+ssh root@45.55.201.134 'bash -s' <<'EOF'
+PID=$(pgrep -f "java -jar /opt/app/jar/EquipoMestro-0.0.1-SNAPSHOT.jar" || true)
+[ -n "$PID" ] && kill $PID && sleep 5
+...
+EOF
+```
+
+Pasó el **2026-08-18**. El `deploy-produccion.sh` ya usa la forma correcta.
+
+---
+
 ## ⚠️ Dos cosas que hay que tener presentes
 
 **1. El backend NO sobrevive a un reinicio del servidor.**
@@ -119,9 +169,26 @@ ssh root@45.55.201.134 "cd /opt/app/jar && setsid nohup java -jar EquipoMestro-0
 
 ### Reiniciar el backend sin desplegar nada nuevo
 
+Pegá el bloque **completo**, incluida la línea final `EOF`, y esperá 30 segundos:
+
 ```bash
-ssh root@45.55.201.134 "pkill -f 'java -jar /opt/app/jar/EquipoMestro-0.0.1-SNAPSHOT.jar'; sleep 3; cd /opt/app/jar && setsid nohup java -jar EquipoMestro-0.0.1-SNAPSHOT.jar >> app.log 2>&1 &"
+ssh root@45.55.201.134 'bash -s' <<'EOF'
+PID=$(pgrep -f "java -jar /opt/app/jar/EquipoMestro-0.0.1-SNAPSHOT.jar" || true)
+echo "PID actual: ${PID:-ninguno (esta caido)}"
+[ -n "$PID" ] && kill $PID && sleep 5
+cd /opt/app/jar
+setsid nohup java -jar EquipoMestro-0.0.1-SNAPSHOT.jar >> app.log 2>&1 </dev/null &
+sleep 30
+echo "--- proceso ---"; pgrep -af "java -jar /opt/app/jar" || echo "NO ARRANCO"
+echo "--- puerto ---";  ss -tln | grep 9099 || echo "9099 NO ESCUCHA"
+echo "--- log ---";     tail -n 20 /opt/app/jar/app.log
+EOF
 ```
+
+Tiene que devolverte un **PID distinto** al de antes y el 9099 escuchando.
+
+> ⚠️ **No lo escribas como `ssh host "pkill -f 'java -jar ...'"`.** Ver la sección
+> [Trampas del servidor](#trampas-del-servidor) — así se cae producción.
 
 ### Entrar a la base
 
@@ -143,15 +210,18 @@ PGPASSWORD='...' psql -h 127.0.0.1 -p 17010 -U equipo_user -d EquipoMaestro
 ### Backend
 
 ```bash
-ssh root@45.55.201.134
-pkill -f 'java -jar /opt/app/jar/EquipoMestro-0.0.1-SNAPSHOT.jar'
+ssh root@45.55.201.134 'bash -s' <<'EOF'
+PID=$(pgrep -f "java -jar /opt/app/jar/EquipoMestro-0.0.1-SNAPSHOT.jar" || true)
+[ -n "$PID" ] && kill $PID && sleep 5
 cd /opt/app/jar
 cp EquipoMestro-0.0.1-SNAPSHOT.jar.bak_<stamp> EquipoMestro-0.0.1-SNAPSHOT.jar
-setsid nohup java -jar EquipoMestro-0.0.1-SNAPSHOT.jar >> app.log 2>&1 &
+setsid nohup java -jar EquipoMestro-0.0.1-SNAPSHOT.jar >> app.log 2>&1 </dev/null &
+sleep 25; pgrep -af "java -jar /opt/app/jar"; ss -tln | grep 9099
+EOF
 ```
 
-Si el backend no levanta, el propio deploy te imprime este comando ya armado
-con el stamp correcto.
+Si el backend no levanta, el propio deploy te imprime este bloque ya armado con
+el stamp correcto.
 
 ### Frontend
 
@@ -172,6 +242,8 @@ tablas en `/root/backup_turnos_<stamp>.sql`.
 | Síntoma | Dónde mirar |
 |---|---|
 | La web carga pero no trae datos | ¿el backend está vivo? `pgrep -af 'java -jar'` y `tail /opt/app/jar/app.log` |
+| `net::ERR_FAILED` + error de CORS en la consola | el backend está caído. El CORS es el síntoma, no la causa — reiniciarlo |
+| Subiste el jar nuevo y sigue el comportamiento viejo | no se reinició el proceso. Ver [Trampas del servidor](#trampas-del-servidor) |
 | 502 en `backmaestro...` | el backend se cayó; levantarlo con el comando de arriba |
 | La web quedó en blanco | `ls /var/www/equipomaestro` — si está vacío, restaurar el `.bak_<stamp>` |
 | El deploy no encuentra rutas | correr `./diagnostico-servidor.sh` y comparar con este documento |
